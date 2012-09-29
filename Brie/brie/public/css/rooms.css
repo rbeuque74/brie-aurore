@@ -1,0 +1,68 @@
+html {
+    font-family: sans-serif;
+}
+
+a {
+   color: #444444;
+   text-decoration: none;
+}
+
+a:hover {
+    color: white;
+    background-color: black;
+}
+
+
+
+.floor_name {
+    color: lightgrey;
+}
+
+.room_number, .interface_status {
+    display: inline-block;
+    color: #444444;
+    font-weight: bold;
+    padding: 3px;
+    margin: 2px;
+}
+
+.area {
+    width: 1300px
+}
+
+.preview_part {
+    display: inline-block;
+}
+
+.preview_name {
+    color: #444444;
+    font-weight: bold;
+}
+
+.ok_color {
+    background-color: #D1F2C4
+}
+
+.vide_color {
+    background-color: white;
+}
+
+.non_certif_color {
+    background-color: #F2E1C4;
+}
+
+.non_paye_color {
+    background-color: #F2C4C4;
+}
+
+.shut_color {
+    background-color: lightgray;
+}
+
+.violation_color {
+    background-color: #F2C4C4;
+}
+
+.rooms_legend {
+    float: right;
+}

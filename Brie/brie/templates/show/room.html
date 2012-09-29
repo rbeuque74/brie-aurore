@@ -1,0 +1,19 @@
+<html 
+    xmlns:py="http://genshi.edgewall.org/"
+    xmlns:xi="http://www.w3.org/2001/XInclude">
+    <xi:include href="member_room_interface_views.html" />
+    <head>
+        <link type="text/css" rel="Stylesheet" href="/css/common.css" />
+        <link type="text/css" rel="Stylesheet" href="/css/show.css" />
+    </head>
+    <body> 
+        <div py:choose="room_ldap">
+            <span class="section_name" py:when="None">Pas de chambre associée</span>
+            <div py:otherwise="">${room_view(room_ldap, member_ldap)}</div>
+        </div>
+        <div py:choose="interface"> 
+            <span class="section_name" py:when="None">Pas d'interface associée</span>
+            <div py:otherwise="">${interface_view(interface)}</div>
+        </div>
+    </body>
+</html>

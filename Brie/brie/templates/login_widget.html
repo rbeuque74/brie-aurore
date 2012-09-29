@@ -1,0 +1,17 @@
+<html 
+    xmlns:py="http://genshi.edgewall.org/" 
+    xmlns:xi="http://www.w3.org/2001/XInclude"
+    py:strip=""
+    >
+    <py:def function="login_widget(user)">
+        <div py:choose="">
+            <div py:when="user is None">
+                <a href="${tg.url('/auth/login')}">Connection</a>
+            </div>
+            <div py:otherwise="">
+                <span>${user.attrs.cn.first()}</span>
+                <a href="${tg.url('/auth/logout')}">Deconnection</a>
+            </div>
+        </div>
+    </py:def>
+</html>

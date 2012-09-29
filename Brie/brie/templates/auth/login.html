@@ -1,0 +1,16 @@
+<html>
+    <body>
+        <form action="/auth/login" method="post">
+            <p class="error">${error}</p>
+            <div>
+                <span>Nom d'utilisateur</span>
+                <input name="username" type="text" value="${login}" />
+            </div>
+            <div>
+                <span>Nom d'utilisateur</span>
+                <input name="password" type="password" />
+            </div>
+            <input type="submit" value="connexion"/>
+        </form>
+    </body>
+</html>

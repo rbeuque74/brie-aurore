@@ -1,0 +1,12 @@
+.show_section_name {
+    margin-left: 200px;
+}
+
+.item_name {
+    width: 196px;
+    color: #A0A0A0;
+    display: inline-block;
+    height: 22px;
+    text-align: right;
+    padding-right: 4px;
+}

@@ -1,0 +1,6 @@
+syntax: glob
+
+Brie/data/sessions/*
+*.pyc
+*.swp
+*.swo

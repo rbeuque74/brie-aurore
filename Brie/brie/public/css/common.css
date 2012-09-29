@@ -1,0 +1,31 @@
+html {
+    font-family: sans-serif;
+    color: #444444;
+}
+
+a {
+   color: #444444;
+   text-decoration: none;
+}
+
+a:hover {
+    color: white;
+    background-color: black;
+}
+
+.section {
+    font-family: sans-serif;
+    margin-bottom: 20px;
+}
+
+.section_name, .section_name_no_caps {
+    color: grey;
+    font-weight: bold;
+    margin-bottom: 6px;
+    display: inline-block;
+}
+
+.section_name {
+    text-transform: capitalize;
+}
+
