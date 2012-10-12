@@ -1,10 +1,13 @@
 <html xmlns:py="http://genshi.edgewall.org/" xmlns:xi="http://www.w3.org/2001/XInclude">
-    <xi:include href="login_widget.html" />
+    <head>
+        <link rel="stylesheet" type="text/css" href="/css/common.css" />
+    </head>
     <body>
+        <xi:include href="login_widget.html" />
         <div>${login_widget(user)}</div>
-        <h1>Test</h1>
-        <div py:for="item in materiel">
-            <span>${item.hostname}</span>
+
+        <div>
+            <a href="/rooms/" class="button">CHAMBRES</a>
         </div>
     </body>
 </html>

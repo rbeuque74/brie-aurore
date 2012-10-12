@@ -7,6 +7,9 @@
         <link type="text/css" rel="Stylesheet" href="/css/show.css" />
     </head>
     <body> 
+        ${back_rooms()}
+        <a href="/edit/room/${room_ldap.uid.first()}" class="button">EDITER</a>
+
         <div py:choose="room_ldap">
             <span class="section_name" py:when="None">Pas de chambre associée</span>
             <div py:otherwise="">${room_view(room_ldap, member_ldap)}</div>

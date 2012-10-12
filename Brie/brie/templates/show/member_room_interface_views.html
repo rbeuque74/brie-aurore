@@ -2,6 +2,9 @@
     xmlns:py="http://genshi.edgewall.org/" 
     xmlns:xi="http://www.w3.org/2001/XInclude"
     py:strip="">
+    <py:def function="back_rooms()">
+        <a href="/rooms/" class="button">RETOUR</a>
+    </py:def>
     <py:def function="member_view(member_ldap)">
         <div class="section">
             <span class="section_name show_section_name">${member_ldap.cn.first()}</span>
@@ -45,6 +48,13 @@
                 <div>
                     <span class="item_name">Wifi</span>
                 </div>
+            </div>
+        </div>
+        <div class="section">
+            <span class="section_name show_section_name">MACHINES</span>
+            <div py:for="name, mac, ip in machines">
+                <span class="item_name">${name}</span>
+                <span>${mac} : ${ip}</span>
             </div>
         </div>
     </py:def>

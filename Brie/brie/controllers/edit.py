@@ -13,6 +13,7 @@ from brie.model.ldap import *
 
 from brie.controllers import auth
 from brie.controllers.auth import AuthenticatedBaseController, AuthenticatedRestController
+from brie.controllers.import_actions import *
 
 from operator import itemgetter
 
@@ -42,6 +43,21 @@ class EditController(AuthenticatedBaseController):
     @expose("brie.templates.edit.interface")
     def interface(self, interface_id):
         return self.show.interface(interface_id)
+    #end def
+
+    @expose("brie.templates.edit.import_from")
+    def import_from(self, room_number):
+        success = True
+        message = ""
+
+#        try:
+        Migration.import_all(self.user.ldap_bind, room_number)
+#        except Exception as ex:
+#            success = False
+#            message = str(ex)
+        #end try
+    
+        return {"room_number" : room_number,  "success" : success, "message" : message } 
     #end def
 #end class
 

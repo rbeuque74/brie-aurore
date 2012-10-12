@@ -2,6 +2,14 @@
     xmlns:py="http://genshi.edgewall.org/" 
     xmlns:xi="http://www.w3.org/2001/XInclude"
     py:strip="">
+    <py:def function="edit_banner()">
+        <div class="edit_banner">
+            EDITION
+        </div>
+    </py:def>
+    <py:def function="back_show(page, id)">
+        <a href="/show/${page}/${id}" class="button">RETOUR</a>
+    </py:def>
     <py:def function="member_view(member_ldap)">
         <div class="section">
             <span class="section_name show_section_name">${member_ldap.cn.first()}</span>
@@ -47,6 +55,13 @@
                 </div>
             </div>
         </div>
+        <div class="section">
+            <span class="section_name show_section_name">MACHINES</span>
+            <div py:for="name, mac, ip in machines">
+                <span class="item_name">${name}</span>
+                <span>${mac} : ${ip}</span>
+            </div>
+        </div>
     </py:def>
 
     <py:def function="room_view(room, member_in = None)">
@@ -57,6 +72,12 @@
                     <span class="item_name">Membre</span>
                     <span>
                         <a href="/show/member/${member_in.uid.first()}">${member_in.cn.first()}</a>
+                    </span>
+                </div>
+                <div>
+                    <span class="item_name"></span>
+                    <span>
+                        <a href="/edit/import_from/${room.uid.first()}" class="button">Importer depuis Camembert</a>
                     </span>
                 </div>
             </div>

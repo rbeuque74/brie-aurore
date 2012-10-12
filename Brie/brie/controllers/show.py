@@ -39,7 +39,9 @@ class ShowController(AuthenticatedBaseController):
                 .first()
         )
 
-        return { "member_ldap" : member, "interface" : interface, "room_ldap" : room }
+        machines = Machine.get_machines_of_member(self.user, member.dn)
+
+        return { "member_ldap" : member, "interface" : interface, "room_ldap" : room, "machines" : machines}
     #end def
 
     @expose("brie.templates.show.room")

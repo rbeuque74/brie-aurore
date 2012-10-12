@@ -7,6 +7,8 @@
         <link type="text/css" rel="Stylesheet" href="/css/show.css" />
     </head>
     <body> 
+        ${edit_banner()}
+        ${back_show("member", member_ldap.uid.first()}
         <div py:choose="member_ldap">
             <span class="section_name" py:when="None">Entrée inexistante</span>
             <div py:otherwise="">${member_view(member_ldap)}</div>
