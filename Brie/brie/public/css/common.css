@@ -8,7 +8,8 @@ a {
    text-decoration: none;
 }
 
-a:hover {
+a:hover, input[type="button"]
+{
     color: white;
     background-color: black;
 }
@@ -36,3 +37,16 @@ a:hover {
     font-weight: bold;
     background-color: #e0e0e0;
 }
+
+.link_button {
+    text-decoration: underline;
+    color: #e0e0e0;
+}
+
+input[type="submit"]
+{
+    border: none;
+    padding: 5px;
+}
+
+

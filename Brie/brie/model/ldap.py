@@ -64,13 +64,20 @@ class Wifi(object):
         return {
             "objectClass" : ["top", "organizationalRole", "simpleSecurityObject"],
             "cn" : "wifi",
-            "userPassword" : password
+            "userPassword" : str(password)
+        }
+    #end def
+
+    @staticmethod
+    def password_attr(password):
+        return {
+            "userPassword" : str(password)
         }
     #end def
 
     @staticmethod
     def get_by_dn(user_session, dn):
-        return user_session.ldap_bind.search_first("cn=wifi," + dn)
+        return user_session.ldap_bind.search_dn("cn=wifi," + dn)
     #end def
 
 #end class

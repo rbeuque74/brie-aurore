@@ -73,9 +73,14 @@ class WifiRestController(AuthenticatedRestController):
 
         if member is None:
             self.show.error_no_entry()
+
+        return { "member_ldap" : member }
+    #end def
         
 
+    @expose("brie.templates.edit.wifi")
     def post(self, uid, password):
+    
         member = Member.get_by_uid(self.user, uid)
     
         if member is None:
@@ -87,9 +92,7 @@ class WifiRestController(AuthenticatedRestController):
             wifi_dn = "cn=wifi," + member.dn
             self.user.ldap_bind.add_entry(wifi_dn, Wifi.entry_attr(password))
         else:
-            attr = {
-                "userPassword" : password
-            }
+            attr = Wifi.password_attr(password)
             self.user.ldap_bind.replace_attr(wifi.dn, attr)
         #end if
 
