@@ -2,8 +2,11 @@
     xmlns:py="http://genshi.edgewall.org/" 
     xmlns:xi="http://www.w3.org/2001/XInclude"
     py:strip="">
-    <py:def function="back_rooms()">
-        <a href="/rooms/" class="button">RETOUR</a>
+    <py:def function="back_rooms(preview_room_ldap = None)">
+        <div py:choose="preview_room_ldap">
+            <a py:when="None" href="/rooms/" class="button">RETOUR LIST</a>
+            <a py:otherwise="" href="/rooms/preview/${preview_room_ldap.cn.first()}" class="button">RETOUR PREVIEW</a>
+        </div>
     </py:def>
     <py:def function="member_view(member_ldap)">
         <div class="section">
@@ -12,7 +15,7 @@
                 <div>
                     <span class="item_name">Fin de connexion</span>
                     <span py:choose="member_ldap.get('x-connectionEnd')">
-                        <span py:when="None">Pas de fin de connexion</span>
+                        <span py:when="None">pas de fin de connexion</span>
                         <span py:otherwise="">${member_ldap.get("x-connectionEnd").first()}</span>
                     </span>
                 </div>
@@ -52,9 +55,13 @@
             </div>
         </div>
         <div class="section">
-            <span class="section_name show_section_name">SALLE INFO</span>
+            <span class="section_name show_section_name">SALLE INFO + DIVERS</span>
             <div>
-                <span class="item_name">Uid</span>
+                <span class="item_name">Identifiant</span>
+                <span>${member_ldap.uid.first()}</span>
+            </div>
+            <div>
+                <span class="item_name">Uid unix</span>
                 <span>${member_ldap.uidNumber.first()}</span>
             </div>
             <div>
@@ -74,6 +81,7 @@
     <py:def function="room_view(room, member_in = None)">
         <div class="section">
             <span class="section_name show_section_name">CHAMBRE ${room.cn.first()}</span>
+            <a class="link_button some_margin" href="/edit/room/${room.uid.first()}/">éditer</a>
             <div>
                 <div py:if="member_in is not None">
                     <span class="item_name">Membre</span>

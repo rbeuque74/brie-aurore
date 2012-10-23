@@ -43,6 +43,10 @@ a:hover, input[type="button"]
     color: #e0e0e0;
 }
 
+.some_margin {
+    margin-left: 20px;
+}
+
 input[type="submit"]
 {
     border: none;
