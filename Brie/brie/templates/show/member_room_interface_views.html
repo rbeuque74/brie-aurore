@@ -46,9 +46,20 @@
                     </py:with>
                 </div>
                 <div>
-                    <span class="item_name">Wifi</span>
-                    <span><a href="/edit/wifi/${member_ldap.uid.first()}" class="link_button">mot de passe</a></span>
+                    <span class="item_name">Groupes</span>
+                    <span></span>
                 </div>
+            </div>
+        </div>
+        <div class="section">
+            <span class="section_name show_section_name">SALLE INFO</span>
+            <div>
+                <span class="item_name">Uid</span>
+                <span>${member_ldap.uidNumber.first()}</span>
+            </div>
+            <div>
+                <span class="item_name">Wifi</span>
+                <span><a href="/edit/wifi/${member_ldap.uid.first()}" class="link_button">mot de passe</a></span>
             </div>
         </div>
         <div class="section">
