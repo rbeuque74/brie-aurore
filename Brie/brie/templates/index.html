@@ -1,13 +1,33 @@
 <html xmlns:py="http://genshi.edgewall.org/" xmlns:xi="http://www.w3.org/2001/XInclude">
     <head>
         <link rel="stylesheet" type="text/css" href="/css/common.css" />
+        <link rel="stylesheet" type="text/css" href="/css/show.css" />
     </head>
     <body>
         <xi:include href="login_widget.html" />
         <div>${login_widget(user)}</div>
 
-        <div>
-            <a href="/rooms/" class="button">CHAMBRES</a>
+        <div py:if="user is not None">
+            <div class="section">
+                <a py:if="user.groups.admin" class="section_name show_section_name button" href="/rooms/" >CHAMBRES</a>
+            </div>
+            <div class="section" >
+                <span class="section_name show_section_name">DEBUG</span>
+                <div>
+                    <span class="item_name">user</span>
+                    <span>${user.attrs.uid.first()}</span>
+                </div>
+                <div>
+                    <span class="item_name">dn</span>
+                    <span>${user.attrs.dn}</span>
+                </div>
+                <div>
+                    <span class="item_name">groups</span>
+                    <span>
+                        <py:for each="group in user.groups.list()">${group} </py:for>
+                    </span>
+                </div>
+            </div>
         </div>
     </body>
 </html>

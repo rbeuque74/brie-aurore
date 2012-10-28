@@ -33,15 +33,21 @@ class ShowController(AuthenticatedBaseController):
             return self.error_no_entry()
         
         room = Room.get_by_member_dn(self.user, member.dn)
-        interface = (
-            DBSession.query(Interface)
-                .filter(Interface.idinterface == room.get("x-switchInterface").first())
-                .first()
-        )
+        interface = None
+        
+        if room is not None:
+            interface = (
+                DBSession.query(Interface)
+                    .filter(Interface.idinterface == room.get("x-switchInterface").first())
+                    .first()
+            )
+        #end if
 
         machines = Machine.get_machines_of_member(self.user, member.dn)
+    
+        groups = Groupes.get_by_user_dn(self.user, member.dn)
 
-        return { "member_ldap" : member, "interface" : interface, "room_ldap" : room, "machines" : machines}
+        return { "user" : self.user,  "member_ldap" : member, "interface" : interface, "room_ldap" : room, "machines" : machines, "groups" : groups}
     #end def
 
     @expose("brie.templates.show.room")
@@ -61,7 +67,7 @@ class ShowController(AuthenticatedBaseController):
         if room.has("x-memberIn"):
             member = Member.get_by_dn(self.user, room.get("x-memberIn").first())
         
-        return { "interface" : interface, "room_ldap" : room, "member_ldap" : member }        
+        return { "user" : self.user, "interface" : interface, "room_ldap" : room, "member_ldap" : member }        
     #end def
 
     @expose("brie.templates.show.interface")
@@ -77,7 +83,7 @@ class ShowController(AuthenticatedBaseController):
 
         room = Room.get_by_interface(self.user, interface.idinterface)
     
-        return { "interface" : interface, "room_ldap" : room }
+        return { "user" : self.user, "interface" : interface, "room_ldap" : room }
     #end def
 #end class
         

@@ -134,7 +134,7 @@ class Machine(object):
             dns = user_session.ldap_bind.search_first(result.dn, "(objectClass=dlzGenericRecord)")
             if dhcp is not None and dns is not None:
                 mac = dhcp.dhcpHWAddress.first().replace("ethernet ", "")
-                machines.append((dhcp.cn.first(), mac, dns.dlzData.first()))
+                machines.append((dhcp.cn.first(), mac, dns.dlzData.first())) # tuple
             #end if
         #end for
 
@@ -143,3 +143,19 @@ class Machine(object):
 
 #end class
 
+class Groupes(object):
+    
+    @staticmethod
+    def get_by_user_dn(user_session, user_dn):
+        results = user_session.ldap_bind.search(ldap_config.group_base_dn, "(&(objectClass=groupOfUniqueNames)(uniqueMember=" + user_dn + "))")
+        
+        groups = list()
+
+
+        for item in results:
+            groups.append(item.cn.first())
+        #end for
+
+        return groups
+    #end 
+#end class

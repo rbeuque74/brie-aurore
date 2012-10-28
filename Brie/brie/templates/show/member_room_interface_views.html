@@ -48,10 +48,6 @@
                         </span>
                     </py:with>
                 </div>
-                <div>
-                    <span class="item_name">Groupes</span>
-                    <span></span>
-                </div>
             </div>
         </div>
         <div class="section">
@@ -59,6 +55,15 @@
             <div>
                 <span class="item_name">Identifiant</span>
                 <span>${member_ldap.uid.first()}</span>
+            </div>
+            <div>
+                <span class="item_name">Groupes</span>
+                <py:choose test="groups">
+                    <span py:when="[]">aucun</span>
+                    <span py:otherwise="">
+                        <py:for each="group in groups">${group} </py:for>
+                    </span>
+                </py:choose>
             </div>
             <div>
                 <span class="item_name">Uid unix</span>

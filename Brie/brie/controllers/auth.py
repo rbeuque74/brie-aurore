@@ -7,14 +7,37 @@ from tg.decorators import expose, validate
 from brie.lib.base import BaseController
 from brie.config import ldap_config
 from brie.lib.ldap_helper import *
+from brie.model.ldap import Groupes
+
+class Groups(object):
+    __groups = list()
+
+    def __init__(self, groups):
+        self.__groups = groups
+    #end def
+
+    def __getattr__(self, name):
+        return name in self.__groups
+    #end def
+
+    def list(self):
+        return list(self.__groups)
+    #end def
+ 
+#end class
 
 class User(object):
     ldap_bind = None
     attrs = None
+    groups =  None
     
     def __init__(self, ldap_bind, attrs):
         self.ldap_bind = ldap_bind
         self.attrs = attrs
+
+        groups = Groupes.get_by_user_dn(self, self.attrs.dn)
+
+        self.groups = Groups(groups)
     #end def
 #end class
 

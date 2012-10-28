@@ -6,11 +6,11 @@
     <py:def function="login_widget(user)">
         <div py:choose="">
             <div py:when="user is None">
-                <a href="${tg.url('/auth/login')}">Connection</a>
+                <a href="${tg.url('/auth/login')}">Connexion</a>
             </div>
             <div py:otherwise="">
                 <span>${user.attrs.cn.first()}</span>
-                <a href="${tg.url('/auth/logout')}">Deconnection</a>
+                <a href="${tg.url('/auth/logout')}">Deconnexion</a>
             </div>
         </div>
     </py:def>

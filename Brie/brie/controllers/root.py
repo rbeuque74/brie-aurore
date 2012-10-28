@@ -49,14 +49,5 @@ class RootController(BaseController):
         user = auth_handler.current.get_user()
         
 	return { "user" : user, "materiel" : materiel }
-    
-    @expose()
-    def foobar(self):
-        redirect("http://172.17.22.10:9000/toto")
     #end def
-
-#    @expose('brie.templates.index')
-#    @require(predicates.has_permission('manage', msg=l_('Only for managers')))
-#    def manage_permission_only(self, **kw):
-#        """Illustrate how a page for managers only works."""
-#        return dict(page='managers stuff')
+#end class

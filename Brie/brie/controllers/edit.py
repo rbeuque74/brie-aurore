@@ -57,7 +57,7 @@ class EditController(AuthenticatedBaseController):
 #            message = str(ex)
         #end try
     
-        return {"room_number" : room_number,  "success" : success, "message" : message } 
+        return { "room_number" : room_number,  "success" : success, "message" : message } 
     #end def
 #end class
 

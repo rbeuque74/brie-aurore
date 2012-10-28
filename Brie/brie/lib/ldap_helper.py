@@ -14,11 +14,11 @@ class Ldap(object):
     @staticmethod
     def connect(dn, password):
         connection = None
-        try:
-            connection = ldap.initialize(ldap_config.uri)
-            connection.simple_bind_s(dn, password)
-        except:
-            return None
+#        try:
+        connection = ldap.initialize(ldap_config.uri)
+        connection.simple_bind_s(dn, password)
+#        except:
+#        return None
         #end try
        
         if connection is not None:
@@ -29,10 +29,10 @@ class Ldap(object):
     #end def
 
     def search(self, dn, filter, scope = ldap.SCOPE_SUBTREE):
-        try:
-            results = self.__connection.search_s(dn, scope, filter)
-        except:
-            return None
+#        try:
+        results = self.__connection.search_s(dn, scope, filter)
+#        except:
+#        return None
         #end try
 
         ldap_results = []
