@@ -4,3 +4,4 @@ Brie/data/sessions/*
 *.pyc
 *.swp
 *.swo
+Brie/tg2env/*

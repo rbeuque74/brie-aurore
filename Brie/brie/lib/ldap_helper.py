@@ -29,10 +29,10 @@ class Ldap(object):
     #end def
 
     def search(self, dn, filter, scope = ldap.SCOPE_SUBTREE):
-#        try:
-        results = self.__connection.search_s(dn, scope, filter)
-#        except:
-#        return None
+        try:
+            results = self.__connection.search_s(dn, scope, filter)
+        except ldap.NO_SUCH_OBJECT:
+            return None
         #end try
 
         ldap_results = []

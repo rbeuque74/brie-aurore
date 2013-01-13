@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 
-uri = "ldaps://ldap.pacaterie.u-psud.fr"
+uri = "ldaps://172.17.31.4"
 
 base_dn = "dc=pacaterie,dc=u-psud,dc=fr"
 

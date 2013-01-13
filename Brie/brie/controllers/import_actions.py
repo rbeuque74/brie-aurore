@@ -104,7 +104,6 @@ class Migration:
 
         member = bind.search_first(ldap_config.username_base_dn, "(uid=" + uid + ")")
 
-        print user.prenom
         print member.dn
 
         machines = DBSession.query(Computer).filter(Computer.iduser == user.iduser)
