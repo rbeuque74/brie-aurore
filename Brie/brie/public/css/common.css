@@ -53,4 +53,16 @@ input[type="submit"]
     padding: 5px;
 }
 
+.param_block {
+    vertical-align: top;
+}
+
+.inline_block {
+    display: inline-block;
+    margin-bottom: 17px;
+}
+
+.enum_block {
+    display: block;
+}
 

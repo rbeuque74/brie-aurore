@@ -9,7 +9,9 @@
 
         <div py:if="user is not None">
             <div class="section">
-                <a py:if="user.groups.admin" class="section_name show_section_name button" href="/rooms/" >CHAMBRES</a>
+                <span class="section_name show_section_name"></span>
+                <a py:if="user.groups.admin" class="button" href="/rooms/" >CHAMBRES</a>
+                <a py:if="user.groups.responsablereseau" class="button" href="/administration/" >ADMINISTRATION</a>
             </div>
             <div class="section" >
                 <span class="section_name show_section_name">DEBUG</span>

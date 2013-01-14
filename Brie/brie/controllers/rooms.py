@@ -6,6 +6,7 @@ from brie.lib.base import BaseController
 from brie.lib.camembert_helpers import *
 
 from brie.config import ldap_config
+from brie.config import groups_enum
 from brie.lib.ldap_helper import *
 from brie.model import DBSession
 from brie.model.camembert import *
@@ -18,6 +19,9 @@ from operator import itemgetter
 
 
 class RoomsController(AuthenticatedBaseController):
+    require_group = groups_enum.admin
+
+
     __default_color = "ok_color"
     __error_colors = {
         "PAS PAYE" : "non_paye_color",

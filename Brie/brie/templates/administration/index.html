@@ -1,0 +1,40 @@
+<html xmlns:py="http://genshi.edgewall.org/" xmlns:xi="http://www.w3.org/2001/XInclude">
+    <head>
+        <link rel="stylesheet" type="text/css" href="/css/common.css" />
+        <link rel="stylesheet" type="text/css" href="/css/show.css" />
+    </head>
+    <body>
+        <a class="button" href="/" >RETOUR</a>
+        <div class="section" >
+            <span class="section_name show_section_name">GROUPES</span>
+            <div py:for="group in groups_ldap">
+                <span class="item_name">${group.cn.first()}</span>
+                <div class="inline_block param_block" py:choose="group.uniqueMember">
+                    <py:when test="None">
+                        <span class="enum_block">aucun membre</span>
+                    </py:when>
+                    <py:otherwise>
+                        <span class="enum_block" py:for="member in group.uniqueMember.values">${member}  <a class="link_button" href="groups/delete_member/${group.cn.first()}/${member}">retirer</a></span>
+                    </py:otherwise>
+                </div>
+            </div>
+        </div>
+        <div class="section">
+            <div>
+                <span class="item_name">ajouter</span>
+                <form class="inline_block" method="post" action="groups/add_member/">
+                    <select name="user_dn">
+                        <option py:for="user in all_users" value="${user.dn}">${user.cn.first()}</option>
+                    </select>
+                    &nbsp;à&nbsp;
+                    <select name="group_cn">
+                        <option py:for="group in groups_ldap" value="${group.cn.first()}">
+                            ${group.cn.first()}
+                        </option>
+                    </select>
+                    <input type="submit" class="button" value="GO"></input>
+                </form>
+            </div>
+        </div>
+    </body>
+</html>

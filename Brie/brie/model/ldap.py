@@ -31,6 +31,11 @@ class Member(object):
         return user_session.ldap_bind.search_first(ldap_config.username_base_dn, "(uid=" + uid + ")")
     #end def
 
+    @staticmethod
+    def get_all(user_session):
+        return user_session.ldap_bind.search(ldap_config.username_base_dn, "(objectClass=pacatnetMember)")
+    #end def
+
 #end class
 
 class Room(object):
@@ -157,5 +162,27 @@ class Groupes(object):
         #end for
 
         return groups
-    #end 
+    #end def
+
+    @staticmethod
+    def get_by_cn(user_session, cn):
+        results = user_session.ldap_bind.search_first(ldap_config.group_base_dn, "(&(objectClass=groupOfUniqueNames)(cn=" + cn + "))")
+
+        return results
+    #end def
+
+    @staticmethod
+    def get_all(user_session):
+        results = user_session.ldap_bind.search(ldap_config.group_base_dn, "(objectClass=groupOfUniqueNames)")
+
+        return results
+    #end def
+
+    @staticmethod
+    def unique_member_attr(member_dn):
+        return {
+            "uniqueMember" : str(member_dn)
+        }
+    #end def
+
 #end class

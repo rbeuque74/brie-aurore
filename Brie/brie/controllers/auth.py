@@ -117,17 +117,33 @@ class AuthHandler(object):
 
 class AuthenticatedRestController(RestController):
     user = None
+    require_group = None
 
     def __before__(self, *args, **kwargs):
         self.user = current.get_user_or_redirect()
+
+        if self.require_group is not None:
+            if self.require_group not in self.user.groups.list():
+                redirect("/error/permission_denied/")
+            #end if
+        #end if
+            
     #end def
 #end def
 
 class AuthenticatedBaseController(BaseController):
     user = None
+    require_group = None
     
     def __before__(self, *args, **kwargs):
         self.user = current.get_user_or_redirect()
+
+        if self.require_group is not None:
+            if self.require_group not in self.user.groups.list():
+                redirect("/error/permission_denied/")
+            #end if
+        #end if
+
     #end def
 #end def
 

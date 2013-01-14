@@ -7,6 +7,7 @@ from tg.decorators import expose, validate
 from brie.lib.camembert_helpers import *
 
 from brie.config import ldap_config
+from brie.config import groups_enum
 from brie.lib.ldap_helper import *
 from brie.model import DBSession
 from brie.model.ldap import *
@@ -22,6 +23,8 @@ from operator import itemgetter
 
 """ Controller d'affichage de details de membres, chambres et interfaces """ 
 class EditController(AuthenticatedBaseController):
+    require_group = groups_enum.admin
+
     show = None
     wifi = None
 
@@ -62,6 +65,8 @@ class EditController(AuthenticatedBaseController):
 #end class
 
 class WifiRestController(AuthenticatedRestController):
+    require_group = groups_enum.respsalleinfo
+
     show = None
 
     def __init__(self, new_show):

@@ -15,6 +15,8 @@ from brie.controllers.auth import AuthRestController
 from brie.controllers.rooms import RoomsController
 from brie.controllers.show import ShowController
 from brie.controllers.edit import EditController
+from brie.controllers.administration import AdministrationController
+from brie.controllers.error import ErrorController
 
 from brie.model.camembert import Materiel
 
@@ -41,6 +43,8 @@ class RootController(BaseController):
     rooms = RoomsController()
     show = ShowController()
     edit = EditController(show)
+    administration = AdministrationController()
+    error = ErrorController()
     
     @expose('brie.templates.index')
     def index(self):
