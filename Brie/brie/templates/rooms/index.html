@@ -6,6 +6,8 @@
         <link rel="stylesheet" type="text/css" href="/css/rooms.css" />
         <link rel="stylesheet" type="text/css" href="/css/common.css" />
     </head>
+
+<!--
     <div class="rooms_legend">
         <py:def function="display_stat(name)">
             <div class="room_number ${name}">${"%03d" % stats[name]}</div>
@@ -27,33 +29,28 @@
             <span>chambres vides</span>
         </div>
     </div>
+-->
     <div class="area section">
         <span class="section_name">PREVIEW</span>
         <div py:if="defined('preview')">
-            <py:with vars="member_ldap, room_preview, interface_preview = preview">
-                <div class="room_number ${color_picker(interface_preview.ifdescription)}">
-                    <span><a href="/show/room/${room_preview.uid.first()}">${room_preview.cn.first()}</a></span>
+            <py:with vars="member_ldap, room_preview  = preview">
+                <div class="room_number">
+                    <span><a href="/show/room/${residence}/${room_preview.uid.first()}">${room_preview.cn.first()}</a></span>
                 </div>
                 <div class="preview_part preview_name" py:choose="member_ldap is not None">
-                    <span py:when="True"><a href="/show/member/${member_ldap.uid.first()}">${member_ldap.cn.first()}</a></span>
-                    <span py:otherwise=""><a href="/show/room/${room_preview.uid.first()}">Chambre Vide</a></span>
-                </div>
-                <div class="preview_part" py:choose="">
-                    <span py:when="interface_preview.ifoperstatus == 1" class="interface_status ok_color">Ordinateur branché</span>
-                    <span py:when="interface_preview.portsecviolation == 1" class="interface_status violation_color">Violation mac</span>
-                    <span py:when="interface_preview.ifoperstatus == 0" class="interface_status shut_color">Ordinateur débranché</span>
-                    <span py:when="interface_preview.portsecstatus == 3" class="interface_status violation_color">Inteface éteinte</span>
+                    <span py:when="True"><a href="/show/member/${residence}/${member_ldap.uid.first()}">${member_ldap.cn.first()}</a></span>
+                    <span py:otherwise=""><a href="/show/room/${residence}/${room_preview.uid.first()}">Chambre Vide</a></span>
                 </div>
             </py:with>
         </div>
     </div>
-    <div py:for="area_name, floors in sorted_name(areas.iteritems())" class="area section">
+    <div py:for="area, floors in sorted_name(areas.iteritems())" class="area section">
         <div>
-            <span class="section_name">${("Aile " + area_name).upper()}</span>
-            <div py:for="floor_name, rooms in reverse_sorted_name(floors.iteritems())" class="floor">
-                <span class="floor_name">étage ${floor_name}</span>
-                <div py:for="room, interface in rooms" class="room_number ${color_picker(interface.ifdescription)}">
-                    <a href="/rooms/preview/${room.uid.first()}"><span>${room.cn.first()}</span></a>
+            <span class="section_name">${("Aile " + area.cn.first()).upper()}</span>
+            <div py:for="floor, rooms in reverse_sorted_name(floors.iteritems())" class="floor">
+                <span class="floor_name">étage ${floor.cn.first()}</span>
+                <div py:for="room in rooms" class="room_number">
+                    <a href="/rooms/preview/${residence}/${room.uid.first()}"><span>${room.cn.first()}</span></a>
                 </div>
             </div>
         </div>

@@ -3,13 +3,9 @@
 from tg import session
 from tg.controllers import redirect
 from tg.decorators import expose, validate
-
-from brie.lib.camembert_helpers import *
-
 from brie.config import ldap_config
 from brie.lib.ldap_helper import *
-from brie.model import DBSession
-from brie.model.camembert import Interface
+from brie.lib.aurore_helper import *
 from brie.model.ldap import *
 
 from brie.controllers import auth
@@ -26,64 +22,50 @@ class ShowController(AuthenticatedBaseController):
 
     """ Affiche les détails du membre, de la chambre et de l'interface """
     @expose("brie.templates.show.member")
-    def member(self, uid):
-        member = Member.get_by_uid(self.user, uid)
+    def member(self, residence, uid):
+        residence_dn = Residences.get_dn_by_name(self.user, residence)    
+    
+        member = Member.get_by_uid(self.user, residence_dn, uid)
 
         if member is None:
             return self.error_no_entry()
         
-        room = Room.get_by_member_dn(self.user, member.dn)
-        interface = None
+        room = Room.get_by_member_dn(self.user, residence_dn, member.dn)
         
-        if room is not None:
-            interface = (
-                DBSession.query(Interface)
-                    .filter(Interface.idinterface == room.get("x-switchInterface").first())
-                    .first()
-            )
-        #end if
-
         machines = Machine.get_machines_of_member(self.user, member.dn)
     
-        groups = Groupes.get_by_user_dn(self.user, member.dn)
+        groups = Groupes.get_by_user_dn(self.user, residence_dn, member.dn)
 
-        return { "user" : self.user,  "member_ldap" : member, "interface" : interface, "room_ldap" : room, "machines" : machines, "groups" : groups}
+        return { 
+            "residence" : residence, 
+            "user" : self.user,  
+            "member_ldap" : member, 
+            "room_ldap" : room, 
+            "machines" : machines, 
+            "groups" : groups
+        }
     #end def
 
     @expose("brie.templates.show.room")
-    def room(self, room_id):
-        room = Room.get_by_uid(self.user, room_id)
+    def room(self, residence, room_id):
+        residence_dn = Residences.get_dn_by_name(self.user, residence)    
+
+        room = Room.get_by_uid(self.user, residence_dn, room_id)
 
         if room is None:
             return self.error_no_entry()
-
-        interface = (
-            DBSession.query(Interface)
-                .filter(Interface.idinterface == room.get("x-switchInterface").first())
-                .first()
-        )
 
         member = None
         if room.has("x-memberIn"):
             member = Member.get_by_dn(self.user, room.get("x-memberIn").first())
         
-        return { "user" : self.user, "interface" : interface, "room_ldap" : room, "member_ldap" : member }        
+        return { 
+            "residence" : residence,
+            "user" : self.user, 
+            "room_ldap" : room, 
+            "member_ldap" : member 
+        }        
     #end def
 
-    @expose("brie.templates.show.interface")
-    def interface(self, interface_id):
-        interface = (
-            DBSession.query(Interface)
-                .filter(Interface.idinterface == interface_id)
-                .first()
-        )
-
-        if interface is None:
-            return self.error_no_entry()
-
-        room = Room.get_by_interface(self.user, interface.idinterface)
-    
-        return { "user" : self.user, "interface" : interface, "room_ldap" : room }
-    #end def
 #end class
         

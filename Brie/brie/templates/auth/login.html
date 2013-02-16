@@ -1,4 +1,7 @@
-<html>
+<html
+    xmlns:py="http://genshi.edgewall.org/" 
+    xmlns:xi="http://www.w3.org/2001/XInclude"
+>
     <head>
         <link type="text/css" rel="Stylesheet" href="/css/common.css" />
         <link type="text/css" rel="Stylesheet" href="/css/show.css" />
@@ -8,6 +11,22 @@
             <span class="section_name show_section_name">CONNEXION</span>
             <form action="/auth/login" method="post">
                 <p class="error">${error}</p>
+                <div>
+                    <span class="item_name">Résidence</span>
+                    <select name="residence">
+                        <option value=""></option>
+                        <py:for each="residence in residences">
+                            <py:choose test="residence.cn.first() == residence">
+                                <option py:when="True" selected="selected" value="${residence.cn.first()}">
+                                    ${residence.cn.first()}
+                                </option>
+                                <option py:otherwise="" value="${residence.cn.first()}">
+                                    ${residence.cn.first()}
+                                </option>
+                            </py:choose>
+                        </py:for>
+                    </select>
+                </div>
                 <div>
                     <span class="item_name">Utilisateur</span>
                     <input name="username" type="text" value="${login}" />

@@ -4,17 +4,13 @@ from tg import session
 from tg.controllers import redirect
 from tg.decorators import expose, validate
 
-from brie.lib.camembert_helpers import *
-
 from brie.config import ldap_config
 from brie.config import groups_enum
 from brie.lib.ldap_helper import *
-from brie.model import DBSession
 from brie.model.ldap import *
 
 from brie.controllers import auth
 from brie.controllers.auth import AuthenticatedBaseController, AuthenticatedRestController
-from brie.controllers.import_actions import *
 
 from operator import itemgetter
 
@@ -43,25 +39,6 @@ class EditController(AuthenticatedBaseController):
         return self.show.room(room_number)
     #end def
 
-    @expose("brie.templates.edit.interface")
-    def interface(self, interface_id):
-        return self.show.interface(interface_id)
-    #end def
-
-    @expose("brie.templates.edit.import_from")
-    def import_from(self, room_number):
-        success = True
-        message = ""
-
-#        try:
-        Migration.import_all(self.user.ldap_bind, room_number)
-#        except Exception as ex:
-#            success = False
-#            message = str(ex)
-        #end try
-    
-        return { "room_number" : room_number,  "success" : success, "message" : message } 
-    #end def
 #end class
 
 class WifiRestController(AuthenticatedRestController):
@@ -74,7 +51,7 @@ class WifiRestController(AuthenticatedRestController):
     
     @expose("brie.templates.edit.wifi")
     def get(self, uid):
-        member = Member.get_by_uid(self.user, uid)     
+        member = Member.get_by_uid(self.user, self.user.residence_dn, uid)     
 
         if member is None:
             self.show.error_no_entry()
@@ -86,7 +63,7 @@ class WifiRestController(AuthenticatedRestController):
     @expose("brie.templates.edit.wifi")
     def post(self, uid, password):
     
-        member = Member.get_by_uid(self.user, uid)
+        member = Member.get_by_uid(self.user, self.user.residence_dn, uid)
     
         if member is None:
             self.show.error_no_entry()

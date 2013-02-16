@@ -3,13 +3,10 @@ from tg.controllers import redirect
 from tg.decorators import expose, validate
 from brie.lib.base import BaseController
 
-from brie.lib.camembert_helpers import *
-
 from brie.config import ldap_config
 from brie.config import groups_enum
 from brie.lib.ldap_helper import *
-from brie.model import DBSession
-from brie.model.camembert import *
+from brie.lib.aurore_helper import *
 from brie.model.ldap import *
 
 from brie.controllers import auth
@@ -47,54 +44,54 @@ class RoomsController(AuthenticatedBaseController):
         return sorted(name_items, key=itemgetter(0))
 
     @expose("brie.templates.rooms.index")
-    def index(self):
-        result = DBSession.query(Interface)
-        
-        interfaces_dict = dict()
-        for interface in result:
-            interfaces_dict[str(interface.idinterface)] = interface
-
+    def index(self, residence_name):
         stats = dict()
         areas = dict()
-
-        rooms = self.user.ldap_bind.search(ldap_config.room_base_dn, ldap_config.room_filter)
-
-        rooms = sorted(rooms, key = lambda a: a.cn.first())
-        for room in rooms:
-            interface = interfaces_dict[room.get("x-switchInterface").first()]
-
-            color = self.color_picker(interface.ifdescription)
-            if color in stats:
-                stats[color] = stats[color] + 1
-            else:
-                stats[color] = 0
-            #end if
-
-            room_id = int(room.uid.first())
-            floor = Translations.floor_of_room(room_id)
-            area = Translations.area_of_room(room_id)
-
-            if area not in areas:
-                areas[area] = dict()
-            #end if
         
-            if floor not in areas[area]:
-                areas[area][floor] = []
-            #end if
+        residence_dn = Residences.get_dn_by_name(self.user, residence_name)
+        if residence_dn is None:
+            raise Exception("unknown residence")
+        #end if
 
-            areas[area][floor].append((room, interface))
-        #end for
+        for area in Room.get_areas(self.user, residence_dn):
+            areas[area] = dict()
 
-        return { "areas" : areas, "color_picker" : self.color_picker, "reverse_sorted_name" : self.reverse_sort_name, "sorted_name" : self.sort_name, "stats" : stats}
+            for floor in Room.get_floors(self.user, area.dn):
+                areas[area][floor] = list()
+
+                for room in Room.get_rooms_of_floor(self.user, floor.dn):
+                    areas[area][floor].append(room)
+
+
+                    color = self.color_picker("foobar")
+                    if color in stats:
+                        stats[color] = stats[color] + 1
+                    else:
+                        stats[color] = 0
+                    #end if
+
+                #end for room
+            #end for floor
+        #end for area
+
+
+        return { 
+            "areas" : areas, 
+            "color_picker" : self.color_picker, 
+            "reverse_sorted_name" : self.reverse_sort_name, 
+            "sorted_name" : self.sort_name, 
+            "stats" : stats, 
+            "residence" : residence_name
+        }
     #end def        
 
     @expose("brie.templates.rooms.index")
-    def preview(self, number):
-        if not number.isdigit(): redirect("/rooms/")
+    def preview(self, residence, number):
+        if not number.isdigit(): redirect("/rooms/" + residence)
     
-        index_result = self.index() 
+        index_result = self.index(residence) 
 
-        room = Room.get_by_uid(self.user, number)
+        room = Room.get_by_uid(self.user, self.user.residence_dn, number)
 
 
         member = None
@@ -102,13 +99,7 @@ class RoomsController(AuthenticatedBaseController):
             member = Member.get_by_dn(self.user, room.get("x-memberIn").first())
         
 
-        interface = (
-            DBSession.query(Interface)
-                .filter(Interface.idinterface == room.get("x-switchInterface").first())
-                .first()
-        )
-
-        preview = member, room, interface       
+        preview = member, room
         index_result["preview"] = preview
     
         return index_result

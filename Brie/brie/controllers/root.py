@@ -7,8 +7,9 @@ from catwalk.tg2 import Catwalk
 from repoze.what import predicates
 
 from brie.lib.base import BaseController
-from brie.model import DBSession, metadata
+from brie.lib.aurore_helper import *
 from brie import model
+
 #from brie.controllers.secure import SecureController
 import brie.controllers.auth as auth_handler
 from brie.controllers.auth import AuthRestController
@@ -18,7 +19,6 @@ from brie.controllers.edit import EditController
 from brie.controllers.administration import AdministrationController
 from brie.controllers.error import ErrorController
 
-from brie.model.camembert import Materiel
 
 __all__ = ['RootController']
 
@@ -38,7 +38,7 @@ class RootController(BaseController):
     
     """
 #    admin = Catwalk(model, DBSession)
-    
+ 
     auth = AuthRestController()
     rooms = RoomsController()
     show = ShowController()
@@ -48,10 +48,13 @@ class RootController(BaseController):
     
     @expose('brie.templates.index')
     def index(self):
-        """Handle the front-page."""
-	materiel = DBSession.query(Materiel)
         user = auth_handler.current.get_user()
+        residence = None
+ 
+        if user is not None:
+            residence = Residences.get_name_by_dn(user, user.residence_dn)
+        #end if
         
-	return { "user" : user, "materiel" : materiel }
+	return { "user" : user, "residence" : residence }
     #end def
 #end class

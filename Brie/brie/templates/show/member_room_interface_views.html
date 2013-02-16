@@ -4,8 +4,8 @@
     py:strip="">
     <py:def function="back_rooms(preview_room_ldap = None)">
         <div py:choose="preview_room_ldap">
-            <a py:when="None" href="/rooms/" class="button">RETOUR LIST</a>
-            <a py:otherwise="" href="/rooms/preview/${preview_room_ldap.cn.first()}" class="button">RETOUR PREVIEW</a>
+            <a py:when="None" href="/rooms/index/${residence}/" class="button">RETOUR LIST</a>
+            <a py:otherwise="" href="/rooms/preview/${residence}/${preview_room_ldap.cn.first()}" class="button">RETOUR PREVIEW</a>
         </div>
     </py:def>
     <py:def function="member_view(member_ldap)">
@@ -51,7 +51,7 @@
             </div>
         </div>
         <div class="section">
-            <span class="section_name show_section_name">SALLE INFO + DIVERS</span>
+            <span class="section_name show_section_name">DIVERS</span>
             <div>
                 <span class="item_name">Identifiant</span>
                 <span>${member_ldap.uid.first()}</span>
@@ -86,83 +86,17 @@
     <py:def function="room_view(room, member_in = None)">
         <div class="section">
             <span class="section_name show_section_name">CHAMBRE ${room.cn.first()}</span>
-            <a class="link_button some_margin" href="/edit/room/${room.uid.first()}/">éditer</a>
+            <a class="link_button some_margin" href="/edit/room/${residence}/${room.uid.first()}/">éditer</a>
             <div>
                 <div py:if="member_in is not None">
                     <span class="item_name">Membre</span>
                     <span>
-                        <a href="/show/member/${member_in.uid.first()}">${member_in.cn.first()}</a>
+                        <a href="/show/member/${residence}/${member_in.uid.first()}">${member_in.cn.first()}</a>
                     </span>
                 </div>
             </div>
         </div>
     </py:def>
 
-    <py:def function="interface_view(interface, room_attached = None)">
-        <div class="section">
-            <span class="section_name show_section_name">INFOS INTERFACE</span>
-            <div>
-                <div>
-                    <span class="item_name">Nombre de mac max</span>
-                    <span>${interface.portsecmaxmac}</span>
-                </div>
-                <div>
-                    <span class="item_name">Violation</span>
-                    <span>${interface.portsecviolation}</span>
-                </div>
-            </div>
-        </div>
-        <div class="section">
-            <span class="section_name show_section_name">INFOS AVANCÉES</span>
-            <div>
-                <div>
-                    <span class="item_name">ifNumber</span>
-                    <span>${interface.ifnumber}</span>
-                </div>
-                <div>
-                    <span class="item_name">ifAddress</span>
-                    <span>${interface.ifaddress}</span>
-                </div>
-                <div>
-                    <span class="item_name">ifType</span>
-                    <span>${interface.iftype}</span>
-                </div>
-                <div>
-                    <span class="item_name">Description</span>
-                    <span>${interface.ifdescription}</span>
-                </div>
-                <div>
-                    <span class="item_name">Etat</span>
-                    <span py:choose="interface.ifoperstatus">
-                        <span py:when="1">Up</span>
-                        <span py:when="0">Down</span>
-                        <span py:when="2">Error</span>
-                        <span py:otherwise="">Inconnu</span>
-                    </span>
-                </div>
-                <div>
-                    <span class="item_name">Vitesse</span>
-                    <span py:choose="interface.ifspeed">
-                        <span py:when="10000000">10 Mb/s</span>
-                        <span py:when="100000000">100 Mb/s</span>
-                        <span py:when="1000000000">1 Gb/s</span>
-                        <span py:otherwise="">interface.ifspeed</span>
-                    </span>
-                </div>
-                <div>
-                    <span class="item_name">Vlan</span>
-                    <span>${interface.ifvlan}</span>
-                </div>
-                <div>
-                    <span class="item_name">Native Vlan</span>
-                    <span>${interface.ifnativevlan}</span>
-                </div>
-                <div>
-                    <span class="item_name">SpanningTree Portfast</span>
-                    <span>${interface.portfast}</span>
-                </div>
-            </div>
-        </div>
-    </py:def>
 </html>
 

@@ -7,6 +7,7 @@ from tg.decorators import expose, validate
 from brie.lib.base import BaseController
 from brie.config import ldap_config
 from brie.lib.ldap_helper import *
+from brie.lib.aurore_helper import *
 from brie.model.ldap import Groupes
 
 class Groups(object):
@@ -30,14 +31,18 @@ class User(object):
     ldap_bind = None
     attrs = None
     groups =  None
+    residence_dn = None
     
-    def __init__(self, ldap_bind, attrs):
+    def __init__(self, ldap_bind, attrs, residence_dn = None):
         self.ldap_bind = ldap_bind
         self.attrs = attrs
+        self.residence_dn = residence_dn
 
-        groups = Groupes.get_by_user_dn(self, self.attrs.dn)
+        if attrs is not None:
+            groups = Groupes.get_by_user_dn(self, residence_dn, self.attrs.dn)
 
-        self.groups = Groups(groups)
+            self.groups = Groups(groups)
+        #end if
     #end def
 #end class
 
@@ -54,12 +59,17 @@ class AuthHandler(object):
             return self.__anon_bind
         #end if
     #end def        
+
+    def get_anon_user(self):
+        return User(self.get_anon_bind(), None)
+    #end def
     
-    def login(self, username, password):
+    def login(self, residence_dn, username, password):
         if self.get_anon_bind() is None:
             return False
 
-        actual_user = self.get_anon_bind().search_first(ldap_config.username_base_dn, "(uid=" + username + ")")
+        user_base_dn = ldap_config.username_base_dn + residence_dn
+        actual_user = self.get_anon_bind().search_first(user_base_dn, "(uid=" + username + ")")
 
         if actual_user is None:
             return False
@@ -72,7 +82,7 @@ class AuthHandler(object):
 
         attributes = bind.search_first(username_dn, "(uid=" + username + ")")
 
-        user = User(bind, attributes)
+        user = User(bind, attributes, residence_dn)
         
         AuthHandler.__users[username] = user
 
@@ -153,17 +163,38 @@ class LoginRestController(RestController):
 
     @expose("brie.templates.auth.login")
     def get(self):
-        return dict(login = "", error = "")
+        residences = Residences.get_residences(current.get_anon_user())
+
+        return dict(residences = residences, login = "", error = "")
+    #end def 
 
     @expose("brie.templates.auth.login")
-    def post(self, username, password):
-        success = current.login(username, password)
+    def post(self, residence, username, password):
+        anon_user = current.get_anon_user()
+
+        residence_dn = Residences.get_dn_by_name(anon_user, residence)
+        
+        if residence_dn is None:
+            return dict(
+                login = username,
+                error = "erreur de résidence"
+            )
+        #end if
+
+        success = current.login(residence_dn, username, password)
 
         if success:
             redirect("/")
         #end if 
 
-        return dict(login = username, error = "erreur de connexion")
+        residences = Residences.get_residences(anon_user)
+
+        return dict(
+            residences = residences, 
+            login = username, 
+            residence = residence, 
+            error = "erreur de connexion"
+        )
     #end def
     
 

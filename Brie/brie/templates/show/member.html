@@ -16,9 +16,5 @@
             <span class="section_name" py:when="None">Pas de chambre associée</span>
             <div py:otherwise="">${room_view(room_ldap)}</div>
         </div>
-        <div py:choose="interface"> 
-            <span class="section_name" py:when="None">Pas d'interface associée</span>
-            <div py:otherwise="">${interface_view(interface)}</div>
-        </div>
     </body>
 </html>

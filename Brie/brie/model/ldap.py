@@ -27,13 +27,13 @@ class Member(object):
     #end def
  
     @staticmethod
-    def get_by_uid(user_session, uid):
-        return user_session.ldap_bind.search_first(ldap_config.username_base_dn, "(uid=" + uid + ")")
+    def get_by_uid(user_session, residence_dn, uid):
+        return user_session.ldap_bind.search_first(ldap_config.username_base_dn + residence_dn, "(uid=" + uid + ")")
     #end def
 
     @staticmethod
-    def get_all(user_session):
-        return user_session.ldap_bind.search(ldap_config.username_base_dn, "(objectClass=pacatnetMember)")
+    def get_all(user_session, residence_dn):
+        return user_session.ldap_bind.search(ldap_config.username_base_dn + residence_dn, "(objectClass=pacatnetMember)")
     #end def
 
 #end class
@@ -41,23 +41,39 @@ class Member(object):
 class Room(object):
 
     @staticmethod
-    def get_by_name(user_session, name):
-        return user_session.ldap_bind.search_first(ldap_config.room_base_dn, "(&" + ldap_config.room_filter + "(cn=" + name + "))")
+    def get_by_name(user_session, residence_dn, name):
+        return user_session.ldap_bind.search_first(ldap_config.room_base_dn + residence_dn, "(&(objectClass=pacaterieRoom)(cn=" + name + "))")
     #end def
 
     @staticmethod
-    def get_by_uid(user_session, uid):
-        return user_session.ldap_bind.search_first(ldap_config.room_base_dn, "(&" + ldap_config.room_filter + "(uid=" + uid + "))")
+    def get_by_uid(user_session, residence_dn, uid):
+        return user_session.ldap_bind.search_first(ldap_config.room_base_dn + residence_dn, "(&(objectClass=pacaterieRoom)(uid=" + uid + "))")
     #end def
 
     @staticmethod
-    def get_by_member_dn(user_session, dn):
-        return user_session.ldap_bind.search_first(ldap_config.room_base_dn, "(&" + ldap_config.room_filter + "(x-memberIn=" + dn + "))")
+    def get_by_member_dn(user_session, residence_dn, dn):
+        return user_session.ldap_bind.search_first(ldap_config.room_base_dn + residence_dn, "(&(objectClass=pacaterieRoom)(x-memberIn=" + dn + "))")
     #end def
 
     @staticmethod
-    def get_by_interface(user_session, interface_id):
-        return user_session.ldap_bind.search_first(ldap_config.room_base_dn, "(&" + ldap_config.room_filter + "(x-switchInterface=" + str(interface_id) + "))")
+    def get_areas(user_session, residence_dn):
+        return user_session.ldap_bind.search(ldap_config.room_base_dn + residence_dn, "(objectClass=pacaterieArea)")
+    #end def
+
+    @staticmethod
+    def get_floors(user_session, area_dn):
+        return user_session.ldap_bind.search(area_dn, "(objectClass=pacaterieFloor)")
+    #end def
+
+    @staticmethod
+    def get_rooms_of_floor(user_session, floor_dn):
+        return user_session.ldap_bind.search(floor_dn, "(objectClass=pacaterieRoom)")
+    #end def
+
+    @staticmethod
+    def get_rooms(user_session, residence_dn):
+        return user_session.ldap_bind.search(ldap_config.room_base_dn + residence_dn, "(objectClass=pacaterieRoom)")
+    #end def
 
 #end class
 
@@ -151,8 +167,8 @@ class Machine(object):
 class Groupes(object):
     
     @staticmethod
-    def get_by_user_dn(user_session, user_dn):
-        results = user_session.ldap_bind.search(ldap_config.group_base_dn, "(&(objectClass=groupOfUniqueNames)(uniqueMember=" + user_dn + "))")
+    def get_by_user_dn(user_session, residence_dn, user_dn):
+        results = user_session.ldap_bind.search(ldap_config.group_base_dn + residence_dn, "(&(objectClass=groupOfUniqueNames)(uniqueMember=" + user_dn + "))")
         
         groups = list()
 
@@ -165,15 +181,15 @@ class Groupes(object):
     #end def
 
     @staticmethod
-    def get_by_cn(user_session, cn):
-        results = user_session.ldap_bind.search_first(ldap_config.group_base_dn, "(&(objectClass=groupOfUniqueNames)(cn=" + cn + "))")
+    def get_by_cn(user_session, residence_dn, cn):
+        results = user_session.ldap_bind.search_first(ldap_config.group_base_dn + residence_dn, "(&(objectClass=groupOfUniqueNames)(cn=" + cn + "))")
 
         return results
     #end def
 
     @staticmethod
-    def get_all(user_session):
-        results = user_session.ldap_bind.search(ldap_config.group_base_dn, "(objectClass=groupOfUniqueNames)")
+    def get_all(user_session, residence_dn):
+        results = user_session.ldap_bind.search(ldap_config.group_base_dn + residence_dn, "(objectClass=groupOfUniqueNames)")
 
         return results
     #end def
