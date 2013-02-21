@@ -41,6 +41,26 @@ class EditController(AuthenticatedBaseController):
 
 #end class
 
+class MachineController(AuthenticatedBaseController):
+    require_group = groups_enum.admin
+
+
+class MachineDeleteController(AuthenticatedRestController):
+    require_group = groups_enum.admin
+
+    @expose()
+    def post(self, residence, member_uid, machine_id):
+        member = Member.get_by_uid(self.user, residence, member_uid)
+        machine = Machine.get_machine_by_id(self.user, member.dn, machine_id)
+        if machine is not None:
+            self.user.ldap_bind.delete_entry_subtree(machine.dn)
+        #end if
+
+        redirect("/edit/room/" + residence + "/" + member_uid)
+    #end def
+#end def
+
+
 class WifiRestController(AuthenticatedRestController):
     require_group = groups_enum.respsalleinfo
 

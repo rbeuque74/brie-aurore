@@ -14,12 +14,14 @@ brie/websetup.py
 brie/config/__init__.py
 brie/config/app_cfg.py
 brie/config/environment.py
+brie/config/groups_enum.py
 brie/config/ldap_config.py
 brie/config/middleware.py
 brie/controllers/__init__.py
+brie/controllers/administration.py
 brie/controllers/auth.py
 brie/controllers/edit.py
-brie/controllers/import_actions.py
+brie/controllers/error.py
 brie/controllers/rooms.py
 brie/controllers/root.py
 brie/controllers/show.py
@@ -27,8 +29,8 @@ brie/controllers/template.py
 brie/i18n/ru/LC_MESSAGES/brie.po
 brie/lib/__init__.py
 brie/lib/app_globals.py
+brie/lib/aurore_helper.py
 brie/lib/base.py
-brie/lib/camembert_helpers.py
 brie/lib/helpers.py
 brie/lib/ldap_helper.py
 brie/model/__init__.py
@@ -45,6 +47,9 @@ brie/templates/__init__.py
 brie/templates/__init__.pyc
 brie/templates/index.html
 brie/templates/login_widget.html
+brie/templates/administration/__init__.py
+brie/templates/administration/__init__.pyc
+brie/templates/administration/index.html
 brie/templates/auth/__init__.py
 brie/templates/auth/__init__.pyc
 brie/templates/auth/login.html
@@ -56,8 +61,9 @@ brie/templates/edit/member.html
 brie/templates/edit/member_room_interface_edit_views.html
 brie/templates/edit/room.html
 brie/templates/edit/wifi.html
+brie/templates/error/__init__.py
+brie/templates/error/permission_denied.html
 brie/templates/models/__init__.py
-brie/templates/models/__init__.pyc
 brie/templates/models/about.html
 brie/templates/models/authentication.html
 brie/templates/models/debug.html

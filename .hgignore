@@ -5,3 +5,4 @@ Brie/data/sessions/*
 *.swp
 *.swo
 Brie/tg2env/*
+Brie/build/*

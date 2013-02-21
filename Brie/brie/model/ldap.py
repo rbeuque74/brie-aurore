@@ -147,7 +147,7 @@ class Machine(object):
     #end def
 
     @staticmethod
-    def get_machines_of_member(user_session, member_dn):
+    def get_machine_tuples_of_member(user_session, member_dn):
         results = user_session.ldap_bind.search(member_dn, "(objectClass=organizationalRole)")
         machines = list()
         for result in results:
@@ -155,11 +155,23 @@ class Machine(object):
             dns = user_session.ldap_bind.search_first(result.dn, "(objectClass=dlzGenericRecord)")
             if dhcp is not None and dns is not None:
                 mac = dhcp.dhcpHWAddress.first().replace("ethernet ", "")
-                machines.append((dhcp.cn.first(), mac, dns.dlzData.first())) # tuple
+                machines.append(
+                    (
+                        dhcp.cn.first(), 
+                        mac, 
+                        dns.dlzData.first(), 
+                        result.cn.first()
+                    ) #tuple
+                ) 
             #end if
         #end for
 
         return machines
+    #end def
+
+    @staticmethod
+    def get_machine_by_id(user_session, member_dn, machine_id):
+        return user_session.ldap_bind.search_first(member_dn, "(cn=" + machine_id + ")")
     #end def
 
 #end class
