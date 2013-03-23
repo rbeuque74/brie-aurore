@@ -6,3 +6,4 @@ Brie/data/sessions/*
 *.swo
 Brie/tg2env/*
 Brie/build/*
+Brie/development.ini
