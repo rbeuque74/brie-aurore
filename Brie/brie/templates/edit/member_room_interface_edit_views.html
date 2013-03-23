@@ -54,9 +54,15 @@
         </div>
         <div class="section">
             <span class="section_name show_section_name">MACHINES</span>
-            <div py:for="name, mac, ip in machines">
+            <div py:for="name, mac, ip, id  in machines">
                 <span class="item_name">${name}</span>
                 <span>${mac} : ${ip}</span>
+                <form action="/edit/machine/delete/" method="post" class="inline_block">
+                    <input type="hidden" name="residence" value="${residence}"/>
+                    <input type="hidden" name="member_uid" value="${member_ldap.uid.first()}"/>
+                    <input type="hidden" name="machine_id" value="${id}"/>
+                    <input type="submit" value="X" class="button"/>
+                </form>
             </div>
             <div>
                 <form action="/edit/machine/add/" method="post">

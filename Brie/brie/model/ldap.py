@@ -233,7 +233,7 @@ class IpReservation:
     @staticmethod
     def taken_attr(description):
         return {
-            "x-taken" : description
+            "x-taken" : str(description)
         }
     #end def
 
