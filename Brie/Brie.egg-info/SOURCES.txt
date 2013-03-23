@@ -35,6 +35,7 @@ brie/lib/helpers.py
 brie/lib/ldap_helper.py
 brie/model/__init__.py
 brie/model/auth.py
+brie/model/briedb.py
 brie/model/camembert.py
 brie/model/ldap.py
 brie/public/favicon.ico
@@ -44,17 +45,13 @@ brie/public/css/rooms.css
 brie/public/css/show.css
 brie/public/css/style.css
 brie/templates/__init__.py
-brie/templates/__init__.pyc
 brie/templates/index.html
 brie/templates/login_widget.html
 brie/templates/administration/__init__.py
-brie/templates/administration/__init__.pyc
 brie/templates/administration/index.html
 brie/templates/auth/__init__.py
-brie/templates/auth/__init__.pyc
 brie/templates/auth/login.html
 brie/templates/edit/__init__.py
-brie/templates/edit/__init__.pyc
 brie/templates/edit/error.html
 brie/templates/edit/import_from.html
 brie/templates/edit/member.html
@@ -75,10 +72,8 @@ brie/templates/models/login.html
 brie/templates/models/master.html
 brie/templates/models/sidebars.html
 brie/templates/rooms/__init__.py
-brie/templates/rooms/__init__.pyc
 brie/templates/rooms/index.html
 brie/templates/show/__init__.py
-brie/templates/show/__init__.pyc
 brie/templates/show/error.html
 brie/templates/show/member.html
 brie/templates/show/member_room_interface_views.html

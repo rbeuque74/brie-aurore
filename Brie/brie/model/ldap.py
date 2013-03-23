@@ -233,5 +233,13 @@ class IpReservation:
             "x-taken" : description
         }
     #end def
+
+    @staticmethod
+    def get_first_free(user_session, residence_dn):
+        results  = user_session.ldap_bind.search_first(ldap_config.ip_reservation_base_dn + residence_dn, "(&(objectClass=auroreIpReservation)(!(x-taken=*)))")
+
+        return results
+    #end def
+        
         
 #end class

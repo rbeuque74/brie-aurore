@@ -14,26 +14,34 @@ from brie.controllers.auth import AuthenticatedBaseController, AuthenticatedRest
 
 from operator import itemgetter
 
+import uuid
 
 #root = tg.config['application_root_module'].RootController
 
-""" Controller d'affichage de details de membres, chambres et interfaces """ 
+""" Controller d'edition de details de membres, chambres""" 
 class EditController(AuthenticatedBaseController):
     require_group = groups_enum.admin
 
+    """ Controller show qu'on réutilise pour gérer l'affichage """
     show = None
+
+    """ Controller fils wifi pour gérer le wifi """
     wifi = None
+
+    """ Controller fils de gestion des machines """
+    machine = MachineController()
 
     def __init__(self, new_show):
         self.show = new_show
         self.wifi = WifiRestController(new_show)
 
-    """ Affiche les détails du membre, de la chambre et de l'interface """
+    """ Affiche les détails éditables du membre et de la chambre """
     @expose("brie.templates.edit.member")
     def member(self, residence, uid):
         return self.show.member(residence, uid)
     #end def
-
+    
+    """ Affiche les détails éditables de la chambre """
     @expose("brie.templates.edit.room")
     def room(self, residence, room_id):
         return self.show.room(residence, room_id)
@@ -41,21 +49,93 @@ class EditController(AuthenticatedBaseController):
 
 #end class
 
+""" Controller de gestion des machines """
 class MachineController(AuthenticatedBaseController):
     require_group = groups_enum.admin
 
+    """ Controller fils d'ajout de machine """
+    add  = MachineAddController()
 
+    """ Controller fils de suppression de machine """
+    delete = MachineDeleteController()
+
+#end class
+
+""" Controller de gestion des ajouts de machines.
+    Il est de type REST, i.e. il gère séparement les requêtes
+    get, post, put, delete
+"""
+class MachineAddController(AuthenticatedRestController):
+    require_group = groups_enum.admin
+
+    @expose()
+    """ Fonction de gestion de requete post sur le controller d'ajout """
+    def post(self, residence, member_uid, name, mac):
+        residence_dn = Residences.get_dn_by_name(self.user, residence)
+
+        #TODO : néttoyer mac (utiliser deux-points) et vérifier (regex)
+        # XX:XX:XX:XX:XX
+
+        # Vérification que le membre existe
+        member = Member.get_by_uid(self.user, residence_dn, member_uid)
+        if member is None:
+            #TODO : membre inexistant
+        
+        # Vérification que le nom de machine n'existe pas déjà
+        # Note : on cherche sur toute la résidence (residence_dn)
+        machine = Machine.get_machine_by_name(self.user, residence_dn, name)
+        if machine is not None:
+            #TODO : erreur machine existe déjà
+        
+        # Génération de l'id de la machine et recherche d'une ip libre
+        machine_id = uuid.uuid4()
+        ip = IpReservation.get_first_free(self.user, residence_dn)
+
+        # Attributs ldap de l'objet machine (regroupant dns et dhcp)
+        machine_top = Machine.entry_attr(machine_id)
+
+        # Attributs ldap des objets dhcp et dns, fils de l'objet machine
+        machine_dhcp = Machine.dhcp_attr(name, mac)
+        machine_dns = Machine.dns_attr(name, ip.cn.first())
+        
+        # Construction du dn et ajout de l'objet machine 
+        # en fils du membre (membre.dn)
+        machine_dn = "cn=" + machine_id + "," + member.dn
+        self.user.ldap_bind.add_entry(machine_dn, machine_top)
+
+        # Construction du dn et ajout de l'objet dhcp 
+        # en fils de la machine (machine_dn)
+        dhcp_dn = "cn=" + name + "," + machine_dn
+        self.user.ldap_bind.add_entry(dhcp_dn, machine_dhcp)
+
+        # Construction du dn et ajout de l'objet dns 
+        dns_dn = "dlzHostName=" + name + "," + machine_dn
+        self.user.ldap_bind.add_entry(dns_dn, machine_dns)
+
+
+    #end def
+#end class
+        
+
+""" Controller REST de gestion des ajouts de machines. """
 class MachineDeleteController(AuthenticatedRestController):
     require_group = groups_enum.admin
 
     @expose()
+    """ Gestion des requêtes post sur ce controller """
     def post(self, residence, member_uid, machine_id):
+
+        # Récupération du membre et de la machine
+        # Note : on cherche la machine seulement sur le membre (member.dn)
         member = Member.get_by_uid(self.user, residence, member_uid)
         machine = Machine.get_machine_by_id(self.user, member.dn, machine_id)
+
+        # Si la machine existe effectivement, on la supprime
         if machine is not None:
             self.user.ldap_bind.delete_entry_subtree(machine.dn)
         #end if
 
+        # On redirige sur la page d'édition du membre
         redirect("/edit/room/" + residence + "/" + member_uid)
     #end def
 #end def
