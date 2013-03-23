@@ -214,3 +214,24 @@ class Groupes(object):
     #end def
 
 #end class
+
+class IpReservation:
+    
+    @staticmethod
+    def entry_attr(ip):
+        return {
+            "objectClass" : ["top", "auroreIpReservation"],
+            "cn" : str(ip)
+        }
+    #end def
+
+    @staticmethod
+    def taken_attr(ip, description):
+        return {
+            "objectClass" : ["top", "auroreIpReservation"],
+            "cn" : str(ip),
+            "x-taken" : description
+        }
+    #end def
+        
+#end class

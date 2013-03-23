@@ -30,13 +30,13 @@ class EditController(AuthenticatedBaseController):
 
     """ Affiche les détails du membre, de la chambre et de l'interface """
     @expose("brie.templates.edit.member")
-    def member(self, uid):
-        return self.show.member(uid)
+    def member(self, residence, uid):
+        return self.show.member(residence, uid)
     #end def
 
     @expose("brie.templates.edit.room")
-    def room(self, room_number):
-        return self.show.room(room_number)
+    def room(self, residence, room_id):
+        return self.show.room(residence, room_id)
     #end def
 
 #end class

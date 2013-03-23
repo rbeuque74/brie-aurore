@@ -91,7 +91,8 @@ class RoomsController(AuthenticatedBaseController):
     
         index_result = self.index(residence) 
 
-        room = Room.get_by_uid(self.user, self.user.residence_dn, number)
+        residence_dn = Residences.get_dn_by_name(self.user, residence)
+        room = Room.get_by_uid(self.user, residence_dn, number)
 
 
         member = None

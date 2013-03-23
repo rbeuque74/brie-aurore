@@ -32,7 +32,7 @@ class Ldap(object):
         try:
             results = self.__connection.search_s(dn, scope, filter)
         except ldap.NO_SUCH_OBJECT:
-            return None
+            return []
         #end try
 
         ldap_results = []

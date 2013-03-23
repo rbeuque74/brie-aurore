@@ -32,7 +32,7 @@ class ShowController(AuthenticatedBaseController):
         
         room = Room.get_by_member_dn(self.user, residence_dn, member.dn)
         
-        machines = Machine.get_machines_of_member(self.user, member.dn)
+        machines = Machine.get_machine_tuples_of_member(self.user, member.dn)
     
         groups = Groupes.get_by_user_dn(self.user, residence_dn, member.dn)
 
