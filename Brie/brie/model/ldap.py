@@ -174,6 +174,11 @@ class Machine(object):
         return user_session.ldap_bind.search_first(member_dn, "(cn=" + machine_id + ")")
     #end def
 
+    @staticmethod
+    def get_dns_by_id(user_session, machine_dn, machine_id):
+        return user_session.ldap_bind.search_first(machine_dn, "(objectClass=dlzAbstractRecord)")
+    #end def
+
 #end class
 
 class Groupes(object):
@@ -226,10 +231,8 @@ class IpReservation:
     #end def
 
     @staticmethod
-    def taken_attr(ip, description):
+    def taken_attr(description):
         return {
-            "objectClass" : ["top", "auroreIpReservation"],
-            "cn" : str(ip),
             "x-taken" : description
         }
     #end def
@@ -240,6 +243,12 @@ class IpReservation:
 
         return results
     #end def
+
+    @staticmethod
+    def get_ip(user_session, residence_dn, ip):
+        results  = user_session.ldap_bind.search_first(ldap_config.ip_reservation_base_dn + residence_dn, "(&(objectClass=auroreIpReservation)(cn=" + ip + "))")
         
+        return results
+    #end def
         
 #end class

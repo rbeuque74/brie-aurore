@@ -11,6 +11,7 @@
     <py:def function="member_view(member_ldap)">
         <div class="section">
             <span class="section_name show_section_name">${member_ldap.cn.first()}</span>
+            <a class="link_button some_margin" href="/edit/member/${residence}/${member_ldap.uid.first()}/">éditer</a>
             <div>
                 <div>
                     <span class="item_name">Fin de connexion</span>
