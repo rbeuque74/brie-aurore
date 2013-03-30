@@ -54,8 +54,12 @@
         <div class="section">
             <span class="section_name show_section_name">DIVERS</span>
             <div>
-                <span class="item_name">Identifiant</span>
-                <span>${member_ldap.uid.first()}</span>
+                <span class="item_name">Identifiants</span>
+                <span>
+                    <py:for each="uid in member_ldap.uid.values">
+                        ${uid}
+                    </py:for>
+                </span>
             </div>
             <div>
                 <span class="item_name">Groupes</span>
@@ -65,17 +69,6 @@
                         <py:for each="group in groups">${group} </py:for>
                     </span>
                 </py:choose>
-            </div>
-            <div>
-                <span class="item_name">Uid unix</span>
-                <py:choose test="member_ldap.uidNumber">
-                    <span py:when="None">Aucun uid</span>
-                    <span py:otherwise="">${member_ldap.uidNumber.first()}</span>
-                </py:choose>
-            </div>
-            <div>
-                <span class="item_name">Wifi</span>
-                <span><a href="/edit/wifi/${member_ldap.uid.first()}" class="link_button">mot de passe</a></span>
             </div>
         </div>
         <div class="section">

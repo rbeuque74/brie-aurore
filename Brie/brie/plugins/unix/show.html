@@ -1,0 +1,28 @@
+<html 
+    xmlns:py="http://genshi.edgewall.org/"
+    xmlns:xi="http://www.w3.org/2001/XInclude" 
+    py:strip="" >
+    <div class="section">
+        <span class="section_name show_section_name">UNIX</span>          
+        <div>
+            <span class="item_name">Uid unix</span>
+            <py:choose test="member_ldap.uidNumber">
+                <span py:when="None">Aucun uid</span>
+                <span py:otherwise="">
+                    ${member_ldap.uidNumber.first()}
+                </span>
+            </py:choose>
+            <a href="#todo" class="link_button">génerer</a>
+        </div>
+        <div>
+            <span class="item_name">Shell</span>
+            <py:choose test="member_ldap.loginShell">
+                <span py:when="None">Aucun shell</span>
+                <span py:otherwise="">
+                    ${member_ldap.loginShell.first()}
+                </span>
+            </py:choose> 
+        </div>
+    </div>
+</html>
+

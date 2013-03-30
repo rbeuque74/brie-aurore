@@ -2,6 +2,16 @@
     xmlns:py="http://genshi.edgewall.org/"
     xmlns:xi="http://www.w3.org/2001/XInclude" 
     py:strip="" >
-    hello wifi
+    <div class="section">
+        <span class="section_name show_section_name">WIFI</span>          
+        <div>
+            <span class="item_name">Activé</span>
+            <span>${wifi_show.activated}</span>
+        </div>
+        <div>
+            <span class="item_name">Mot de passe</span>
+            <span><a href="/plugins/wifi/edit/${residence}/${member_ldap.uid.first()}" class="link_button">changer</a></span>
+        </div>
+    </div>
 </html>
 

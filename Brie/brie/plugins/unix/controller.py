@@ -1,11 +1,11 @@
+from tg.decorators import expose
 
-
-class Shell:
+class Unix:
 
     @staticmethod
+    @expose("brie.plugins.unix.show")
     def show(models):
         return {
-            "name" : "shell"
         }
     #end def
 #end class
