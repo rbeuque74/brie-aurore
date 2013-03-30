@@ -68,7 +68,10 @@
             </div>
             <div>
                 <span class="item_name">Uid unix</span>
-                <span>${member_ldap.uidNumber.first()}</span>
+                <py:choose test="member_ldap.uidNumber">
+                    <span py:when="None">Aucun uid</span>
+                    <span py:otherwise="">${member_ldap.uidNumber.first()}</span>
+                </py:choose>
             </div>
             <div>
                 <span class="item_name">Wifi</span>

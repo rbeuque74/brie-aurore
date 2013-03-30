@@ -139,7 +139,7 @@ class LdapResult(object):
 
     def __init__(self, dn, var_dict):
         self.__dict__ = var_dict
-        self.dn = dn
+        self.dn = dn.decode("utf-8")
     #end def
 
     def has(self, attribute_name):
