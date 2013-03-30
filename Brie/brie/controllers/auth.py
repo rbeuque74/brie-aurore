@@ -174,10 +174,14 @@ class LoginRestController(RestController):
 
         residence_dn = Residences.get_dn_by_name(anon_user, residence)
         
+        residences = Residences.get_residences(anon_user)
+        
         if residence_dn is None:
             return dict(
+                residences = residences,
                 login = username,
-                error = "erreur de résidence"
+                residence = residence,
+                error = u"erreur de résidence"
             )
         #end if
 
@@ -186,8 +190,6 @@ class LoginRestController(RestController):
         if success:
             redirect("/")
         #end if 
-
-        residences = Residences.get_residences(anon_user)
 
         return dict(
             residences = residences, 
