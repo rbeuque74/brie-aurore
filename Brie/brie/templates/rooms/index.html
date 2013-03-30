@@ -49,7 +49,7 @@
             <span class="section_name">${("Aile " + area.cn.first()).upper()}</span>
             <div py:for="floor, rooms in reverse_sorted_name(floors.iteritems())" class="floor">
                 <span class="floor_name">étage ${floor.cn.first()}</span>
-                <div py:for="room in rooms" class="room_number">
+                <div py:for="room in sorted(rooms, key=lambda t:t.cn.first())" class="room_number">
                     <a href="/rooms/preview/${residence}/${room.uid.first()}"><span>${room.cn.first()}</span></a>
                 </div>
             </div>
