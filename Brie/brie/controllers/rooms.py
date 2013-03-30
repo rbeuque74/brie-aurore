@@ -54,7 +54,7 @@ class RoomsController(AuthenticatedBaseController):
         #end if
 
         for area in Room.get_areas(self.user, residence_dn):
-            areas[area] = dict()
+            areas[area] = list()
 
             for floor in Room.get_floors(self.user, area.dn):
                 areas[area][floor] = list()
@@ -71,11 +71,12 @@ class RoomsController(AuthenticatedBaseController):
                     #end if
 
                 #end for room
+                areas[area][floor] = sorted(areas[area][floor], key=lambda r:r.cn.first())
             #end for floor
+            areas[area] = sorted(areas[area].items(), key=lambda t:t[0])
         #end for area
 
-
-        return { 
+        return {
             "areas" : areas, 
             "color_picker" : self.color_picker, 
             "reverse_sorted_name" : self.reverse_sort_name, 
