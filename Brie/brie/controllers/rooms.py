@@ -12,9 +12,6 @@ from brie.model.ldap import *
 from brie.controllers import auth
 from brie.controllers.auth import AuthenticatedBaseController, AuthenticatedRestController
 
-from operator import itemgetter
-
-
 class RoomsController(AuthenticatedBaseController):
     require_group = groups_enum.admin
 
@@ -38,10 +35,10 @@ class RoomsController(AuthenticatedBaseController):
     #end def
 
     def reverse_sort_name(self, name_items):
-        return sorted(name_items, key=itemgetter(0), reverse=True)
+        return sorted(name_items, key=lambda t:t[0].cn.first(), reverse=True)
 
     def sort_name(self, name_items):
-        return sorted(name_items, key=itemgetter(0))
+        return sorted(name_items, key=lambda t:t[0].cn.first())        
 
     @expose("brie.templates.rooms.index")
     def index(self, residence_name):
@@ -54,7 +51,7 @@ class RoomsController(AuthenticatedBaseController):
         #end if
 
         for area in Room.get_areas(self.user, residence_dn):
-            areas[area] = list()
+            areas[area] = dict()
 
             for floor in Room.get_floors(self.user, area.dn):
                 areas[area][floor] = list()
@@ -71,9 +68,7 @@ class RoomsController(AuthenticatedBaseController):
                     #end if
 
                 #end for room
-                areas[area][floor] = sorted(areas[area][floor], key=lambda r:r.cn.first())
             #end for floor
-            areas[area] = sorted(areas[area].items(), key=lambda t:t[0])
         #end for area
 
         return {
