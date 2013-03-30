@@ -1,0 +1,12 @@
+<html 
+    xmlns:py="http://genshi.edgewall.org/"
+    xmlns:xi="http://www.w3.org/2001/XInclude" 
+    py:strip="" >
+   toto 
+    <py:if test="defined('_plugins_templates')">
+        <xi:include 
+            py:for="plugin_template in _plugins_templates"
+            href="${plugin_template}" />
+    </py:if>
+</html>
+
