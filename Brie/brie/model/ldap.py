@@ -252,3 +252,12 @@ class IpReservation:
     #end def
         
 #end class
+
+class Plugins:
+    
+    @staticmethod
+    def get_by_name(user_session, residence_dn, plugin_name):
+        return user_session.ldap_bind.search_first(ldap_config.plugins_base_dn + residence_dn, "(cn=" + plugin_name + ")")
+    #end def
+
+#end class

@@ -6,6 +6,7 @@ from tg.decorators import expose, validate
 from brie.config import ldap_config
 from brie.lib.ldap_helper import *
 from brie.lib.aurore_helper import *
+from brie.lib.plugins import *
 from brie.model.ldap import *
 
 from brie.controllers import auth
@@ -22,6 +23,7 @@ class ShowController(AuthenticatedBaseController):
 
     """ Affiche les détails du membre, de la chambre et de l'interface """
     @expose("brie.templates.show.member")
+    @plugins("brie.controllers.show.member")
     def member(self, residence, uid):
         residence_dn = Residences.get_dn_by_name(self.user, residence)    
     
