@@ -5,7 +5,7 @@
     <py:def function="back_rooms(preview_room_ldap = None)">
         <div py:choose="preview_room_ldap">
             <a py:when="None" href="/rooms/index/${residence}/" class="button">RETOUR LIST</a>
-            <a py:otherwise="" href="/rooms/preview/${residence}/${preview_room_ldap.cn.first()}" class="button">RETOUR PREVIEW</a>
+            <a py:otherwise="" href="/rooms/preview/${residence}/${preview_room_ldap.uid.first()}" class="button">RETOUR PREVIEW</a>
         </div>
     </py:def>
     <py:def function="member_view(member_ldap)">

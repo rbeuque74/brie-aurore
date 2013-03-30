@@ -15,6 +15,14 @@
             <span class="section_name show_section_name">${member_ldap.cn.first()}</span>
             <div>
                 <div>
+                    <span class="item_name">Prénom</span>
+                    <input type="text" value="${member_ldap.givenName.first('')}" />
+                </div>
+                <div>
+                    <span class="item_name">Nom</span>
+                    <input type="text" value="${member_ldap.sn.first()}" />
+                </div>
+                <div>
                     <span class="item_name">Fin de connexion</span>
                     <span py:choose="member_ldap.get('x-connectionEnd')">
                         <span py:when="None">Pas de fin de connexion</span>
@@ -66,8 +74,8 @@
             </div>
             <div>
                 <form action="/edit/machine/add/" method="post">
-                   <input type="text" name="name" class="item_name"/>
-                   <input type="text" name="mac"/>
+                   <input type="text" name="name" placeholder="nom de la machine" class="item_name"/>
+                   <input type="text" name="mac" placeholder="adresse mac" />
                    <input type="hidden" name="residence" value="${residence}"/>
                    <input type="hidden" name="member_uid" value="${member_ldap.uid.first()}"/>
                    <input type="submit" value="ajouter" class="button"/>
@@ -76,14 +84,29 @@
         </div>
     </py:def>
 
-    <py:def function="room_view(room, member_in = None)">
+    <py:def function="room_view(room, rooms, member_in = None)">
         <div class="section">
             <span class="section_name show_section_name">CHAMBRE ${room.cn.first()}</span>
             <div>
                 <div py:if="member_in is not None">
                     <span class="item_name">Membre</span>
                     <span>
-                        <a href="/show/member/${member_in.uid.first()}">${member_in.cn.first()}</a>
+                        <a href="/show/member/${residence}/${member_in.uid.first()}">${member_in.cn.first()}</a>
+                    </span>
+                </div>
+                <div>
+                    <span class="item_name">Changer de chambre</span>
+                    <select name="rooms">
+                        <option value="">&lt;vide&gt;</option>
+                        <py:for each="target_room in rooms">
+                            <py:choose test="target_room.cn.first() == room.cn.first()">
+                                <option py:when="True" selected="selected" value="${target_room.uid.first()}">${target_room.cn.first()}</option>
+                                <option py:when="False" value="${target_room.uid.first()}">${target_room.cn.first()}</option>
+                            </py:choose>
+                        </py:for>
+                    </select>
+                    <span>
+                        <a href="#" class="button">Sauvegarder le changement de chambre</a>
                     </span>
                 </div>
                 <div>

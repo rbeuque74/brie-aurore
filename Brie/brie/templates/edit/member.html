@@ -15,7 +15,7 @@
         </div>
         <div py:choose="room_ldap">
             <span class="section_name" py:when="None">Pas de chambre associée</span>
-            <div py:otherwise="">${room_view(room_ldap)}</div>
+            <div py:otherwise="">${room_view(room_ldap,rooms)}</div>
         </div>
     </body>
 </html>
