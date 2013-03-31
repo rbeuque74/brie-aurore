@@ -31,12 +31,16 @@ class EditController(AuthenticatedBaseController):
     """ Controller fils wifi pour gérer le wifi """
     wifi = None
 
+    """ Controller fils room pour gérer les chambres """
+    room = None
+
     """ Controller fils de gestion des machines """
     machine = None
     def __init__(self, new_show):
         self.show = new_show
         self.wifi = WifiRestController(new_show)
         self.machine = MachineController()
+        self.room = RoomController(new_show)
 
 
     """ Affiche les détails éditables du membre et de la chambre """
@@ -264,3 +268,132 @@ class WifiRestController(AuthenticatedRestController):
     #end def
 #end class
         
+""" Controller de gestion des rooms """
+class RoomController(AuthenticatedBaseController):
+    require_group = groups_enum.admin
+
+    """ Controller fils d'ajout de machine """
+    move  = None
+    show = None
+    change_member = None
+    def __init__(self, show):
+        self.move = RoomMoveController()
+        self.show = show
+        self.change_member = RoomChangeMemberController()
+
+
+    """ Affiche les détails éditables de la chambre """
+    @expose("brie.templates.edit.room")
+    def index(self, residence, room_id):
+        residence_dn = Residences.get_dn_by_name(self.user, residence)    
+
+        room = Room.get_by_uid(self.user, residence_dn, room_id)
+
+        if room is None:
+            raise Exception("no room")
+
+        member = None
+        if room.has("x-memberIn"):
+            member = Member.get_by_dn(self.user, room.get("x-memberIn").first())
+
+        members = Member.get_all(self.user, residence_dn)
+        
+        return { 
+            "residence" : residence,
+            "user" : self.user, 
+            "room_ldap" : room, 
+            "member_ldap" : member,
+            "members" : members
+        }        
+        #se Exception("tait toi")
+    #end def
+
+#end class
+
+""" Controller REST de gestion des ajouts de machines. """
+class RoomMoveController(AuthenticatedRestController):
+    require_group = groups_enum.admin
+
+    """ Gestion des requêtes post sur ce controller """
+    @expose()
+    def post(self, residence, member_uid, room_uid):
+        residence_dn = Residences.get_dn_by_name(self.user, residence)
+
+        # Récupération du membre et de la machine
+        # Note : on cherche la machine seulement sur le membre (member.dn)
+        member = Member.get_by_uid(self.user, residence_dn, member_uid)
+        room = Room.get_by_uid(self.user, residence_dn, room_uid)
+
+        # Si la machine existe effectivement, on la supprime
+        if room is not None:
+            if room.get("x-memberIn") is not None:
+                raise Exception("chambre de destination non vide")
+                #TODO passer sur une page d'erreur au lieu d'une exception
+            else:
+                old_room = Room.get_by_member_dn(self.user, residence_dn, member.dn)
+                memberIn_attribute = Room.memberIn_attr(str(member.dn))
+                self.user.ldap_bind.delete_attr(old_room.dn, memberIn_attribute)
+                self.user.ldap_bind.add_attr(room.dn, memberIn_attribute)
+            #end if
+        else:
+            old_room = Room.get_by_member_dn(self.user, residence_dn, member.dn)
+            memberIn_attribute = Room.memberIn_attr(str(member.dn))
+            self.user.ldap_bind.delete_attr(old_room.dn, memberIn_attribute)
+        #end if
+            
+            #self.user.ldap_bind.delete_entry_subtree(machine.dn)
+
+            #taken_attribute = IpReservation.taken_attr(ip.get("x-taken").first())
+            #self.user.ldap_bind.delete_attr(ip.dn, taken_attribute)
+        #end if
+
+        # On redirige sur la page d'édition du membre
+        redirect("/edit/member/" + residence + "/" + member_uid)
+    #end def
+#end def
+
+
+""" Controller REST de gestion des ajouts de machines. """
+class RoomChangeMemberController(AuthenticatedRestController):
+    require_group = groups_enum.admin
+
+    """ Gestion des requêtes post sur ce controller """
+    @expose()
+    def post(self, residence, member_uid, room_uid):
+        residence_dn = Residences.get_dn_by_name(self.user, residence)
+
+        # Récupération du membre et de la machine
+        # Note : on cherche la machine seulement sur le membre (member.dn)
+        member = Member.get_by_uid(self.user, residence_dn, member_uid)
+        room = Room.get_by_uid(self.user, residence_dn, room_uid)
+
+        if member is None and member_uid != "":
+            raise Exception("member not found")
+        #end if
+
+        if member is not None:
+            old_room_member = Room.get_by_member_dn(self.user, residence_dn, member.dn)
+    
+            # Si la machine existe effectivement, on la supprime
+            if old_room_member is not None:
+                raise Exception("le nouveau membre possèdait déjà une chambre. conflit")
+            #end if
+        #end if
+
+        if room is None:
+            raise Exception("room inconnue")
+
+        if room.get("x-memberIn") is not None:
+            memberIn_attribute = Room.memberIn_attr(str(room.get("x-memberIn").first()))
+            self.user.ldap_bind.delete_attr(room.dn, memberIn_attribute)
+        #end if
+
+        if member is not None:
+            memberIn_attribute = Room.memberIn_attr(str(member.dn))
+            self.user.ldap_bind.add_attr(room.dn, memberIn_attribute)
+        #end if    
+
+        # On redirige sur la page d'édition du membre
+        redirect("/edit/room/index/" + residence + "/" + room_uid)
+    #end def
+#end def

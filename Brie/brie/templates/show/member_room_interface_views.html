@@ -90,7 +90,7 @@
     <py:def function="room_view(room, member_in = None)">
         <div class="section">
             <span class="section_name show_section_name">CHAMBRE ${room.cn.first()}</span>
-            <a class="link_button some_margin" href="/edit/room/${residence}/${room.uid.first()}/">éditer</a>
+            <a class="link_button some_margin" href="/edit/room/index/${residence}/${room.uid.first()}/">éditer</a>
             <div>
                 <div py:if="member_in is not None">
                     <span class="item_name">Membre</span>

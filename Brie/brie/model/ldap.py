@@ -41,6 +41,14 @@ class Member(object):
 class Room(object):
 
     @staticmethod
+    def memberIn_attr(member_dn):
+        return {
+            "x-memberIn" : str(member_dn)
+        }
+    #end def
+
+
+    @staticmethod
     def get_by_name(user_session, residence_dn, name):
         return user_session.ldap_bind.search_first(ldap_config.room_base_dn + residence_dn, "(&(objectClass=pacaterieRoom)(cn=" + name + "))")
     #end def

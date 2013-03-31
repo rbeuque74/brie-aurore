@@ -9,10 +9,10 @@
     </head>
     <body> 
         ${edit_banner()}
-        ${back_show("room", None, room_ldap.uid.first())}
+        ${back_show("room", room_ldap.uid.first())}
         <div py:choose="room_ldap">
             <span class="section_name" py:when="None">Pas de chambre associée</span>
-            <div py:otherwise="">${room_view(room_ldap, member_ldap)}</div>
+            <div py:otherwise="">${room_edit_member(room_ldap, members, member_ldap)}</div>
         </div>
     </body>
 </html>
