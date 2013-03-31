@@ -17,7 +17,7 @@ from operator import itemgetter
 
 from datetime import datetime
 import uuid
-
+import re
 
 #root = tg.config['application_root_module'].RootController
 
@@ -31,18 +31,52 @@ class EditController(AuthenticatedBaseController):
     """ Controller fils wifi pour gérer le wifi """
     wifi = None
 
+    """ Controller fils room pour gérer les chambres """
+    room = None
+
     """ Controller fils de gestion des machines """
     machine = None
     def __init__(self, new_show):
         self.show = new_show
         self.wifi = WifiRestController(new_show)
         self.machine = MachineController()
+        self.room = RoomController(new_show)
 
 
     """ Affiche les détails éditables du membre et de la chambre """
     @expose("brie.templates.edit.member")
     def member(self, residence, uid):
-        return self.show.member(residence, uid)
+        
+        residence_dn = Residences.get_dn_by_name(self.user, residence)    
+        if residence_dn is None:
+            raise Exception("unknown residence")
+        #end if
+    
+        member = Member.get_by_uid(self.user, residence_dn, uid)
+
+        if member is None:
+            return self.error_no_entry()
+        
+        room = Room.get_by_member_dn(self.user, residence_dn, member.dn)
+        
+        machines = Machine.get_machine_tuples_of_member(self.user, member.dn)
+    
+        groups = Groupes.get_by_user_dn(self.user, residence_dn, member.dn)
+
+        rooms = Room.get_rooms(self.user, residence_dn)
+        if rooms is None:
+            raise Exception("unable to retrieve rooms")
+        #end if
+        rooms = sorted(rooms, key=lambda t:t.cn.first())
+        return { 
+            "residence" : residence, 
+            "user" : self.user,  
+            "member_ldap" : member, 
+            "room_ldap" : room, 
+            "machines" : machines, 
+            "groups" : groups,
+            "rooms" : rooms
+        }
     #end def
     
     """ Affiche les détails éditables de la chambre """
@@ -79,24 +113,53 @@ class MachineAddController(AuthenticatedRestController):
     def post(self, residence, member_uid, name, mac):
         residence_dn = Residences.get_dn_by_name(self.user, residence)
 
-        #TODO : néttoyer mac (utiliser deux-points) et vérifier (regex)
-        # XX:XX:XX:XX:XX
+        #Vérification que l'adresse mac soit correcte
+        mac_match = re.match('^([0-9A-Fa-f]{2}[:-]?){5}([0-9A-Fa-f]{2})$', mac)
+        if mac_match is None:
+            #TODO : changer l'exception en une page d'erreur
+            raise Exception("mac non valide")
+        #endif
+
+        #Remplacement de l'adresse mac non séparée
+        mac_match = re.match('^([0-9A-Fa-f]{2})([0-9A-Fa-f]{2})([0-9A-Fa-f]{2})([0-9A-Fa-f]{2})([0-9A-Fa-f]{2})([0-9A-Fa-f]{2})$', mac)
+        if mac_match is not None:
+            mac = mac_match.group(1) + ":" + mac_match.group(2) + ":" + mac_match.group(3) + ":" + mac_match.group(4) + ":" + mac_match.group(5) + ":" + mac_match.group(6)
+        #endif
+        
+        #Remplacement de l'adresse mac séparée par des tirets
+        mac_match = re.match('^([0-9A-Fa-f]{2})-([0-9A-Fa-f]{2})-([0-9A-Fa-f]{2})-([0-9A-Fa-f]{2})-([0-9A-Fa-f]{2})-([0-9A-Fa-f]{2})$', mac)
+        if mac_match is not None:
+            mac = mac_match.group(1) + ":" + mac_match.group(2) + ":" + mac_match.group(3) + ":" + mac_match.group(4) + ":" + mac_match.group(5) + ":" + mac_match.group(6)
+        #endif
+
+        #Passage au format lowercase
+        mac = mac.lower()
+
 
         # Vérification que le membre existe
         member = Member.get_by_uid(self.user, residence_dn, member_uid)
         if member is None:
             #TODO : membre inexistant
             pass
-        
+        #endif
+
+
+        # Vérification que l'adresse mac de la machine n'existe pas déjà
+        # Note : on cherche sur toute la résidence (residence_dn)
+        machine = Machine.get_dhcp_by_mac(self.user, residence_dn, mac)
+        if machine is not None:
+            #TODO : gérer l'exception
+            raise Exception("mac address already exist")
+        #endif
+
         # Vérification que le nom de machine n'existe pas déjà
         # Note : on cherche sur toute la résidence (residence_dn)
-
-        # TODO :
-        # machine = Machine.get_machine_by_name(self.user, residence_dn, name)
-        machine = None
+        machine = Machine.get_dns_by_name(self.user, residence_dn, name)
         if machine is not None:
-            #TODO : erreur machine existe déjà
-            pass
+            #TODO : gérer l'exception
+            raise Exception("dns name already exist")
+        #endif
+
         # Génération de l'id de la machine et recherche d'une ip libre
         machine_id = str(uuid.uuid4())
         ip = IpReservation.get_first_free(self.user, residence_dn)
@@ -205,3 +268,132 @@ class WifiRestController(AuthenticatedRestController):
     #end def
 #end class
         
+""" Controller de gestion des rooms """
+class RoomController(AuthenticatedBaseController):
+    require_group = groups_enum.admin
+
+    """ Controller fils d'ajout de machine """
+    move  = None
+    show = None
+    change_member = None
+    def __init__(self, show):
+        self.move = RoomMoveController()
+        self.show = show
+        self.change_member = RoomChangeMemberController()
+
+
+    """ Affiche les détails éditables de la chambre """
+    @expose("brie.templates.edit.room")
+    def index(self, residence, room_id):
+        residence_dn = Residences.get_dn_by_name(self.user, residence)    
+
+        room = Room.get_by_uid(self.user, residence_dn, room_id)
+
+        if room is None:
+            raise Exception("no room")
+
+        member = None
+        if room.has("x-memberIn"):
+            member = Member.get_by_dn(self.user, room.get("x-memberIn").first())
+
+        members = Member.get_all(self.user, residence_dn)
+        
+        return { 
+            "residence" : residence,
+            "user" : self.user, 
+            "room_ldap" : room, 
+            "member_ldap" : member,
+            "members" : members
+        }        
+        #se Exception("tait toi")
+    #end def
+
+#end class
+
+""" Controller REST de gestion des ajouts de machines. """
+class RoomMoveController(AuthenticatedRestController):
+    require_group = groups_enum.admin
+
+    """ Gestion des requêtes post sur ce controller """
+    @expose()
+    def post(self, residence, member_uid, room_uid):
+        residence_dn = Residences.get_dn_by_name(self.user, residence)
+
+        # Récupération du membre et de la machine
+        # Note : on cherche la machine seulement sur le membre (member.dn)
+        member = Member.get_by_uid(self.user, residence_dn, member_uid)
+        room = Room.get_by_uid(self.user, residence_dn, room_uid)
+
+        # Si la machine existe effectivement, on la supprime
+        if room is not None:
+            if room.get("x-memberIn") is not None:
+                raise Exception("chambre de destination non vide")
+                #TODO passer sur une page d'erreur au lieu d'une exception
+            else:
+                old_room = Room.get_by_member_dn(self.user, residence_dn, member.dn)
+                memberIn_attribute = Room.memberIn_attr(str(member.dn))
+                self.user.ldap_bind.delete_attr(old_room.dn, memberIn_attribute)
+                self.user.ldap_bind.add_attr(room.dn, memberIn_attribute)
+            #end if
+        else:
+            old_room = Room.get_by_member_dn(self.user, residence_dn, member.dn)
+            memberIn_attribute = Room.memberIn_attr(str(member.dn))
+            self.user.ldap_bind.delete_attr(old_room.dn, memberIn_attribute)
+        #end if
+            
+            #self.user.ldap_bind.delete_entry_subtree(machine.dn)
+
+            #taken_attribute = IpReservation.taken_attr(ip.get("x-taken").first())
+            #self.user.ldap_bind.delete_attr(ip.dn, taken_attribute)
+        #end if
+
+        # On redirige sur la page d'édition du membre
+        redirect("/edit/member/" + residence + "/" + member_uid)
+    #end def
+#end def
+
+
+""" Controller REST de gestion des ajouts de machines. """
+class RoomChangeMemberController(AuthenticatedRestController):
+    require_group = groups_enum.admin
+
+    """ Gestion des requêtes post sur ce controller """
+    @expose()
+    def post(self, residence, member_uid, room_uid):
+        residence_dn = Residences.get_dn_by_name(self.user, residence)
+
+        # Récupération du membre et de la machine
+        # Note : on cherche la machine seulement sur le membre (member.dn)
+        member = Member.get_by_uid(self.user, residence_dn, member_uid)
+        room = Room.get_by_uid(self.user, residence_dn, room_uid)
+
+        if member is None and member_uid != "":
+            raise Exception("member not found")
+        #end if
+
+        if member is not None:
+            old_room_member = Room.get_by_member_dn(self.user, residence_dn, member.dn)
+    
+            # Si la machine existe effectivement, on la supprime
+            if old_room_member is not None:
+                raise Exception("le nouveau membre possèdait déjà une chambre. conflit")
+            #end if
+        #end if
+
+        if room is None:
+            raise Exception("room inconnue")
+
+        if room.get("x-memberIn") is not None:
+            memberIn_attribute = Room.memberIn_attr(str(room.get("x-memberIn").first()))
+            self.user.ldap_bind.delete_attr(room.dn, memberIn_attribute)
+        #end if
+
+        if member is not None:
+            memberIn_attribute = Room.memberIn_attr(str(member.dn))
+            self.user.ldap_bind.add_attr(room.dn, memberIn_attribute)
+        #end if    
+
+        # On redirige sur la page d'édition du membre
+        redirect("/edit/room/index/" + residence + "/" + room_uid)
+    #end def
+#end def

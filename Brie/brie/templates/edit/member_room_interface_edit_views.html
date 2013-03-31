@@ -15,6 +15,14 @@
             <span class="section_name show_section_name">${member_ldap.cn.first()}</span>
             <div>
                 <div>
+                    <span class="item_name">Prénom</span>
+                    <input type="text" value="${member_ldap.givenName.first('')}" />
+                </div>
+                <div>
+                    <span class="item_name">Nom</span>
+                    <input type="text" value="${member_ldap.sn.first()}" />
+                </div>
+                <div>
                     <span class="item_name">Fin de connexion</span>
                     <span py:choose="member_ldap.get('x-connectionEnd')">
                         <span py:when="None">Pas de fin de connexion</span>
@@ -66,8 +74,8 @@
             </div>
             <div>
                 <form action="/edit/machine/add/" method="post">
-                   <input type="text" name="name" class="item_name"/>
-                   <input type="text" name="mac"/>
+                   <input type="text" name="name" placeholder="nom de la machine" class="item_name"/>
+                   <input type="text" name="mac" placeholder="adresse mac" />
                    <input type="hidden" name="residence" value="${residence}"/>
                    <input type="hidden" name="member_uid" value="${member_ldap.uid.first()}"/>
                    <input type="submit" value="ajouter" class="button"/>
@@ -76,21 +84,77 @@
         </div>
     </py:def>
 
-    <py:def function="room_view(room, member_in = None)">
+    <py:def function="room_view(room, rooms, member_in)">
         <div class="section">
             <span class="section_name show_section_name">CHAMBRE ${room.cn.first()}</span>
             <div>
-                <div py:if="member_in is not None">
+<!--                <div py:if="member_in is not None">
                     <span class="item_name">Membre</span>
                     <span>
-                        <a href="/show/member/${member_in.uid.first()}">${member_in.cn.first()}</a>
+                        <a href="/show/member/${residence}/${member_in.uid.first()}">${member_in.cn.first()}</a>
                     </span>
+                </div>-->
+                <div py:if="rooms is not None">
+                    <form method="post" action="/edit/room/move">
+                        <span class="item_name">Changer de chambre</span>
+                        <select name="room_uid">
+                            <option value="">&lt;vide&gt;</option>
+                            <py:for each="target_room in rooms">
+                                <py:choose test="target_room.cn.first() == room.cn.first()">
+                                    <option py:when="True" selected="selected" value="${target_room.uid.first()}">${target_room.cn.first()}</option>
+                                    <option py:when="False" value="${target_room.uid.first()}">${target_room.cn.first()}</option>
+                                </py:choose>
+                            </py:for>
+                        </select>
+                        <input type="hidden" name="residence" value="${residence}"/>
+                        <input type="hidden" name="member_uid" value="${member_in.uid.first()}"/>
+                        <span>
+                            <input type="submit" class="button" value="Envoyer!" />
+                        </span>
+                    </form>
                 </div>
                 <div>
                     <span class="item_name"></span>
                     <span>
                         <a href="/edit/import_from/${room.uid.first()}" class="button">Importer depuis Camembert</a>
                     </span>
+                </div>
+            </div>
+        </div>
+    </py:def>
+    <py:def function="room_edit_member(room, members, member_in)">
+        <div class="section">
+            <span class="section_name show_section_name">CHAMBRE ${room.cn.first()}</span>
+            <div>
+                <div py:if="member_in is not None">
+                    <span class="item_name">Membre</span>
+                    <span>
+                        <a href="/show/member/${residence}/${member_in.uid.first()}">${member_in.cn.first()}</a>
+                    </span>
+                </div>
+                <div>
+                    <form method="post" action="/edit/room/change_member">
+                        <span class="item_name">Changer de propriétaire</span>
+                        <select name="member_uid">
+                            <option value="">&lt;vide&gt;</option>
+                            <py:for each="target_member in members">
+                                <py:if test="member_in is None">
+                                        <option value="${target_member.uid.first()}">${target_member.cn.first()}</option>
+                                </py:if>
+                                <py:if test="member_in is not None">
+                                    <py:choose test="target_member.cn.first() == member_in.cn.first()">
+                                        <option py:when="True" selected="selected" value="${target_member.uid.first()}">${target_member.cn.first()}</option>
+                                        <option py:when="False" value="${target_member.uid.first()}">${target_member.cn.first()}</option>
+                                    </py:choose>
+                                </py:if>
+                            </py:for>
+                        </select>
+                        <input type="hidden" name="residence" value="${residence}"/>
+                        <input type="hidden" name="room_uid" value="${room.uid.first()}"/>
+                        <span>
+                            <input type="submit" class="button" value="Envoyer!" />
+                        </span>
+                    </form>
                 </div>
             </div>
         </div>
