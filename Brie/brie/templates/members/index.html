@@ -1,0 +1,51 @@
+<html 
+    xmlns:py="http://genshi.edgewall.org/" 
+    xmlns:xi="http://www.w3.org/2001/XInclude"
+    >
+    <head>
+        <link rel="stylesheet" type="text/css" href="/css/rooms.css" />
+        <link rel="stylesheet" type="text/css" href="/css/common.css" />
+    </head>
+
+<!--
+    <div class="rooms_legend">
+        <py:def function="display_stat(name)">
+            <div class="room_number ${name}">${"%03d" % stats[name]}</div>
+        </py:def>
+        <div>
+            ${display_stat("ok_color")}
+            <span>ordinateurs connectés</span>
+        </div>
+        <div>
+            ${display_stat("non_certif_color")}
+            <span>certifs manquants</span>
+        </div>
+        <div>
+            ${display_stat("non_paye_color")}
+            <span>fins de connexions passées</span>
+        </div>
+        <div>
+            ${display_stat("vide_color")}
+            <span>chambres vides</span>
+        </div>
+    </div>
+-->
+    <div class="area section">
+        <span class="section_name">PREVIEW</span>
+    </div>
+    <div>
+    <form method="post" action="/members/add/">
+        <input type="text" placeholder="prenom" name="prenom" /><br />
+        <input type="text" placeholder="nom" name="nom" /><br />
+        <input type="email" placeholder="e-mail" name="mail" />
+        <input type="hidden" name="residence" value="${residence}" />
+        <input type="submit" value="GO!" />
+    </form>
+    </div>
+    <div py:for="member in members" class="area section">
+        <div>
+            <span>${member.cn.first()}</span>
+            <span py:if="member.room">${member.room.cn.first()}</span>
+        </div>
+    </div>
+</html>

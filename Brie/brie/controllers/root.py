@@ -14,6 +14,7 @@ from brie import model
 import brie.controllers.auth as auth_handler
 from brie.controllers.auth import AuthRestController
 from brie.controllers.rooms import RoomsController
+from brie.controllers.members import MembersController
 from brie.controllers.show import ShowController
 from brie.controllers.edit import EditController
 from brie.controllers.administration import AdministrationController
@@ -41,6 +42,7 @@ class RootController(BaseController):
  
     auth = AuthRestController()
     rooms = RoomsController()
+    members = MembersController()
     show = ShowController()
     edit = EditController(show)
     administration = AdministrationController()
