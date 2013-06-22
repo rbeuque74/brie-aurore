@@ -106,15 +106,15 @@ class MachineAddController(AuthenticatedRestController):
         self.user.ldap_bind.add_attr(ip.dn, taken_attribute)
 
         # Attributs ldap de l'objet machine (regroupant dns et dhcp)
-        machine_top = Machine.entry_attr(machine_id)
+        machine_top = Machine.entry_attr(name, machine_id)
 
         # Attributs ldap des objets dhcp et dns, fils de l'objet machine
-        machine_dhcp = Machine.dhcp_attr(name, mac)
-        machine_dns = Machine.dns_attr(name, ip.cn.first())
+        machine_dhcp = Machine.dhcp_attr(machine_id, name, mac)
+        machine_dns = Machine.dns_attr(machine_id, name, ip.cn.first())
         
         # Construction du dn et ajout de l'objet machine 
         # en fils du membre (membre.dn)
-        machine_dn = "cn=" + machine_id + "," + member.dn
+        machine_dn = "cn=" + name + "," + member.dn
         self.user.ldap_bind.add_entry(machine_dn, machine_top)
 
         # Construction du dn et ajout de l'objet dhcp 
