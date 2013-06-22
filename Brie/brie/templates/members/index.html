@@ -35,17 +35,27 @@
     </div>
     <div>
     <form method="post" action="/members/add/">
+        <input type="hidden" name="residence" value="${residence}" />
         <input type="text" placeholder="prenom" name="prenom" /><br />
         <input type="text" placeholder="nom" name="nom" /><br />
-        <input type="email" placeholder="e-mail" name="mail" />
-        <input type="hidden" name="residence" value="${residence}" />
+        <input type="email" placeholder="email" name="mail" /><br />
         <input type="submit" value="GO!" />
     </form>
     </div>
-    <div py:for="member in members" class="area section">
-        <div>
-            <span>${member.cn.first()}</span>
-            <span py:if="member.room">${member.room.cn.first()}</span>
-        </div>
-    </div>
+    <table>
+        <tr>
+            <th>prenom</th>
+            <th>nom</th>
+            <th>chambres</th>
+        </tr>
+        
+        <tr py:for="member in members">
+            <td><a href="/show/member/${residence}/${member.uid.first()}">${member.givenName.first()}</a></td>
+            <td><a href="/show/member/${residence}/${member.uid.first()}">${member.sn.first()}</a></td>
+            <py:choose test="member.room">
+                <td py:when="None"></td>
+                <td py:otherwise=""><a href="/show/room/${residence}/${member.room.cn.first()}">${member.room.cn.first()}</a></td>
+            </py:choose>
+        </tr>
+    </table>
 </html>

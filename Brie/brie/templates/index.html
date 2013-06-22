@@ -11,6 +11,7 @@
             <div class="section">
                 <span class="section_name show_section_name"></span>
                 <a py:if="user.groups.admin" class="button" href="/rooms/index/${residence}/" >CHAMBRES</a>
+                <a py:if="user.groups.admin" class="button" href="/members/index/${residence}/" >MEMBRES</a>
                 <a py:if="user.groups.responsablereseau" class="button" href="/administration/" >ADMINISTRATION</a>
             </div>
             <div class="section" >

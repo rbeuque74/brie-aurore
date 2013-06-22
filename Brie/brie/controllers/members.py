@@ -9,6 +9,8 @@ from brie.lib.ldap_helper import *
 from brie.lib.aurore_helper import *
 from brie.model.ldap import *
 
+import datetime
+
 from brie.controllers import auth
 from brie.controllers.auth import AuthenticatedBaseController, AuthenticatedRestController
 
@@ -39,7 +41,7 @@ class MembersController(AuthenticatedBaseController):
 		if rooms is None:
 			raise Exception("unable to retrieve rooms")
 		#end if
-		rooms = sorted(rooms, key=lambda t:t.cn.first())
+		rooms = sorted(rooms, key=lambda t:t.uid.first())
 
 		for m in members:
 			for r in rooms:
@@ -54,6 +56,13 @@ class MembersController(AuthenticatedBaseController):
 		}
 	#end def
 
+#        @expose("brie.templates.members.index")
+#        def search(self, residence_name, query)
+#            responses = index(self, residence_name)
+
+#            retu
+                
+
 
 class MembersAddController(AuthenticatedRestController):
 	require_group = groups_enum.admin
@@ -67,7 +76,16 @@ class MembersAddController(AuthenticatedRestController):
 
 		residence_dn = Residences.get_dn_by_name(self.user, residence)
 
-		member_dn = "uid=" + member_uid + "," + ldap_config.username_base_dn + residence_dn
+		now = datetime.datetime.now()
+		year = 0
+
+		if now.month >= 8:
+			year = now.year
+		else:
+			year = now.year - 1 
+		#endif
+
+		member_dn = "uid=" + member_uid + ",ou=" + str(year) + "," + ldap_config.username_base_dn + residence_dn
 		self.user.ldap_bind.add_entry(member_dn, member)
 		
 
