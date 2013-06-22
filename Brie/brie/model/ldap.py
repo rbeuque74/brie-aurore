@@ -117,7 +117,7 @@ class Machine(object):
     def dhcp_attr(name, mac):
         return {
             "objectClass" : ["top", "uidObject", "dhcpHost"],
-            "cn" : str(name),
+            "cn" : "dhcp",
             "uid" : "machine_membre",
             "dhcpHWAddress" : str("ethernet " + mac),
             "dhcpStatements" : str("fixed-address " + name)
@@ -127,7 +127,8 @@ class Machine(object):
     @staticmethod
     def dns_attr(name, ip):
         return {
-            "objectClass" : ["top", "dlzAbstractRecord", "dlzGenericRecord"],
+            "objectClass" : ["top", "organizationalRole", "dlzAbstractRecord", "dlzGenericRecord"],
+            "cn" : "dns",
             "dlzData" : str(ip),
             "dlzHostName" : str(name),
             "dlzRecordId" : "1",
@@ -140,7 +141,7 @@ class Machine(object):
     def auth_attr(flat_mac):
         return {
             "objectClass" : ["top", "organizationalRole", "simpleSecurityObject", "uidObject"],
-            "cn" : "mac",
+            "cn" : "mac_auth",
             "uid" : flat_mac,
             "userPassword" : flat_mac
         }
