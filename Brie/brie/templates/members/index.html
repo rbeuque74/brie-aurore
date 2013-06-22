@@ -49,7 +49,7 @@
             <th>chambres</th>
         </tr>
         
-        <tr py:for="member in members">
+        <tr py:for="member in sort_name(members)">
             <td><a href="/show/member/${residence}/${member.uid.first()}">${member.givenName.first()}</a></td>
             <td><a href="/show/member/${residence}/${member.uid.first()}">${member.sn.first()}</a></td>
             <py:choose test="member.room">

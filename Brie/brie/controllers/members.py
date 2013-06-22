@@ -6,6 +6,7 @@ from brie.lib.base import BaseController
 from brie.config import ldap_config
 from brie.config import groups_enum
 from brie.lib.ldap_helper import *
+from brie.lib.name_translation_helpers import Translations
 from brie.lib.aurore_helper import *
 from brie.model.ldap import *
 
@@ -23,7 +24,7 @@ class MembersController(AuthenticatedBaseController):
 		self.add = MembersAddController()
 
 	def sort_name(self, name_items):
-		return sorted(name_items, key=lambda t:t[0].cn.first())        
+		return sorted(name_items, key=lambda t:t.sn.first())        
 	
 	@expose("brie.templates.members.index")
 	def index(self, residence_name):
@@ -52,7 +53,8 @@ class MembersController(AuthenticatedBaseController):
 
 		return {
 			"members" : members, 
-			"residence" : residence_name
+			"residence" : residence_name,
+                        "sort_name" : self.sort_name
 		}
 	#end def
 
@@ -71,7 +73,7 @@ class MembersAddController(AuthenticatedRestController):
 	@expose()
 	def post(self, residence, prenom, nom, mail):
 
-		member_uid = prenom.lower() + "." + nom.lower()
+		member_uid = Translations.to_uid(prenom, nom)
 		member = Member.entry_attr(member_uid, prenom, nom, mail, 1)
 
 		residence_dn = Residences.get_dn_by_name(self.user, residence)
