@@ -16,6 +16,7 @@ from brie.controllers.auth import AuthRestController
 from brie.controllers.rooms import RoomsController
 from brie.controllers.members import MembersController
 from brie.controllers.show import ShowController
+from brie.controllers.search import SearchController
 from brie.controllers.edit import EditController
 from brie.controllers.administration import AdministrationController
 from brie.controllers.error import ErrorController
@@ -47,6 +48,7 @@ class RootController(BaseController):
     edit = EditController(show)
     administration = AdministrationController()
     error = ErrorController()
+    search = SearchController()
     
     @expose('brie.templates.index')
     def index(self):

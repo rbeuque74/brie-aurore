@@ -31,6 +31,14 @@
                     </span>
                 </div>
             </div>
+            <div class="section">
+                <span class="section_name show_section_name">Nom</span>
+                    <form action="/search/member/" method="post" class="inline_block">
+                        <input type="hidden" name="residence" value="${residence}"/>
+                        <input type="text" name="name"/>
+                        <input type="submit" value="Search" class="button"/>
+                    </form>
+            </div>
         </div>
     </body>
 </html>

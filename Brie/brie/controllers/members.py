@@ -22,8 +22,8 @@ class MembersController(AuthenticatedBaseController):
 
 	def __init__(self):
 		self.add = MembersAddController()
-
-	def sort_name(self, name_items):
+        @staticmethod
+	def sort_name(name_items):
 		return sorted(name_items, key=lambda t:t.sn.first())        
 	
 	@expose("brie.templates.members.index")
@@ -54,7 +54,7 @@ class MembersController(AuthenticatedBaseController):
 		return {
 			"members" : members, 
 			"residence" : residence_name,
-                        "sort_name" : self.sort_name
+                        "sort_name" : MembersController.sort_name
 		}
 	#end def
 
