@@ -1,0 +1,25 @@
+<html 
+    xmlns:py="http://genshi.edgewall.org/"
+    xmlns:xi="http://www.w3.org/2001/XInclude">
+    <head>
+        <link type="text/css" rel="Stylesheet" href="/css/common.css" />
+        <link type="text/css" rel="Stylesheet" href="/css/rooms.css" />
+    </head>
+    <body> 
+         <table>
+            <tr>
+                <th>prenom</th>
+                <th>nom</th>
+                <th>chambres</th>
+            </tr>
+            <tr py:for="member in sort_name(member_ldap)">
+                <td><a href="/show/member/${residence}/${member.uid.first()}">${member.givenName.first()}</a></td>
+                <td><a href="/show/member/${residence}/${member.uid.first()}">${member.sn.first()}</a></td>
+                <py:choose test="member.room">
+                    <td py:when="None"></td>
+                    <td py:otherwise=""><a href="/show/room/${residence}/${member.room.cn.first()}">${member.room.cn.first()}</a></td>
+                </py:choose>
+            </tr>
+        </table>
+    </body>
+</html>
