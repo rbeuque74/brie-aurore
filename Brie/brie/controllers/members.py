@@ -74,7 +74,7 @@ class MembersAddController(AuthenticatedRestController):
 	def post(self, residence, prenom, nom, mail):
 
 		member_uid = Translations.to_uid(prenom, nom)
-		member = Member.entry_attr(member_uid, prenom, nom, mail, 1)
+		member = Member.entry_attr(member_uid, prenom, nom, mail, -1)
 
 		residence_dn = Residences.get_dn_by_name(self.user, residence)
 

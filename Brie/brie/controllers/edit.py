@@ -36,16 +36,31 @@ class EditController(AuthenticatedBaseController):
 
     """ Controller fils de gestion des machines """
     machine = None
+
+    member = None
+
     def __init__(self, new_show):
         self.show = new_show
         self.wifi = WifiRestController(new_show)
         self.machine = MachineController()
         self.room = RoomController(new_show)
+        self.member = MemberModificationController()
 
+    
+    """ Affiche les détails éditables de la chambre """
+    @expose("brie.templates.edit.room")
+    def room(self, residence, room_id):
+        return self.show.room(residence, room_id)
+    #end def
+
+#end class
+
+class MemberModificationController(AuthenticatedRestController):
+    require_group = groups_enum.admin
 
     """ Affiche les détails éditables du membre et de la chambre """
     @expose("brie.templates.edit.member")
-    def member(self, residence, uid):
+    def get(self, residence, uid):
         
         residence_dn = Residences.get_dn_by_name(self.user, residence)    
         if residence_dn is None:
@@ -78,14 +93,20 @@ class EditController(AuthenticatedBaseController):
             "rooms" : rooms
         }
     #end def
-    
-    """ Affiche les détails éditables de la chambre """
-    @expose("brie.templates.edit.room")
-    def room(self, residence, room_id):
-        return self.show.room(residence, room_id)
-    #end def
 
-#end class
+    @expose()
+    def post(self, residence, member_uid, sn, givenName, mail, comment):
+        residence_dn = Residences.get_dn_by_name(self.user, residence)
+        member = Member.get_by_uid(self.user, residence_dn, member_uid)
+    
+        member.sn.replace(member.sn.first(), sn)
+
+        member.givenName.replace(member.givenName.first(), givenName)
+        member.mail.replace(member.mail.first(), mail)
+        member.get("x-comment").replace(member.get("x-comment").first(), comment)
+
+        self.user.ldap_bind.save(member)
+    #end def
 
 """ Controller de gestion des machines """
 class MachineController(AuthenticatedBaseController):
@@ -166,6 +187,14 @@ class MachineAddController(AuthenticatedRestController):
         # Rendre l'ip prise 
         taken_attribute = IpReservation.taken_attr(str(datetime.today()))
         self.user.ldap_bind.add_attr(ip.dn, taken_attribute)
+
+        machine_folder = Machine.folder_attr()
+        machine_folder_dn = ldap_config.machine_base_dn + member.dn
+        try:
+            self.user.ldap_bind.add_entry(machine_folder_dn, machine_folder)
+        except ldap.ALREADY_EXISTS:
+            pass # OKAY
+        #end try
 
         # Attributs ldap de l'objet machine (regroupant dns et dhcp)
         machine_top = Machine.entry_attr(name)

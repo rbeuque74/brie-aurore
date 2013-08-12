@@ -14,7 +14,7 @@ class Member(object):
             "cn" : (prenom + " " + nom.upper()).encode("utf-8"),
             "sn" : (nom.upper()).encode("utf-8"),
             "givenName" : (prenom).encode("utf-8"),
-            "uidNumber" : uid_number,
+            "uidNumber" : str(uid_number),
             "gidNumber" : "10000",
             "homeDirectory" : ("/net/home/" + uid).encode("utf-8"),
             "mail" : mail.encode("utf-8"),
@@ -119,6 +119,14 @@ class Wifi(object):
 #end class
 
 class Machine(object):
+
+    @staticmethod
+    def folder_attr():
+        return {
+            "objectClass" : ["organizationalRole", "top"],
+            "cn" : "machines"
+        }
+    #end def
 
     @staticmethod
     def entry_attr(machine_id):

@@ -86,11 +86,32 @@ class Ldap(object):
     def search_dn(self, dn):
         return self.search_first(dn, "(objectClass=*)", ldap.SCOPE_BASE)
 
+
+    @staticmethod
+    def str_attributes(attributes):
+        def str_value(value):
+            if isinstance(value, str):
+                return value
+            elif isinstance(value, list):
+                return [str(subval) for subval in value]
+            #end if
+
+            return str(value)
+        #end def
+
+        return dict([ 
+            (keyval[0], str_value(keyval[1]))
+            for keyval in attributes.iteritems() 
+        ])
+    #end def
+
     """ Remplace les attributs d'un dn donné
         dn : adresse de l'élément
         attributes : dictionnaire d'attributs 
     """
     def replace_attr(self, dn, attributes):
+        attributes = Ldap.str_attributes(attributes)
+
         modlist = []
         for attribute in attributes.iteritems():
             modlist.append((ldap.MOD_REPLACE, attribute[0], attribute[1]))
@@ -103,6 +124,8 @@ class Ldap(object):
         attributes : dictionnaire des nouveaux attributs
     """
     def add_attr(self, dn, attributes):
+        attributes = Ldap.str_attributes(attributes)
+
         modlist = []
         for attribute in attributes.iteritems():
             modlist.append((ldap.MOD_ADD, attribute[0], attribute[1]))
@@ -118,6 +141,8 @@ class Ldap(object):
         attributes : dictionnaire des attributs à supprimer
     """
     def delete_attr(self, dn, attributes):
+        attributes = Ldap.str_attributes(attributes)
+
         modlist = []
         for attribute in attributes.iteritems():
             modlist.append((ldap.MOD_DELETE, attribute[0], attribute[1]))
@@ -133,6 +158,8 @@ class Ldap(object):
         attributes : dictionnaire des attributes de l'élément
     """
     def add_entry(self, dn, attributes):
+        attributes = Ldap.str_attributes(attributes)
+
         modlist = []
         for attribute in attributes.iteritems():
             modlist.append((attribute[0], attribute[1]))
@@ -169,7 +196,7 @@ class Ldap(object):
         modlist = []
 
         for global_deletion in ldap_entry._deletions:
-            modlist.append((ldap.MOD_DELETE, global_deletion, NONE))
+            modlist.append((ldap.MOD_DELETE, global_deletion, None))
         #end for
         ldap_entry._deletions = []
 
@@ -187,12 +214,14 @@ class Ldap(object):
             print  "modified : " + str(ldap_attribute._modified)
             
             if ldap_attribute._deletions != []:
-                modlist.append((ldap.MOD_DELETE, ldap_attribute.name, ldap_attribute._deletions))
+                str_values = [str(value) for value in ldap_attribute._deletions]
+                modlist.append((ldap.MOD_DELETE, ldap_attribute.name, str_values))
                 ldap_attribute._deletions = []
             #end if
 
             if ldap_attribute._additions != []:
-                modlist.append((ldap.MOD_ADD, ldap_attribute.name, ldap_attribute._additions))
+                str_values = [str(value) for value in ldap_attribute._additions]
+                modlist.append((ldap.MOD_ADD, ldap_attribute.name, str_values))
                 ldap_attribute._additions = []
             #end if
 
@@ -247,7 +276,10 @@ class LdapEntry(object):
     #end def
 
     def __getattr__(self, name):
-        return None
+        attr = LdapAttribute(name, [])
+        self.__dict__[name] = attr
+        
+        return attr
     #end def
 
     """ Ajoute un attribut """
@@ -346,7 +378,9 @@ class LdapAttribute(object):
         si la valeur est nulle, modifie la première valeur
     """
     def replace(self, old, new):
-
+        if old == new:
+            return
+    
         # Fonction usuelle de remplacement
         def replace(current):
             if current == old:
@@ -360,6 +394,8 @@ class LdapAttribute(object):
         # l'ancienne valeur n'est que supprimée
         if new in self.values:
             self.delete(old)
+        elif self.values == []:
+            self.add(new)
         else:
             self.values = [replace(value) for value in self.values]
 
@@ -370,7 +406,7 @@ class LdapAttribute(object):
             self._modified = True
         #end if
 
-
     #end def
+
 #end class
     

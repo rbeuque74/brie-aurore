@@ -11,55 +11,35 @@
         <a href="/show/${page}/${residence}/${id}" class="button">RETOUR</a>
     </py:def>
     <py:def function="member_view(member_ldap)">
-        <div class="section">
-            <span class="section_name show_section_name">${member_ldap.cn.first()}</span>
-            <div>
+        <form action="/edit/member/" method="POST">
+            <input type="hidden" name="residence" value="${residence}" />
+            <input type="hidden" name="member_uid" value="${member_ldap.uid.first()}" />
+            <div class="section">
+                <span class="section_name show_section_name">${member_ldap.cn.first()}</span>
                 <div>
-                    <span class="item_name">Prénom</span>
-                    <input type="text" value="${member_ldap.givenName.first('')}" />
-                </div>
-                <div>
-                    <span class="item_name">Nom</span>
-                    <input type="text" value="${member_ldap.sn.first()}" />
-                </div>
-                <div>
-                    <span class="item_name">Fin de connexion</span>
-                    <span py:choose="member_ldap.get('x-connectionEnd')">
-                        <span py:when="None">Pas de fin de connexion</span>
-                        <span py:otherwise="">${member_ldap.get("x-connectionEnd").first()}</span>
-                    </span>
-                </div>
-                <div>
-                    <span class="item_name">E-mail</span>
-                    <input type="text" value="${member_ldap.mail.first('')}" />
-                </div>
-                <div>
-                    <span class="item_name">Certificat</span>
-                    <py:with vars="certif = member_ldap.get('x-certificatGiven')">
-                        <span py:choose="">
-                            <span py:when="certif is not None and certif.first() == 'TRUE'">oui</span>
-                            <span py:otherwise="">non</span>
-                        </span>
-                    </py:with>
-                </div>
-                <div>
-                    <span class="item_name">Commentaire</span>
-                    <span py:choose="member_ldap.get('x-comment')">
-                        <span py:when="None"></span>
-                        <span py:otherwise="">${member_ldap.get("x-comment").first()}</span>
-                    </span>
-                </div>
-                <div>
-                    <span class="item_name">Cas spécial</span>
-                    <py:with vars="cas_spec = member_ldap.get('x-specialCase')">
-                        <span py:choose="">
-                            <span py:when="cas_spec is not None and cas_spec.first() == 'TRUE'">oui</span>
-                            <span py:otherwise="">non</span>
-                        </span>
-                    </py:with>
+                    <div>
+                        <span class="item_name">Prénom</span>
+                        <input type="text" name="givenName" value="${member_ldap.givenName.first('')}" />
+                    </div>
+                    <div>
+                        <span class="item_name">Nom</span>
+                        <input type="text" name="sn" value="${member_ldap.sn.first()}" />
+                    </div>
+                    <div>
+                        <span class="item_name">E-mail</span>
+                        <input type="text" name="mail" value="${member_ldap.mail.first('')}" />
+                    </div>
+                    <div>
+                        <span class="item_name">Commentaire</span>
+                        <input type="text" name="comment" value="${member_ldap.get('x-comment').first('')}" />
+                    </div>
+                    <div>
+                        <span class="item_name"></span>
+                        <input type="submit" value="Soumettre" />
+                    </div>
                 </div>
             </div>
-        </div>
+        </form>
         <div class="section">
             <span class="section_name show_section_name">MACHINES</span>
             <div py:for="name, mac, ip in machines">
