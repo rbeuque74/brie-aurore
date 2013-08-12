@@ -1,6 +1,8 @@
 # -*- coding: utf-8 -*-
 
+from __future__ import absolute_import
 from brie.config import ldap_config
+import ldap
 
 class Member(object):
   
@@ -149,7 +151,8 @@ class Machine(object):
 
     @staticmethod
     def get_machine_tuples_of_member(user_session, member_dn):
-        results = user_session.ldap_bind.search(member_dn, "(objectClass=organizationalRole)")
+        machine_dn = ldap_config.machine_base_dn + member_dn
+        results = user_session.ldap_bind.search(machine_dn, "(objectClass=organizationalRole)", scope = ldap.SCOPE_ONELEVEL)
         machines = list()
         for result in results:
             dhcp = user_session.ldap_bind.search_first(result.dn, "(objectClass=dhcpHost)")
@@ -158,10 +161,9 @@ class Machine(object):
                 mac = dhcp.dhcpHWAddress.first().replace("ethernet ", "")
                 machines.append(
                     (
-                        dhcp.cn.first(), 
+                        result.cn.first(), 
                         mac, 
-                        dns.dlzData.first(), 
-                        result.cn.first()
+                        dns.dlzData.first() 
                     ) #tuple
                 ) 
             #end if
@@ -172,11 +174,12 @@ class Machine(object):
 
     @staticmethod
     def get_machine_by_id(user_session, member_dn, machine_id):
-        return user_session.ldap_bind.search_first(member_dn, "(cn=" + machine_id + ")")
+        machines_dn = ldap_config.machine_base_dn + member_dn
+        return user_session.ldap_bind.search_first(machines_dn, "(cn=" + machine_id + ")")
     #end def
 
     @staticmethod
-    def get_dns_by_id(user_session, machine_dn, machine_id):
+    def get_dns_by_id(user_session, machine_dn):
         return user_session.ldap_bind.search_first(machine_dn, "(objectClass=dlzAbstractRecord)")
     #end def
 

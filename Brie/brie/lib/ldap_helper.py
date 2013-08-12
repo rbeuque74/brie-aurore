@@ -38,7 +38,7 @@ class Ldap(object):
     """ Recherche sur la base
         dn : base de recherche
         filter : filtre ldap de recherche
-        scope : portée de recherche (voir la librairie ldap)
+        scope : portée de recherche (SCOPE_SUBTREE, SCOPE_BASE, SCOPE_ONELEVEL)
     """
     def search(self, dn, filter, scope = ldap.SCOPE_SUBTREE):
         try:
