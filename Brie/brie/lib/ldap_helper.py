@@ -4,13 +4,20 @@ import ldap
 
 from brie.config import ldap_config
 
+
+""" Classe de manipulation de la base ldap """
 class Ldap(object):
     __connection = None
 
+    """ Connexion à la base """
     def __init__(self, connection):
         self.__connection = connection
     #end def
     
+    """ Methode de connexion à la base de donnée
+        dn : dn de connexion
+        password : mot de passe
+    """
     @staticmethod
     def connect(dn, password):
         connection = None
@@ -28,6 +35,11 @@ class Ldap(object):
         return None
     #end def
 
+    """ Recherche sur la base
+        dn : base de recherche
+        filter : filtre ldap de recherche
+        scope : portée de recherche (SCOPE_SUBTREE, SCOPE_BASE, SCOPE_ONELEVEL)
+    """
     def search(self, dn, filter, scope = ldap.SCOPE_SUBTREE):
         try:
             results = self.__connection.search_s(dn, scope, filter)
@@ -45,17 +57,20 @@ class Ldap(object):
             for attribute in attributes.iteritems():
                 name = attribute[0]
                 values = attribute[1]
-                ldap_value = LdapValue(name, values)
+                ldap_value = LdapAttribute(name, values)
                 val_dict[name] = ldap_value
             #end for
             
-            ldap_result = LdapResult(result_dn, val_dict)
+            ldap_result = LdapEntry(result_dn, val_dict)
             ldap_results.append(ldap_result)
         #end for
 
         return ldap_results
     #end def
 
+    """ Recherche le premier resultat sur la base
+        appel la methode "search" en interne
+    """
     def search_first(self, dn, filter, scope = ldap.SCOPE_SUBTREE):
         results = self.search(dn, filter, scope)
         if results is None: return None
@@ -67,9 +82,14 @@ class Ldap(object):
         return None
     #end def
 
+    """ Recherche seulement l'element décrit par le dn donnée """
     def search_dn(self, dn):
         return self.search_first(dn, "(objectClass=*)", ldap.SCOPE_BASE)
 
+    """ Remplace les attributs d'un dn donné
+        dn : adresse de l'élément
+        attributes : dictionnaire d'attributs 
+    """
     def replace_attr(self, dn, attributes):
         modlist = []
         for attribute in attributes.iteritems():
@@ -78,6 +98,10 @@ class Ldap(object):
         self.__connection.modify_s(dn, modlist)
     #end def
 
+    """ Ajouter les attributs d'un dn donné
+        dn : addresse de l'élément
+        attributes : dictionnaire des nouveaux attributs
+    """
     def add_attr(self, dn, attributes):
         modlist = []
         for attribute in attributes.iteritems():
@@ -89,6 +113,10 @@ class Ldap(object):
             pass
     #end def
 
+    """ Supprime les attributs d'un dn donné 
+        dn : adresse de l'élément
+        attributes : dictionnaire des attributs à supprimer
+    """
     def delete_attr(self, dn, attributes):
         modlist = []
         for attribute in attributes.iteritems():
@@ -100,6 +128,10 @@ class Ldap(object):
         #    pass
     #end def
 
+    """ Ajoute un nouvelle élément 
+        dn : adresse du nouvelle élément
+        attributes : dictionnaire des attributes de l'élément
+    """
     def add_entry(self, dn, attributes):
         modlist = []
         for attribute in attributes.iteritems():
@@ -112,6 +144,7 @@ class Ldap(object):
         ##    pass
     #end def
 
+    """ Supprime un élement donné """
     def delete_entry(self, dn):
         #try:
         self.__connection.delete_s(dn)
@@ -119,6 +152,7 @@ class Ldap(object):
         #    pass
     #end def
 
+    """ Supprime récursivement un élément et ses fils """
     def delete_entry_subtree(self, dn):
         entries = self.search(dn, "(objectClass=*)")
         for entry in reversed(entries):
@@ -126,26 +160,84 @@ class Ldap(object):
         #end for
     #end def
 
+    """ Renomme un élément """
     def rename_entry(self, dn, newdn, superior):
         self.__connection.rename_s(dn, newdn, newsuperior= superior)
 
+    """ Sauvegarde en base une valeur l'élément donné """
+    def save(self, ldap_entry):
+        modlist = []
+
+        for global_deletion in ldap_entry._deletions:
+            modlist.append((ldap.MOD_DELETE, global_deletion, NONE))
+        #end for
+        ldap_entry._deletions = []
+
+        ldap_attributes = (
+            attribute 
+            for attribute in ldap_entry.__dict__.itervalues()
+            if isinstance(attribute, LdapAttribute)
+        )
+
+        for ldap_attribute in ldap_attributes:
+            print "name : " + ldap_attribute.name
+            print "values : " + str(ldap_attribute.values)
+            print "deletions : " + str(ldap_attribute._deletions)
+            print "additions : " + str(ldap_attribute._additions)
+            print  "modified : " + str(ldap_attribute._modified)
+            
+            if ldap_attribute._deletions != []:
+                modlist.append((ldap.MOD_DELETE, ldap_attribute.name, ldap_attribute._deletions))
+                ldap_attribute._deletions = []
+            #end if
+
+            if ldap_attribute._additions != []:
+                modlist.append((ldap.MOD_ADD, ldap_attribute.name, ldap_attribute._additions))
+                ldap_attribute._additions = []
+            #end if
+
+            if ldap_attribute._modified:
+                str_values = [str(value) for value in ldap_attribute.values]
+                modlist.append((ldap.MOD_REPLACE, ldap_attribute.name, str_values))
+                ldap_attribute._modified = False
+            #end for
+
+
+        #end for
+
+        print "dn : " +  ldap_entry.dn
+        print "modlist : " + str(modlist)
+        if modlist != []:
+            self.__connection.modify_s(ldap_entry.dn, modlist)
+
+        # On recharge l'entrée après la sauvegarde
+        entry_reloaded = self.search_dn(ldap_entry.dn)
+        ldap_entry.__dict__ = entry_reloaded.__dict__
+    #end def
+
+    """ Ferme la connexion à la base """
     def close(self):
         self.__connection.unbind()
             
 #end class
 
-class LdapResult(object):
+""" Classe représentant un élément ldap """
+class LdapEntry(object):
     dn = None    
+
+    _deletions = []
 
     def __init__(self, dn, var_dict):
         self.__dict__ = var_dict
         self.dn = dn.decode("utf-8")
     #end def
 
+    """ Retourne si un attribut existe sur cette élément """
     def has(self, attribute_name):
         return attribute_name in self.__dict__
     #end def
 
+    """ Retourne la valeur d'un attribut donné """
     def get(self, name):
         if name in self.__dict__:
             return self.__dict__[name]
@@ -158,23 +250,127 @@ class LdapResult(object):
         return None
     #end def
 
+    """ Ajoute un attribut """
+    def add(self, name, value = None):
+        if self.has(name):
+            if value is not None:
+                value = self.get(name)
+                value.add(value)
+            #end if
+        else:
+            values = []
+            if value is not None:
+                values = [value]
+            #end if
+
+            
+            self.__dict__[name] = LdapAttribute(name, values)
+            self.__dict__[name]._additions = values
+        #end if
+    #end def
+
+    """ Supprime un attribut """
+    def delete(self, name, value = None):
+        if self.has(name):
+            if value is not None:
+                value = self.get(name)
+                value.delete(value)
+            else:
+                del self.__dict__[name]
+                self._deletions.append(name)
+            #end if
+        #end if
+    #end def
+
 #end class
 
-class LdapValue(object):
+
+""" Classe représentant la valeur d'un attribut """
+class LdapAttribute(object):
     name = None
-    values = []
+    values = None
+
+    _deletions = None
+    _additions = None
+    _modified = False
 
     def __init__(self, name, values):
         self.values = [value.decode("utf-8") for value in values]
         self.name = name
+
+        self._deletions = list()
+        self._additions = list()
     #end def
 
+    """ Retourne la première valeur de cet attribut """
     def first(self, default = None):
         for value in self.values:
-            return value
+            return unicode(value)
         #end for
         
-        return default
+        return unicode(default)
+    #end def
+
+    """ Retourne toutes les valeurs de cet attribut """
+    def all(self):
+        return self.values
+    #end def
+
+    """ Ajoute une valeur à cet attribut
+        Note : la valeur ne sera pas ajouté si elle existe déjà 
+    """
+    def add(self, value):
+        if not value in self.values:
+            self.values.append(value)
+            self._additions.append(value)
+        #end if
+    #end def 
+
+    """ Supprime une valeur de cet attribut """
+    def delete(self, value):    
+        if value in self.values:
+            self.values = [old for old in self.values if old != value]
+
+            # Si il vient d'être ajouté, on l'enleve simplement 
+            # de la queue d'ajout
+            # sinon on l'ajoute dans la queue de suppression
+            if value in self._additions:
+                self._additions = [old for old in self._additions if old != value]
+            else:
+                self._deletions.append(value)
+            #end if
+        #end if
+    #end def
+
+    """ Modifie une valeur de cet attribut
+        si la valeur est nulle, modifie la première valeur
+    """
+    def replace(self, old, new):
+
+        # Fonction usuelle de remplacement
+        def replace(current):
+            if current == old:
+                return new
+            #end if
+
+            return current
+        #end def
+
+        # Si la valeur modifié existe déjà
+        # l'ancienne valeur n'est que supprimée
+        if new in self.values:
+            self.delete(old)
+        else:
+            self.values = [replace(value) for value in self.values]
+
+            # Si la valeur modifié vient d'être ajouté, 
+            # elle est modifié dans la queue d'addition
+            self._additions = [replace(value) for value in self._additions]
+        
+            self._modified = True
+        #end if
+
+
     #end def
 #end class
     

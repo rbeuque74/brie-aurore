@@ -161,7 +161,6 @@ class MachineAddController(AuthenticatedRestController):
         #endif
 
         # Génération de l'id de la machine et recherche d'une ip libre
-        machine_id = str(uuid.uuid4())
         ip = IpReservation.get_first_free(self.user, residence_dn)
 
         # Rendre l'ip prise 
@@ -169,7 +168,7 @@ class MachineAddController(AuthenticatedRestController):
         self.user.ldap_bind.add_attr(ip.dn, taken_attribute)
 
         # Attributs ldap de l'objet machine (regroupant dns et dhcp)
-        machine_top = Machine.entry_attr(machine_id)
+        machine_top = Machine.entry_attr(name)
 
         # Attributs ldap des objets dhcp et dns, fils de l'objet machine
         machine_dhcp = Machine.dhcp_attr(name, mac)
@@ -177,7 +176,7 @@ class MachineAddController(AuthenticatedRestController):
         
         # Construction du dn et ajout de l'objet machine 
         # en fils du membre (membre.dn)
-        machine_dn = "cn=" + machine_id + "," + member.dn
+        machine_dn = "cn=" + name + "," + ldap_config.machine_base_dn + member.dn
         self.user.ldap_bind.add_entry(machine_dn, machine_top)
 
         # Construction du dn et ajout de l'objet dhcp 
@@ -209,7 +208,7 @@ class MachineDeleteController(AuthenticatedRestController):
         # Note : on cherche la machine seulement sur le membre (member.dn)
         member = Member.get_by_uid(self.user, residence_dn, member_uid)
         machine = Machine.get_machine_by_id(self.user, member.dn, machine_id)
-        dns = Machine.get_dns_by_id(self.user, machine.dn, machine_id)
+        dns = Machine.get_dns_by_id(self.user, machine.dn)
         ip = IpReservation.get_ip(self.user, residence_dn, dns.dlzData.first())
 
         # Si la machine existe effectivement, on la supprime
