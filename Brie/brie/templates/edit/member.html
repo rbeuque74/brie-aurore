@@ -14,7 +14,24 @@
             <div py:otherwise="">${member_view(member_ldap)}</div>
         </div>
         <div py:choose="room_ldap">
-            <span class="section_name" py:when="None">Pas de chambre associée</span>
+            <div class="section_name" py:when="None">Pas de chambre associée
+                <div py:if="rooms is not None">
+                    <form method="post" action="/edit/room/move">
+                        <span class="item_name">Changer de chambre</span>
+                        <select name="room_uid">
+                            <option value="">&lt;vide&gt;</option>
+                            <py:for each="target_room in rooms">
+                                <option value="${target_room.uid.first()}">${target_room.cn.first()}</option>
+                            </py:for>
+                        </select>
+                        <input type="hidden" name="residence" value="${residence}"/>
+                        <input type="hidden" name="member_uid" value="${member_ldap.uid.first()}"/>
+                        <span>
+                            <input type="submit" class="button" value="Envoyer!" />
+                        </span>
+                    </form>
+                </div>
+            </div>
             <div py:otherwise="">${room_view(room_ldap, rooms, member_ldap)}</div>
         </div>
     </body>

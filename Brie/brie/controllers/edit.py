@@ -83,6 +83,7 @@ class MemberModificationController(AuthenticatedRestController):
             raise Exception("unable to retrieve rooms")
         #end if
         rooms = sorted(rooms, key=lambda t:t.cn.first())
+
         return { 
             "residence" : residence, 
             "user" : self.user,  
@@ -354,13 +355,15 @@ class RoomMoveController(AuthenticatedRestController):
 
         # Si la machine existe effectivement, on la supprime
         if room is not None:
-            if room.get("x-memberIn") is not None:
+            if room.get("x-memberIn") is not None and room.get('x-memberIn').first() != 'None':
                 raise Exception("chambre de destination non vide")
                 #TODO passer sur une page d'erreur au lieu d'une exception
             else:
                 old_room = Room.get_by_member_dn(self.user, residence_dn, member.dn)
                 memberIn_attribute = Room.memberIn_attr(str(member.dn))
-                self.user.ldap_bind.delete_attr(old_room.dn, memberIn_attribute)
+                if old_room is not None:
+                    self.user.ldap_bind.delete_attr(old_room.dn, memberIn_attribute)
+                #end if
                 self.user.ldap_bind.add_attr(room.dn, memberIn_attribute)
             #end if
         else:
@@ -411,7 +414,7 @@ class RoomChangeMemberController(AuthenticatedRestController):
         if room is None:
             raise Exception("room inconnue")
 
-        if room.get("x-memberIn") is not None:
+        if room.get("x-memberIn") is not None and room.get("x-memberIn").first() != 'None':
             memberIn_attribute = Room.memberIn_attr(str(room.get("x-memberIn").first()))
             self.user.ldap_bind.delete_attr(room.dn, memberIn_attribute)
         #end if
