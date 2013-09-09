@@ -5,8 +5,9 @@
     <head>
         <link rel="stylesheet" type="text/css" href="/css/rooms.css" />
         <link rel="stylesheet" type="text/css" href="/css/common.css" />
+        <xi:include href="common-css-header.html" />
     </head>
-
+    <body>
 <!--
     <div class="rooms_legend">
         <py:def function="display_stat(name)">
@@ -30,6 +31,7 @@
         </div>
     </div>
 -->
+    <xi:include href="navbar.html" />
     <div class="area section">
         <span class="section_name">PREVIEW</span>
         <div py:if="defined('preview')">
@@ -55,4 +57,5 @@
             </div>
         </div>
     </div>
+    </body>
 </html>

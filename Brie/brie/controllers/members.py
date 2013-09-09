@@ -52,6 +52,7 @@ class MembersController(AuthenticatedBaseController):
 
 
 		return {
+                        "user" : self.user,
 			"members" : members, 
 			"residence" : residence_name,
                         "sort_name" : MembersController.sort_name

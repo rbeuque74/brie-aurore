@@ -6,6 +6,7 @@ from tg.decorators import expose, validate
 
 from brie.config import ldap_config
 from brie.lib.ldap_helper import *
+from brie.lib.aurore_helper import *
 from brie.model.ldap import *
 
 from brie.controllers import auth
@@ -70,7 +71,17 @@ class AdministrationController(AuthenticatedBaseController):
         groups = Groupes.get_all(self.user, self.user.residence_dn)
         all_users = sorted(Member.get_all(self.user, self.user.residence_dn), key=lambda u: u.cn.first())
 
-        return { "user" : self.user, "groups_ldap" : groups, "all_users" : all_users }
+        residence = None
+        if self.user is not None:
+            residence = Residences.get_name_by_dn(self.user, self.user.residence_dn)
+        #end if
+
+        return { 
+            "user" : self.user, 
+            "residence" : residence,
+            "groups_ldap" : groups, 
+            "all_users" : all_users 
+        }
     #end def
 #end class
 

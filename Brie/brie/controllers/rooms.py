@@ -72,6 +72,7 @@ class RoomsController(AuthenticatedBaseController):
         #end for area
 
         return {
+            "user" : self.user,
             "areas" : areas, 
             "color_picker" : self.color_picker, 
             "reverse_sorted_name" : self.reverse_sort_name, 

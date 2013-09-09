@@ -6,8 +6,10 @@
         <link type="text/css" rel="Stylesheet" href="/css/common.css" />
         <link type="text/css" rel="Stylesheet" href="/css/show.css" />
         <link type="text/css" rel="Stylesheet" href="/css/edit.css" />
+        <xi:include href="common-css-header.html" />
     </head>
     <body> 
+        <xi:include href="navbar.html" />
         ${edit_banner()}
         ${back_show("room", room_ldap.uid.first())}
         <div py:choose="room_ldap">

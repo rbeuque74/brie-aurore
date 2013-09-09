@@ -5,8 +5,10 @@
     <head>
         <link type="text/css" rel="Stylesheet" href="/css/common.css" />
         <link type="text/css" rel="Stylesheet" href="/css/show.css" />
+        <xi:include href="common-css-header.html" />
     </head>
     <body> 
+        <xi:include href="navbar.html" />
         ${back_rooms(room_ldap)}
         <div py:choose="member_ldap">
             <span class="section_name" py:when="None">Entrée inexistante</span>

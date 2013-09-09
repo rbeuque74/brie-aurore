@@ -5,7 +5,9 @@
     <head>
         <link rel="stylesheet" type="text/css" href="/css/rooms.css" />
         <link rel="stylesheet" type="text/css" href="/css/common.css" />
+        <xi:include href="common-css-header.html" />
     </head>
+    <body>
 
 <!--
     <div class="rooms_legend">
@@ -30,6 +32,7 @@
         </div>
     </div>
 -->
+    <xi:include href="navbar.html" />
     <div class="area section">
         <span class="section_name">PREVIEW</span>
     </div>
@@ -39,7 +42,7 @@
         <input type="text" placeholder="prenom" name="prenom" /><br />
         <input type="text" placeholder="nom" name="nom" /><br />
         <input type="email" placeholder="email" name="mail" /><br />
-        <input type="submit" value="GO!" />
+        <input type="submit" value="GO" />
     </form>
     </div>
     <table>
@@ -54,4 +57,5 @@
             <td><a href="/show/member/${residence}/${member.uid.first()}">${member.sn.first()}</a></td>
         </tr>
     </table>
+    </body>
 </html>

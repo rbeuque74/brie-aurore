@@ -1,0 +1,20 @@
+<html 
+    xmlns:py="http://genshi.edgewall.org/" 
+    xmlns:xi="http://www.w3.org/2001/XInclude"
+    py:strip=""
+    >
+    <xi:include href="login_widget.html" />
+    <div>${login_widget(user)}</div>
+    <div py:if="user is not None">
+        <div class="navbar">
+            <div class="navbar-inner">
+                <a class="brand" href="/">Brie d'Aurore</a>
+                <ul class="nav">
+                    <li py:if="user.groups.admin"><a href="/rooms/index/${residence}">CHAMBRES</a></li>
+                    <li py:if="user.groups.admin"><a href="/members/index/${residence}">MEMBRES</a></li>
+                    <li py:if="user.groups.responsablereseau"><a href="/administration/">ADMINISTRATION</a></li>
+                </ul>
+            </div>
+        </div>
+    </div>
+</html>
