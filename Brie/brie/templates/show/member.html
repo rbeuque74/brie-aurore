@@ -11,11 +11,11 @@
         <xi:include href="navbar.html" />
         ${back_rooms(room_ldap)}
         <div py:choose="member_ldap">
-            <span class="section_name" py:when="None">Entrée inexistante</span>
+            <span class="section_name show_section_name" py:when="None">Entrée inexistante</span>
             <div py:otherwise="">${member_view(member_ldap)}</div>
         </div>
         <div py:choose="room_ldap">
-            <span class="section_name" py:when="None">Pas de chambre associée</span>
+            <span class="section_name show_section_name" py:when="None">PAS DE CHAMBRE</span>
             <div py:otherwise="">${room_view(room_ldap)}</div>
         </div>
         <xi:include href="plugins.html" />

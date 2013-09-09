@@ -9,7 +9,7 @@
                 <a href="${tg.url('/auth/login')}">Connexion</a>
             </div>
             <div py:otherwise="">
-                <span>${user.attrs.cn.first()}</span>
+                <span>${user.attrs.cn.first()}</span> - <span>${residence}</span>
                 <a href="${tg.url('/auth/logout')}">Deconnexion</a>
             </div>
         </div>

@@ -1,0 +1,77 @@
+<html 
+    xmlns:py="http://genshi.edgewall.org/"
+    xmlns:xi="http://www.w3.org/2001/XInclude">
+    <head>
+        <link type="text/css" rel="Stylesheet" href="/css/common.css" />
+        <link type="text/css" rel="Stylesheet" href="/css/show.css" />
+        <xi:include href="common-css-header.html" />
+    </head>
+    <body> 
+        <xi:include href="navbar.html" />
+        <form action="/registration/new" method="POST">
+            <input type="hidden" name="residence" value="${residence}" />
+            <div class="section">
+                <span class="section_name show_section_name">INSCRIPTION MEMBRE</span>
+                <div>
+                    <div>
+                        <span class="item_name">Prénom</span>
+                        <input type="text" name="givenName" value="" />
+                    </div>
+                    <div>
+                        <span class="item_name">Nom</span>
+                        <input type="text" name="sn" value="" />
+                    </div>
+                    <div>
+                        <span class="item_name">E-mail</span>
+                        <input type="text" name="mail" value="" />
+                    </div>
+                </div>
+            </div>
+            <div class="section">
+                <span class="section_name show_section_name">CHAMBRE</span>
+                <div>
+                    <span class="item_name"></span>
+                    <select name="room_uid">
+                        <option value="">&lt;vide&gt;</option>
+                        <py:for each="target_room in rooms">
+                            <option value="${target_room.uid.first()}">${target_room.cn.first()}</option>
+                        </py:for>
+                    </select>
+                </div>
+            </div>
+            <div class="section">
+                <span class="section_name show_section_name">MACHINE</span>
+                <div>
+                    <div>
+                       <input type="text" name="first_machine_name" placeholder="nom de la machine" class="item_name"/>
+                       <input type="text" name="first_machine_mac" placeholder="adresse mac" />
+                    </div>
+                </div>
+            </div>
+            <div class="section">
+                <span class="section_name show_section_name">COTISATION</span>
+                <div>
+                    <div>
+                        <span class="item_name">Mois fin</span>
+                        <span>TODO</span>
+                    </div>
+                </div>
+            </div>
+            <div class="section">                
+                <div>
+                    <div>
+                        <span class="item_name"></span>
+                        <input type="submit" value="Soumettre" />
+                    </div>
+                </div>
+            </div>
+        </form>
+        <div class="section">
+            <span class="section_name show_section_name">QUICK PICK LAST</span>
+            <div py:for="member_ldap in quick_last">
+                <div class="item_name"></div>
+                <span><a href="/show/member/${residence}/${member_ldap.uid.first()}">${member_ldap.cn.first()}</a></span>
+            </div>
+        </div>
+    </body>
+</html>

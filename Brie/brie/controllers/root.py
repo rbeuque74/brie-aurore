@@ -20,6 +20,7 @@ from brie.controllers.search import SearchController
 from brie.controllers.edit import EditController
 from brie.controllers.administration import AdministrationController
 from brie.controllers.error import ErrorController
+from brie.controllers.registration import RegistrationController
 
 
 __all__ = ['RootController']
@@ -49,6 +50,7 @@ class RootController(BaseController):
     administration = AdministrationController()
     error = ErrorController()
     search = SearchController()
+    registration = RegistrationController(edit)
     
     @expose('brie.templates.index')
     def index(self):

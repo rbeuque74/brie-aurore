@@ -9,6 +9,7 @@ from brie.config import groups_enum
 from brie.lib.ldap_helper import *
 from brie.lib.aurore_helper import *
 from brie.model.ldap import *
+from brie.lib.name_translation_helpers import Translations
 
 from brie.controllers import auth
 from brie.controllers.auth import AuthenticatedBaseController, AuthenticatedRestController
@@ -39,12 +40,15 @@ class EditController(AuthenticatedBaseController):
 
     member = None
 
+    add = None
+
     def __init__(self, new_show):
         self.show = new_show
         self.wifi = WifiRestController(new_show)
         self.machine = MachineController()
         self.room = RoomController(new_show)
         self.member = MemberModificationController()
+        self.add = MemberAddController()
 
     
     """ Affiche les détails éditables de la chambre """
@@ -53,6 +57,42 @@ class EditController(AuthenticatedBaseController):
         return self.show.room(residence, room_id)
     #end def
 
+#end class
+
+class MemberAddController(AuthenticatedRestController):
+	require_group = groups_enum.admin
+
+	""" Fonction de gestion de requete post sur le controller d'ajout """
+	@expose()
+	def post(self, residence, prenom, nom, mail, go_redirect = True):
+
+		member_uid = Translations.to_uid(prenom, nom)
+		member = Member.entry_attr(member_uid, prenom, nom, mail, -1)
+
+		residence_dn = Residences.get_dn_by_name(self.user, residence)
+
+		now = datetime.now()
+		year = 0
+
+		if now.month >= 8:
+			year = now.year
+		else:
+			year = now.year - 1 
+		#endif
+
+		member_dn = "uid=" + member_uid + ",ou=" + str(year) + "," + ldap_config.username_base_dn + residence_dn
+		self.user.ldap_bind.add_entry(member_dn, member)
+		
+
+		#preview = member, room
+		#index_result["preview"] = preview
+
+                if go_redirect:
+                    redirect("/edit/member/" + residence + "/" + member_uid)
+                else:
+                    return member_uid
+                #end if
+	#end def
 #end class
 
 class MemberModificationController(AuthenticatedRestController):
@@ -132,7 +172,7 @@ class MachineAddController(AuthenticatedRestController):
 
     """ Fonction de gestion de requete post sur le controller d'ajout """
     @expose()
-    def post(self, residence, member_uid, name, mac):
+    def post(self, residence, member_uid, name, mac, go_redirect = True):
         residence_dn = Residences.get_dn_by_name(self.user, residence)
 
         #Vérification que l'adresse mac soit correcte
@@ -176,11 +216,24 @@ class MachineAddController(AuthenticatedRestController):
 
         # Vérification que le nom de machine n'existe pas déjà
         # Note : on cherche sur toute la résidence (residence_dn)
-        machine = Machine.get_dns_by_name(self.user, residence_dn, name)
-        if machine is not None:
-            #TODO : gérer l'exception
-            raise Exception("dns name already exist")
+        
+
+        # On modifie silencieusement le nom de la machine si il existe déjà
+        def try_name(name, number):
+            actual_name = name
+            if number > 0:
+                actual_name = name + "-" + str(number)
+            #end if 
+
+            machine = Machine.get_dns_by_name(self.user, residence_dn, actual_name)
+            if machine is not None:
+                return try_name(name, number + 1)
+            else:
+                return actual_name
+            #end if
         #endif
+
+        name = try_name(name, 0)
 
         # Génération de l'id de la machine et recherche d'une ip libre
         ip = IpReservation.get_first_free(self.user, residence_dn)
@@ -219,8 +272,9 @@ class MachineAddController(AuthenticatedRestController):
         self.user.ldap_bind.add_entry(dns_dn, machine_dns)
         
         
-
-        redirect("/edit/member/" + residence + "/" + member_uid)
+        if go_redirect:
+            redirect("/edit/member/" + residence + "/" + member_uid)
+        #end if
     #end def
 #end class
         
@@ -345,7 +399,7 @@ class RoomMoveController(AuthenticatedRestController):
 
     """ Gestion des requêtes post sur ce controller """
     @expose()
-    def post(self, residence, member_uid, room_uid):
+    def post(self, residence, member_uid, room_uid, erase = False, go_redirect = True):
         residence_dn = Residences.get_dn_by_name(self.user, residence)
 
         # Récupération du membre et de la machine
@@ -353,18 +407,21 @@ class RoomMoveController(AuthenticatedRestController):
         member = Member.get_by_uid(self.user, residence_dn, member_uid)
         room = Room.get_by_uid(self.user, residence_dn, room_uid)
 
-        # Si la machine existe effectivement, on la supprime
         if room is not None:
-            if room.get("x-memberIn") is not None and room.get('x-memberIn').first() != 'None':
-                raise Exception("chambre de destination non vide")
-                #TODO passer sur une page d'erreur au lieu d'une exception
-            else:
-                old_room = Room.get_by_member_dn(self.user, residence_dn, member.dn)
-                memberIn_attribute = Room.memberIn_attr(str(member.dn))
-                if old_room is not None:
-                    self.user.ldap_bind.delete_attr(old_room.dn, memberIn_attribute)
+            if room.get("x-memberIn") is not None and room.get('x-memberIn').first() is not None:
+                if erase:
+                    room.delete("x-memberIn")
+                    self.user.ldap_bind.save(room)
+                else:
+                    raise Exception("chambre de destination non vide")
                 #end if
-                self.user.ldap_bind.add_attr(room.dn, memberIn_attribute)
+            #end if
+            old_room = Room.get_by_member_dn(self.user, residence_dn, member.dn)
+            memberIn_attribute = Room.memberIn_attr(str(member.dn))
+            if old_room is not None:
+                self.user.ldap_bind.delete_attr(old_room.dn, memberIn_attribute)
+            #end if
+            self.user.ldap_bind.add_attr(room.dn, memberIn_attribute)
             #end if
         else:
             old_room = Room.get_by_member_dn(self.user, residence_dn, member.dn)
@@ -378,8 +435,10 @@ class RoomMoveController(AuthenticatedRestController):
             #self.user.ldap_bind.delete_attr(ip.dn, taken_attribute)
         #end if
 
-        # On redirige sur la page d'édition du membre
-        redirect("/edit/member/" + residence + "/" + member_uid)
+        if go_redirect:
+            # On redirige sur la page d'édition du membre
+            redirect("/edit/member/" + residence + "/" + member_uid)
+        #end if
     #end def
 #end def
 
