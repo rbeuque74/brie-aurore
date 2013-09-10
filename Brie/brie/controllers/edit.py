@@ -19,6 +19,8 @@ from operator import itemgetter
 from datetime import datetime
 import uuid
 import re
+import ldap
+
 
 #root = tg.config['application_root_module'].RootController
 
@@ -26,8 +28,6 @@ import re
 class EditController(AuthenticatedBaseController):
     require_group = groups_enum.admin
 
-    """ Controller show qu'on réutilise pour gérer l'affichage """
-    show = None
 
     """ Controller fils wifi pour gérer le wifi """
     wifi = None
@@ -42,13 +42,16 @@ class EditController(AuthenticatedBaseController):
 
     add = None
 
+    cotisation = None
+
     def __init__(self, new_show):
         self.show = new_show
         self.wifi = WifiRestController(new_show)
         self.machine = MachineController()
         self.room = RoomController(new_show)
-        self.member = MemberModificationController()
+        self.member = MemberModificationController(new_show)
         self.add = MemberAddController()
+        self.cotisation = CotisationController()
 
     
     """ Affiche les détails éditables de la chambre """
@@ -98,41 +101,87 @@ class MemberAddController(AuthenticatedRestController):
 class MemberModificationController(AuthenticatedRestController):
     require_group = groups_enum.admin
 
+    """ Controller show qu'on réutilise pour gérer l'affichage """
+    show = None
+
+    def __init__(self, new_show):
+        self.show = new_show
+    #end def
+
     """ Affiche les détails éditables du membre et de la chambre """
     @expose("brie.templates.edit.member")
     def get(self, residence, uid):
+        residence_dn = Residences.get_dn_by_name(self.user, residence)
         
-        residence_dn = Residences.get_dn_by_name(self.user, residence)    
-        if residence_dn is None:
-            raise Exception("unknown residence")
-        #end if
-    
-        member = Member.get_by_uid(self.user, residence_dn, uid)
-
-        if member is None:
-            return self.error_no_entry()
+        self.show.user = self.user
+        show_values = self.show.member(residence, uid)
         
-        room = Room.get_by_member_dn(self.user, residence_dn, member.dn)
-        
-        machines = Machine.get_machine_tuples_of_member(self.user, member.dn)
-    
-        groups = Groupes.get_by_user_dn(self.user, residence_dn, member.dn)
-
         rooms = Room.get_rooms(self.user, residence_dn)
         if rooms is None:
             raise Exception("unable to retrieve rooms")
         #end if
         rooms = sorted(rooms, key=lambda t:t.cn.first())
 
-        return { 
-            "residence" : residence, 
-            "user" : self.user,  
-            "member_ldap" : member, 
-            "room_ldap" : room, 
-            "machines" : machines, 
-            "groups" : groups,
-            "rooms" : rooms
-        }
+        show_values["rooms"] = rooms
+
+        cotisations = show_values["cotisations"]
+        month_names = [
+            "Janvier",
+            "Fevrier",
+            "Mars",
+            "Avril",
+            "Mai",
+            "Juin",
+            "Juillet",
+            "Aout",
+            "Septembre",
+            "Octobre",
+            "Novembre",
+            "Decembre"
+        ]  # SALE FIXME
+
+        # FIXME => mettre dans aurore helper
+        paid_months = []
+        already_paid = 0
+        for cotisation in cotisations:
+            paid_months = (
+                paid_months + 
+                [int(month) for month in cotisation.get("x-validMonth").all()]
+            )
+
+            already_paid += int(cotisation.get("x-amountPaid").first())
+        #end for
+
+        now = datetime.now()
+
+        available_months = CotisationComputes.get_available_months(now.month, 8, paid_months)
+
+        year_price = 0
+        month_price = 0
+
+        try:
+            year_price = int(Cotisation.prix_annee(self.user, residence_dn).cn.first())
+            month_price = int(Cotisation.prix_mois(self.user, residence_dn).cn.first())
+        except:
+            pass
+        #end try
+
+        available_months_prices = []
+        index = 1
+        
+        for available_month in available_months:
+            available_months_prices.append(
+                (available_month, month_names[available_month - 1], CotisationComputes.price_to_pay(year_price, month_price, already_paid, index))
+            )
+            index += 1
+        #end for
+
+        show_values["available_months_prices"] = available_months_prices
+        
+        extras_available = Cotisation.get_all_extras(self.user, residence_dn)
+        show_values["extras_available"] = extras_available
+
+        return show_values
     #end def
 
     @expose()
@@ -278,6 +327,141 @@ class MachineAddController(AuthenticatedRestController):
     #end def
 #end class
         
+class CotisationController(AuthenticatedBaseController):
+    require_group = groups_enum.admin
+
+    add  = None
+    def __init__(self):
+        self.add = CotisationAddController()
+#end class
+
+class CotisationAddController(AuthenticatedRestController):
+    require_group = groups_enum.admin
+
+    def create_cotisation(self, member, time, current_year, residence, residence_dn, member_uid, next_end):
+        print residence
+        print member_uid
+        print next_end
+
+
+        now = datetime.now()
+        next_month = int(next_end)        
+
+        if not CotisationComputes.is_valid_month(next_month):
+            raise Exception("Invalid month") #FIXME
+        #end if
+
+        print "current_year " + str(current_year)
+
+        print member.dn
+        cotisations_existantes = Cotisation.cotisations_of_member(self.user, member.dn, current_year)
+        paid_months = []
+        already_paid = 0
+        for cotisation in cotisations_existantes:
+            paid_months = (
+                paid_months + 
+                [int(month) for month in cotisation.get("x-validMonth").all()]
+            )
+            already_paid += int(cotisation.get("x-amountPaid").first())
+        #end for
+
+        print paid_months   
+       
+        available_months = CotisationComputes.get_available_months(now.month, next_month, paid_months)
+
+        if available_months == []:
+            return
+
+        year_price = 0
+        month_price = 0
+
+        try:
+            year_price = int(Cotisation.prix_annee(self.user, residence_dn).cn.first())
+            month_price = int(Cotisation.prix_mois(self.user, residence_dn).cn.first())
+        except:
+            pass
+        #end try
+        
+        price_to_pay = CotisationComputes.price_to_pay(year_price, month_price, already_paid, len(available_months))
+
+        user_info = self.user.attrs.cn.first()
+        return Cotisation.entry_attr(time, residence, current_year, self.user.attrs.dn, user_info, price_to_pay, available_months)
+    #end def
+
+    def create_extra(self, time, current_year, residence, residence_dn, member_uid, extra_name):
+        extra_item = Cotisation.get_extra_by_name(self.user, residence_dn, extra_name)
+
+        prix = extra_item.cn.first()
+
+        user_info = self.user.attrs.cn.first()
+        return Cotisation.extra_attr(time, residence, current_year, self.user.attrs.dn, user_info, extra_item.uid.first(), prix)
+    #end def
+    
+    @expose()
+    def post(self, residence, member_uid, next_end, extra_name, go_redirect = True):
+        residence_dn = Residences.get_dn_by_name(self.user, residence)
+
+        time = str(datetime.now())
+        current_year = CotisationComputes.current_year()
+        member = Member.get_by_uid(self.user, residence_dn, member_uid)
+
+        cotisation = None
+        extra = None
+
+        if next_end != "":
+            cotisation = self.create_cotisation(member, time, current_year, residence, residence_dn, member_uid, next_end)
+        
+        if extra_name != "":
+            extra = self.create_extra(time, current_year, residence, residence_dn, member_uid, extra_name)
+        #end if
+
+        if cotisation is None and extra is None:
+            if go_redirect:
+                redirect("/edit/member/" + residence + "/" + member_uid)
+            else:
+                return
+            #end if
+        #end if
+            
+        folder_dn = ldap_config.cotisation_member_base_dn + member.dn
+        print folder_dn
+        year_dn = "cn=" + str(current_year) + "," + folder_dn
+   
+        try:
+            folder = Cotisation.folder_attr()
+            self.user.ldap_bind.add_entry(folder_dn, folder)
+        except ldap.ALREADY_EXISTS:
+            pass # OKAY
+        #end try
+
+        try:
+            year = Cotisation.year_attr(current_year)
+            self.user.ldap_bind.add_entry(year_dn, year)
+        except ldap.ALREADY_EXISTS:
+            pass # OKAY
+        #end try
+
+        
+        if cotisation is not None:
+            cotisation_dn = "cn=cotisation-" + time + "," + year_dn
+            print cotisation
+            self.user.ldap_bind.add_entry(cotisation_dn, cotisation)
+        #end if        
+
+        if extra is not None:
+            extra_dn = "cn=extra-" + time + "," + year_dn
+            print extra
+            self.user.ldap_bind.add_entry(extra_dn, extra)
+        #end if
+
+        if go_redirect:
+            redirect("/edit/member/" + residence + "/" + member_uid)
+        else:
+            return 
+        #end if
+    #end def
+
+#end class
 
 """ Controller REST de gestion des ajouts de machines. """
 class MachineDeleteController(AuthenticatedRestController):

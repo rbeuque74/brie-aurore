@@ -37,5 +37,18 @@
                 </form>
             </div>
         </div>
+        <xi:include href="../show/cotisation.html" />
+        <div class="section">
+            <form method="post" action="/edit/cotisation/add">
+                <input type="hidden" name="residence" value="${residence}"/>
+                <input type="hidden" name="member_uid" value="${member_ldap.uid.first()}"/>
+                <xi:include href="cotisation-edit.html" />
+
+                <div>
+                    <span class="item_name"></span>
+                    <input type="submit" class="button" value="Envoyer" />
+                </div>
+            </form>
+        </div>
     </body>
 </html>

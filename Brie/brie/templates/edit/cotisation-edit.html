@@ -1,0 +1,23 @@
+<html 
+    xmlns:py="http://genshi.edgewall.org/" 
+    xmlns:xi="http://www.w3.org/2001/XInclude"
+    py:strip="">
+    <div>
+        <span class="item_name">Cotiser jusqu'à</span>
+        <select name="next_end">
+            <option value="">&lt;vide&gt;</option>
+            <py:for each="month, name, price in available_months_prices">
+                <option value="${month}">${name} - ${price} €</option>
+            </py:for>
+        </select>
+    </div>
+    <div>
+        <span class="item_name">Acheter extra</span>
+         <select name="extra_name">
+            <option value="">&lt;vide&gt;</option>
+            <py:for each="extra in extras_available">
+                <option value="${extra.uid.first()}">${extra.uid.first()} - ${extra.cn.first()} €</option>
+            </py:for>
+        </select>
+    </div>
+</html>

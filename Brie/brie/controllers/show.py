@@ -38,13 +38,30 @@ class ShowController(AuthenticatedBaseController):
     
         groups = Groupes.get_by_user_dn(self.user, residence_dn, member.dn)
 
+        year = CotisationComputes.current_year()
+        cotisations = Cotisation.cotisations_of_member(self.user, member.dn, year)
+        extras = Cotisation.extras_of_member(self.user, member.dn, year)
+
+        cotisations_mois = []
+        already_paid = 0
+        for cotisation in cotisations:
+            cotisations_mois = (cotisations_mois + 
+                [(cotisation, int(month)) for month in cotisation.get("x-validMonth").all()]
+            )
+            already_paid += int(cotisation.get("x-amountPaid").first())
+        #end for
+
         return { 
             "residence" : residence, 
             "user" : self.user,  
             "member_ldap" : member, 
             "room_ldap" : room, 
             "machines" : machines, 
-            "groups" : groups
+            "groups" : groups,
+            "cotisations" : cotisations,
+            "cotisations_mois" : cotisations_mois,
+            "extras" : extras,
+            "cotisation_paid" : already_paid
         }
     #end def
 

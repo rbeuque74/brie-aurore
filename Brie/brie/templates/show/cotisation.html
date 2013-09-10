@@ -1,0 +1,20 @@
+<html 
+    xmlns:py="http://genshi.edgewall.org/" 
+    xmlns:xi="http://www.w3.org/2001/XInclude"
+    py:strip="">
+    <div class="section">
+        <span class="section_name show_section_name">COTISATION</span>
+        <div>
+            <span class="item_name">Mois cotisés</span>
+            <span class="button" py:for="cotisation, mois in cotisations_mois" title="${cotisation.get('x-action-user-info').first()} / ${cotisation.get('x-time').first()}">${mois}</span>
+        </div>
+        <div>
+            <span class="item_name">Total</span>
+            <span>${cotisation_paid} €</span>
+        </div>
+        <div>
+            <span class="item_name">Extra payés</span>
+            <span py:for="extra in extras">${extra.description.first()} (${extra.get("x-amountPaid").first()} €) ; </span>
+        </div>
+    </div>
+</html>

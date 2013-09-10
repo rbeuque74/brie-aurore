@@ -40,11 +40,56 @@ class RegistrationController(AuthenticatedBaseController):
         rooms = Room.get_rooms(self.user, self.user.residence_dn)
         rooms = sorted(rooms, key=lambda t:t.cn.first())
 
+        now = datetime.now()
+
+        month_names = [
+            "Janvier",
+            "Fevrier",
+            "Mars",
+            "Avril",
+            "Mai",
+            "Juin",
+            "Juillet",
+            "Aout",
+            "Septembre",
+            "Octobre",
+            "Novembre",
+            "Decembre"
+        ]  # SALE FIXME
+
+        available_months = CotisationComputes.get_available_months(now.month, 8, [])
+
+        year_price = 0
+        month_price = 0
+
+        try:
+            year_price = int(Cotisation.prix_annee(self.user, self.user.residence_dn).cn.first())
+            month_price = int(Cotisation.prix_mois(self.user, self.user.residence_dn).cn.first())
+        except:
+            pass
+        #end try
+
+        available_months_prices = []
+        index = 1
+
+        already_paid = 0        
+        for available_month in available_months:
+            available_months_prices.append(
+                (available_month, month_names[available_month - 1], CotisationComputes.price_to_pay(year_price, month_price, already_paid, index))
+            )
+            index += 1
+        #end for
+
+
+        extras_available = Cotisation.get_all_extras(self.user, self.user.residence_dn)
+
         return {
             "user" : self.user,
             "residence" : residence,
             "rooms" : rooms,
-            "quick_last" : RegistrationController.quick_last_registrations
+            "quick_last" : RegistrationController.quick_last_registrations,
+            "available_months_prices" : available_months_prices,
+            "extras_available" : extras_available
         }
 
 #end class 
@@ -59,17 +104,20 @@ class NewRegistrationController(AuthenticatedRestController):
 
     @expose()
     def post(self, residence, sn, givenName, mail, 
-        room_uid, first_machine_name, first_machine_mac
+        room_uid, first_machine_name, first_machine_mac,
+        next_end, extra_name
     ):
         # Initialisation des Users des Controllers Existant appellés 
         self.member_edit_controller.add.user = self.user
         self.member_edit_controller.machine.add.user = self.user
         self.member_edit_controller.room.move.user = self.user
+        self.member_edit_controller.cotisation.add.user = self.user
 
         member_uid = self.member_edit_controller.add.post(residence, givenName, sn, mail, go_redirect = False)
         self.member_edit_controller.machine.add.post(residence, member_uid, first_machine_name, first_machine_mac, go_redirect = False)
         self.member_edit_controller.room.move.post(residence, member_uid, room_uid, erase = True, go_redirect = False)
-        
+        self.member_edit_controller.cotisation.add.post(residence, member_uid, next_end, extra_name, go_redirect = False)        
+
         member = Member.get_by_uid(self.user, self.user.residence_dn, member_uid)
 
         if member is not None:

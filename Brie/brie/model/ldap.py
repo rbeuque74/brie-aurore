@@ -3,6 +3,7 @@
 from __future__ import absolute_import
 from brie.config import ldap_config
 import ldap
+import datetime
 
 class Member(object):
   
@@ -293,5 +294,111 @@ class Plugins:
     def get_by_name(user_session, residence_dn, plugin_name):
         return user_session.ldap_bind.search_first(ldap_config.plugins_base_dn + residence_dn, "(cn=" + plugin_name + ")")
     #end def
+
+#end class
+
+class Cotisation:
+
+    @staticmethod
+    def entry_attr(time, residence, year, user_dn, user_info, amount_paid, valid_months):
+        
+        return {
+            "objectClass" : ["top", "auroreCotisation", "aurorePayment"],
+            "cn" : "cotisation-" + time,
+            "x-time" : time,
+            "description" : "cotisation",
+            "x-year" : str(year),
+            "x-residence" : residence,
+            "x-action-user" : user_dn,
+            "x-action-user-info" : user_info,
+            "x-amountPaid" : amount_paid,
+            "x-validMonth" : valid_months
+        }
+    #end def
+
+    @staticmethod
+    def extra_attr(time, residence, year, user_dn, user_info, description, amount_paid):
+        return {
+            "objectClass" : ["top", "aurorePayment"],
+            "cn" : "extra-" + time,
+            "x-time" : time,
+            "description" : description,
+            "x-year" : str(year),
+            "x-residence" : residence,
+            "x-action-user" : user_dn,
+            "x-action-user-info" : user_info,
+            "x-amountPaid" : amount_paid
+        }
+    #end def
+
+    @staticmethod
+    def folder_attr():
+        return {
+            "objectClass" : ["organizationalRole", "top"],
+            "cn" : "cotisations"
+        }
+    #end def
+
+    @staticmethod
+    def year_attr(year):
+        return {
+            "objectClass" : ["organizationalRole", "top"],
+            "cn" : str(year)
+        }
+    #end def
+
+    @staticmethod
+    def prix_annee(user_session, residence_dn):
+        dn = ldap_config.cotisation_annee_base_dn + residence_dn
+        return user_session.ldap_bind.search_dn(dn)
+    #end def
+
+    @staticmethod
+    def prix_mois(user_session, residence_dn):
+        dn = ldap_config.cotisation_mois_base_dn + residence_dn
+        return user_session.ldap_bind.search_dn(dn)
+    #end def
+
+    @staticmethod
+    def cotisations_of_member(user_session, member_dn, year):
+        return user_session.ldap_bind.search("cn=" + str(year) + "," + ldap_config.cotisation_member_base_dn + member_dn, "(objectClass=auroreCotisation)")
+    #end def
+
+    @staticmethod
+    def extras_of_member(user_session, member_dn, year):
+        return user_session.ldap_bind.search("cn=" + str(year) + "," + ldap_config.cotisation_member_base_dn + member_dn, "(&(objectClass=aurorePayment)(!(objectClass=auroreCotisation)))")
+    #end def
+
+    @staticmethod
+    def get_all_extras(user_session, residence_dn):
+        dn = ldap_config.extra_base_dn + residence_dn
+        return user_session.ldap_bind.search(dn, "(objectClass=organizationalRole)", scope = ldap.SCOPE_ONELEVEL)
+    #end def
+
+    @staticmethod
+    def get_extra_by_name(user_session, residence_dn, name):
+        dn = ldap_config.extra_base_dn + residence_dn
+        return user_session.ldap_bind.search_first(dn, "(uid=" + name + ")")
+    #end def
+
+    @staticmethod
+    def get_all_payment_by_year(user_session, residence_dn, year):
+        dn = ldap_config.username_base_dn + residence_dn
+        return user_session.ldap_bind.search(dn, "(&(objectClass=aurorePayment)(x-year=" + str(year) + "))")
+    #end def
+
+    @staticmethod
+    def get_all_pending_payments(user_session, residence_dn, year):
+        dn = ldap_config.username_base_dn + residence_dn
+        return user_session.ldap_bind.search(dn, "(&(&(objectClass=aurorePayment)(x-year=" + str(year) + "))(!(x-paymentCashed=True)))")
+    #end def
+
+    @staticmethod
+    def get_pending_payments_of_admin(user_session, residence_dn, user_dn, year):
+        dn = ldap_config.username_base_dn + residence_dn
+        return user_session.ldap_bind.search(dn, "(&(&(&(objectClass=aurorePayment)(x-year=" + str(year) + "))(!(x-paymentCashed=True)))(x-action-user=" + user_dn + "))")
+    #end def
+    
+        
 
 #end class
