@@ -1,0 +1,30 @@
+<html 
+    xmlns:py="http://genshi.edgewall.org/"
+    xmlns:xi="http://www.w3.org/2001/XInclude">
+    <head>
+        <link type="text/css" rel="Stylesheet" href="/css/common.css" />
+        <link type="text/css" rel="Stylesheet" href="/css/show.css" />
+        <link type="text/css" rel="Stylesheet" href="/css/rooms.css" />
+        <xi:include href="common-css-header.html" />
+    </head>
+    <body> 
+        <xi:include href="navbar.html" />
+        <div class="section">
+            <span class="section_name">PAIEMENTS EN ATTENTE</span><br />
+        </div>
+        <div py:for="admin_name, payments in admin_payments_received" class="section">
+            <span class="section_name show_section_name">${admin_name} ${admin_totals[admin_name]} €</span>
+            <div py:for="member, payment in payments">
+                <span class="item_name">${payment.description.first()}</span>
+                <span><a href="/show/member/${residence}/${member.uid.first()}">${member.cn.first()}</a> - ${payment.get("x-amountPaid").first()} € - ${payment.get("x-time").first()}</span>
+                <form action="/treasury/validate" method="post" class="inline_block">
+                    <input type="hidden" name="residence" value="${residence}"/>
+                    <input type="hidden" name="member_uid" value="${member.uid.first()}"/>
+                    <input type="hidden" name="payment_cn" value="${payment.cn.first()}" />
+                    <input type="hidden" name="year" value="${payment.get('x-year').first()}" />
+                    <input type="submit" value="valider" class="button"/>
+                </form>
+            </div>
+        </div>
+    </body>
+</html>

@@ -18,8 +18,12 @@
 .form-signin input[type="text"],
 .form-signin input[type="password"] {
     font-size: 16px;
-    height: auto;
     margin-bottom: 15px;
     padding: 7px 9px;
 }
 
+
+input[type="text"],input[type="password"]
+{
+    height: 28px;
+}

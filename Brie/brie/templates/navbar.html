@@ -13,7 +13,9 @@
                     <li py:if="user.groups.admin"><a href="/rooms/index/${residence}">CHAMBRES</a></li>
                     <li py:if="user.groups.admin"><a href="/members/index/${residence}">MEMBRES</a></li>
                     <li py:if="user.groups.admin"><a href="/registration/">INSCRIPTION</a></li>
+                    <li py:if="user.groups.tresorier"><a href="/treasury/">TRESORIE</a></li>
                     <li py:if="user.groups.responsablereseau"><a href="/administration/">ADMINISTRATION</a></li>
+
                 </ul>
             </div>
         </div>
