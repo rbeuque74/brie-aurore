@@ -188,14 +188,23 @@ class MemberModificationController(AuthenticatedRestController):
     def post(self, residence, member_uid, sn, givenName, mail, comment):
         residence_dn = Residences.get_dn_by_name(self.user, residence)
         member = Member.get_by_uid(self.user, residence_dn, member_uid)
+
+        # FIXME
+        sn = unicode.encode(sn, 'utf-8')
+        givenName = unicode.encode(givenName, 'utf-8')
+        comment = unicode.encode(comment, 'utf-8')
     
         member.sn.replace(member.sn.first(), sn)
 
         member.givenName.replace(member.givenName.first(), givenName)
+        member.cn.replace(member.cn.first(), givenName + " " + sn)
         member.mail.replace(member.mail.first(), mail)
-        member.get("x-comment").replace(member.get("x-comment").first(), comment)
+        if comment != "":
+            member.get("x-comment").replace(member.get("x-comment").first(), comment)
 
         self.user.ldap_bind.save(member)
+
+        redirect("/edit/member/" + residence + "/" + member_uid)
     #end def
 
 """ Controller de gestion des machines """
@@ -583,7 +592,7 @@ class RoomMoveController(AuthenticatedRestController):
 
     """ Gestion des requêtes post sur ce controller """
     @expose()
-    def post(self, residence, member_uid, room_uid, erase = False, go_redirect = True):
+    def post(self, residence, member_uid, room_uid, erase = True, go_redirect = True):
         residence_dn = Residences.get_dn_by_name(self.user, residence)
 
         # Récupération du membre et de la machine
@@ -592,10 +601,10 @@ class RoomMoveController(AuthenticatedRestController):
         room = Room.get_by_uid(self.user, residence_dn, room_uid)
 
         if room is not None:
-            if room.get("x-memberIn") is not None and room.get('x-memberIn').first() is not None:
+            member_in = room.get('x-memberIn').first()
+            if  member_in is not None:
                 if erase:
-                    room.delete("x-memberIn")
-                    self.user.ldap_bind.save(room)
+                    self.user.ldap_bind.delete_attr(room.dn, { "x-memberIn" : member_in })
                 else:
                     raise Exception("chambre de destination non vide")
                 #end if

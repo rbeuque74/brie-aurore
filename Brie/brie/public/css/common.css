@@ -47,6 +47,10 @@ a:hover, input[type="button"]
     margin-left: 20px;
 }
 
+.seventy_percent {
+    width: 70%;
+}
+
 input[type="submit"]
 {
     border: none;

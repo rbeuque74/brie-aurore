@@ -340,6 +340,9 @@ class LdapAttribute(object):
             return unicode(value)
         #end for
         
+        if default is None:
+            return None        
+
         return unicode(default)
     #end def
 

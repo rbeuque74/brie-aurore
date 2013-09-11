@@ -8,18 +8,16 @@
     </head>
     <body> 
         <xi:include href="navbar.html" />
-         <table>
+         <table class="table table-hover">
             <tr>
-                <th>prenom</th>
-                <th>nom</th>
-                <th>chambres</th>
+                <th>membre</th>
+                <th>chambre</th>
             </tr>
-            <tr py:for="member in sort_name(member_ldap)">
-                <td><a href="/show/member/${residence}/${member.uid.first()}">${member.givenName.first()}</a></td>
-                <td><a href="/show/member/${residence}/${member.uid.first()}">${member.sn.first()}</a></td>
-                <py:choose test="member.room.first()">
-                    <td py:when="None"></td>
-                    <td py:otherwise=""><a href="/show/room/${residence}/${member.room.cn.first()}">${member.room.cn.first()}</a></td>
+            <tr py:for="member, room in members_rooms">
+                <td><a href="/show/member/${residence}/${member.uid.first()}">${member.cn.first()}</a></td>
+                <py:choose test="room">
+                    <td py:when="None">sdf</td>
+                    <td py:otherwise=""><a href="/show/room/${residence}/${room.cn.first()}">${room.cn.first()}</a></td>
                 </py:choose>
             </tr>
         </table>

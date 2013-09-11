@@ -1,0 +1,60 @@
+<html 
+    xmlns:py="http://genshi.edgewall.org/"
+    xmlns:xi="http://www.w3.org/2001/XInclude">
+    <head>
+        <link type="text/css" rel="Stylesheet" href="/css/common.css" />
+        <link type="text/css" rel="Stylesheet" href="/css/show.css" />
+        <xi:include href="common-css-header.html" />
+    </head>
+    <body> 
+        <xi:include href="navbar.html" />
+        <form action="/registration/recover" method="POST">
+            <input type="hidden" name="residence" value="${residence}" />
+            <input type="hidden" name="member_uid" value="${member_ldap.uid.first()}" />
+            <div class="section">
+                <span class="section_name show_section_name">ERREUR MACHINE OU CHAMBRE <br />${member_ldap.cn.first()}</span>
+            </div>
+            <div class="section">
+                <span class="section_name show_section_name">CHAMBRE</span>
+                <div py:if="room_ldap is not None" class="item_name">
+                    <span>${room_ldap.cn.first()}</span>
+                    <input type="hidden" name="room_uid" value="" />
+                </div>
+                <div py:if="room_ldap is None">
+                    <span class="item_name"></span>
+                    <select name="room_uid">
+                        <option value="">&lt;vide&gt;</option>
+                        <py:for each="target_room in rooms">
+                            <option  value="${target_room.uid.first()}" >${target_room.cn.first()}</option>
+                        </py:for>
+                    </select>
+                </div>
+            </div>
+            <div class="section">
+                <span class="section_name show_section_name">MACHINE</span>
+                <div>
+                    <div py:for="name, mac, ip in machines">
+                        <span class="item_name">${name}</span>
+                        <span>${mac} : ${ip}</span>
+                    </div>
+                    <div>
+                       <input type="text" name="first_machine_name" placeholder="nom de la machine" class="item_name" />
+                       <input type="text" name="first_machine_mac" placeholder="adresse mac" />
+                    </div>
+                </div>
+            </div>
+            <div class="section">
+                <xi:include href="../show/cotisation.html" />
+                <xi:include href="../edit/cotisation-edit.html" />
+            </div>
+            <div class="section">                
+                <div>
+                    <div>
+                        <span class="item_name"></span>
+                        <input type="submit" value="Soumettre" />
+                    </div>
+                </div>
+            </div>
+        </form>
+    </body>
+</html>

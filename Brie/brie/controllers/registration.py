@@ -22,12 +22,14 @@ import re
 class RegistrationController(AuthenticatedBaseController):
     require_group = groups_enum.admin    
 
-    new_member = None
+    member_edit_controller = None
 
     quick_last_registrations = []
 
     def __init__(self, member_edit_controller):
         self.new = NewRegistrationController(member_edit_controller)
+        self.recover = ErrorRecoveryRegistrationController(member_edit_controller)
+        self.member_edit_controller = member_edit_controller
     #end def
 
     @expose("brie.templates.registration.index")
@@ -91,7 +93,30 @@ class RegistrationController(AuthenticatedBaseController):
             "available_months_prices" : available_months_prices,
             "extras_available" : extras_available
         }
+    #end class
 
+
+    @expose("brie.templates.registration.error")
+    def error(self, member_uid):
+        residence = None
+        if self.user is not None:
+            residence = Residences.get_name_by_dn(self.user, self.user.residence_dn)
+        #end if
+
+        self.member_edit_controller.member.user = self.user
+        
+        edit_get_values = self.member_edit_controller.member.get(residence, member_uid)
+
+        
+        rooms = Room.get_rooms(self.user, self.user.residence_dn)
+        rooms = sorted(rooms, key=lambda t:t.cn.first())
+
+        
+
+        return edit_get_values
+    #end def 
+        
+        
 #end class 
 
 class NewRegistrationController(AuthenticatedRestController):
@@ -114,16 +139,64 @@ class NewRegistrationController(AuthenticatedRestController):
         self.member_edit_controller.cotisation.add.user = self.user
 
         member_uid = self.member_edit_controller.add.post(residence, givenName, sn, mail, go_redirect = False)
-        self.member_edit_controller.machine.add.post(residence, member_uid, first_machine_name, first_machine_mac, go_redirect = False)
-        self.member_edit_controller.room.move.post(residence, member_uid, room_uid, erase = True, go_redirect = False)
-        self.member_edit_controller.cotisation.add.post(residence, member_uid, next_end, extra_name, go_redirect = False)        
-
         member = Member.get_by_uid(self.user, self.user.residence_dn, member_uid)
 
         if member is not None:
             RegistrationController.quick_last_registrations.append(member)
         #end if
+
+        self.member_edit_controller.room.move.post(residence, member_uid, room_uid, erase = True, go_redirect = False)
+        try:
+            self.member_edit_controller.machine.add.post(residence, member_uid, first_machine_name, first_machine_mac, go_redirect = False)
+            self.member_edit_controller.cotisation.add.post(residence, member_uid, next_end, extra_name, go_redirect = False)        
+
+        except:
+            redirect("/registration/error/" + member_uid)
+
     
         redirect("/registration/")
     #end def
 #end class
+
+class ErrorRecoveryRegistrationController(AuthenticatedRestController):
+    require_group = groups_enum.admin
+
+    member_edit_controller = None
+
+    def __init__(self, member_edit_controller):
+        self.member_edit_controller = member_edit_controller
+
+    @expose()
+    def post(self, residence, member_uid, room_uid, 
+            first_machine_name, first_machine_mac, 
+            next_end, extra_name):
+        member = Member.get_by_uid(self.user, self.user.residence_dn, member_uid)
+        
+        if member is None:
+            raise Exception("Invalid member uid")
+
+        
+        self.member_edit_controller.add.user = self.user
+        self.member_edit_controller.machine.add.user = self.user
+        self.member_edit_controller.room.move.user = self.user
+        self.member_edit_controller.cotisation.add.user = self.user
+
+        if room_uid != "":
+            self.member_edit_controller.room.move.post(residence, member_uid, room_uid, erase = True, go_redirect = False)
+
+        try:
+            if first_machine_mac != "":
+                self.member_edit_controller.machine.add.post(residence, member_uid, first_machine_name, first_machine_mac, go_redirect = False)
+
+
+            if next_end != "":
+                self.member_edit_controller.cotisation.add.post(residence, member_uid, next_end, extra_name, go_redirect = False)        
+        except:
+            redirect("/registration/error/" + member_uid)
+        #end try
+
+        redirect("/registration")
+    #end def
+#end class
+
+        

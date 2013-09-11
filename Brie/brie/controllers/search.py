@@ -24,7 +24,6 @@ class SearchController(AuthenticatedBaseController):
 
     """ Affiche les résultats """
     @expose("brie.templates.search.member")
-    @plugins("brie.controllers.search.member")
     def member(self, residence, name):
         residence_dn = Residences.get_dn_by_name(self.user, residence)    
         members = Member.get_by_name(self.user, residence_dn, name)
@@ -32,8 +31,13 @@ class SearchController(AuthenticatedBaseController):
         if members is None:
             return self.error_no_entry()
         
-    #    room = Room.get_by_member_dn(self.user, residence_dn, member.dn)
-        
+        members = MembersController.sort_name(members)
+
+        members_rooms = [
+            (member, Room.get_by_member_dn(self.user, residence_dn, member.dn))
+            for member in members
+        ]
+
     #    machines = Machine.get_machine_tuples_of_member(self.user, member.dn)
     
     #    groups = Groupes.get_by_user_dn(self.user, residence_dn, member.dn)
@@ -41,11 +45,7 @@ class SearchController(AuthenticatedBaseController):
         return { 
             "residence" : residence, 
             "user" : self.user,  
-            "member_ldap" : members, 
-            "sort_name" : MembersController.sort_name 
-    #        "room_ldap" : room, 
-    #        "machines" : machines, 
-    #        "groups" : groups
+            "members_rooms" : members_rooms
         }
     #end def
 
