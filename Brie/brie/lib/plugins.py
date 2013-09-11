@@ -84,3 +84,52 @@ def plugins(scope):
 
     return decorator(plugin)
 #end def
+
+
+""" Decorateur plugin action, passe en paramettre de la fonction d'un plugin """
+def plugin_action(scope):
+    def plugin(f, *args, **kw):
+        user = args[0].user
+       
+        plugins_functions = []
+
+        # un plugin est defini pour le scope et residence est defini 
+        if scope in plugins_config.mappings:
+            residence_dn = user.residence_dn
+
+            scope_mappings = plugins_config.mappings[scope]
+            
+            for plugin_name, function in scope_mappings:
+                plugin_activated = Plugins.get_by_name(user, residence_dn, plugin_name)
+
+                if plugin_activated is None:
+                    continue
+                #end if
+
+
+                # constuire le nom de regroupement des variable de ce plugin
+                method_name = function.__name__
+                plugin_section = str.lower(plugin_name + "_" + method_name)
+
+                # ajout du groupe au dictionnaire de la methode du controlleur
+                plugins_functions.append((plugin_name, lambda user, resid, models: PluginVars(function(user, resid, models))))
+            #end for
+
+        #end if
+
+        # ajout des templates dans un champs spécial du dictionnaire pour le rendu
+        def plugin_action(user, resid, models):
+            result_dict = dict()
+            for plugin_name, plugin_function in plugins_functions:
+                result_dict[plugin_name] = plugin_function(user, resid, models)
+            #end for
+        #end def
+
+        # on remplace la dernière variable par un plugin_action
+        new_args = args[:-1] + (plugin_action,)
+
+        return f(*new_args, **kw)
+    #end def
+
+    return decorator(plugin)
+#end def

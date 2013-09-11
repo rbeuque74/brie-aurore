@@ -7,6 +7,7 @@ from tg.decorators import expose, validate
 from brie.config import ldap_config
 from brie.config import groups_enum
 from brie.lib.ldap_helper import *
+from brie.lib.plugins import *
 from brie.lib.aurore_helper import *
 from brie.model.ldap import *
 from brie.lib.name_translation_helpers import Translations
@@ -230,8 +231,11 @@ class MachineAddController(AuthenticatedRestController):
 
     """ Fonction de gestion de requete post sur le controller d'ajout """
     @expose()
-    def post(self, residence, member_uid, name, mac, go_redirect = True):
+    @plugin_action("brie.controllers.edit.machine.post")
+    def post(self, residence, member_uid, name, mac, go_redirect = True, plugin_action = None):
         residence_dn = Residences.get_dn_by_name(self.user, residence)
+        member_base_dn = ldap_config.username_base_dn + residence_dn
+        member = Member.get_by_uid(self.user, member_base_dn, member_uid)
 
         #Vérification que l'adresse mac soit correcte
         mac_match = re.match('^([0-9A-Fa-f]{2}[:-]?){5}([0-9A-Fa-f]{2})$', mac)
@@ -257,7 +261,6 @@ class MachineAddController(AuthenticatedRestController):
 
 
         # Vérification que le membre existe
-        member = Member.get_by_uid(self.user, residence_dn, member_uid)
         if member is None:
             #TODO : membre inexistant
             pass
@@ -266,7 +269,7 @@ class MachineAddController(AuthenticatedRestController):
 
         # Vérification que l'adresse mac de la machine n'existe pas déjà
         # Note : on cherche sur toute la résidence (residence_dn)
-        machine = Machine.get_dhcp_by_mac(self.user, residence_dn, mac)
+        machine = Machine.get_dhcp_by_mac(self.user, member_base_dn, mac)
         if machine is not None:
             #TODO : gérer l'exception
             raise Exception("mac address already exist")
@@ -283,7 +286,7 @@ class MachineAddController(AuthenticatedRestController):
                 actual_name = name + "-" + str(number)
             #end if 
 
-            machine = Machine.get_dns_by_name(self.user, residence_dn, actual_name)
+            machine = Machine.get_dns_by_name(self.user, member_base_dn, actual_name)
             if machine is not None:
                 return try_name(name, number + 1)
             else:
@@ -322,13 +325,21 @@ class MachineAddController(AuthenticatedRestController):
 
         # Construction du dn et ajout de l'objet dhcp 
         # en fils de la machine (machine_dn)
-        dhcp_dn = "cn=" + name + "," + machine_dn
+        dhcp_dn = "cn=dhcp," + machine_dn
         self.user.ldap_bind.add_entry(dhcp_dn, machine_dhcp)
 
         # Construction du dn et ajout de l'objet dns 
-        dns_dn = "dlzHostName=" + name + "," + machine_dn
+        dns_dn = "cn=dns," + machine_dn
         self.user.ldap_bind.add_entry(dns_dn, machine_dns)
         
+        plugin_vars = {
+            "machine_dn" : machine_dn,
+            "name" : name,
+            "ip" : ip,
+            "mac" : mac
+        }
+
+        plugin_action(self.user, residence, plugin_vars)
         
         if go_redirect:
             redirect("/edit/member/" + residence + "/" + member_uid)

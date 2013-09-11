@@ -30,8 +30,8 @@ class Member(object):
     #end def
  
     @staticmethod
-    def get_by_uid(user_session, residence_dn, uid):
-        return user_session.ldap_bind.search_first(ldap_config.username_base_dn + residence_dn, "(uid=" + uid + ")")
+    def get_by_uid(user_session, member_base_dn, uid):
+        return user_session.ldap_bind.search_first(member_base_dn, "(uid=" + uid + ")")        
     #end def
 
     @staticmethod
@@ -206,13 +206,13 @@ class Machine(object):
     #end def
 
     @staticmethod
-    def get_dhcp_by_mac(user_session, residence_dn, mac):
-        return user_session.ldap_bind.search_first(residence_dn, "(dhcpHWAddress=ethernet "+mac+")")
+    def get_dhcp_by_mac(user_session, member_dn, mac):
+        return user_session.ldap_bind.search_first(member_dn, "(dhcpHWAddress=ethernet "+mac+")")
     #end def
 
     @staticmethod
-    def get_dns_by_name(user_session, residence_dn, name):
-        return user_session.ldap_bind.search_first(residence_dn, "(dlzHostName="+name+")")
+    def get_dns_by_name(user_session, member_dn, name):
+        return user_session.ldap_bind.search_first(member_dn, "(dlzHostName="+name+")")
     #end def
 #end class
 
