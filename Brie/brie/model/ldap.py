@@ -30,8 +30,8 @@ class Member(object):
     #end def
  
     @staticmethod
-    def get_by_uid(user_session, member_base_dn, uid):
-        return user_session.ldap_bind.search_first(member_base_dn, "(uid=" + uid + ")")        
+    def get_by_uid(user_session, residence_dn, uid):
+        return user_session.ldap_bind.search_first(ldap_config.username_base_dn + residence_dn, "(uid=" + uid + ")")        
     #end def
 
     @staticmethod

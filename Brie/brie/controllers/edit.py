@@ -235,7 +235,7 @@ class MachineAddController(AuthenticatedRestController):
     def post(self, residence, member_uid, name, mac, go_redirect = True, plugin_action = None):
         residence_dn = Residences.get_dn_by_name(self.user, residence)
         member_base_dn = ldap_config.username_base_dn + residence_dn
-        member = Member.get_by_uid(self.user, member_base_dn, member_uid)
+        member = Member.get_by_uid(self.user, residence_dn, member_uid)
 
         #Vérification que l'adresse mac soit correcte
         mac_match = re.match('^([0-9A-Fa-f]{2}[:-]?){5}([0-9A-Fa-f]{2})$', mac)
