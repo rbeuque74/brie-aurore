@@ -237,6 +237,9 @@ class MachineAddController(AuthenticatedRestController):
         member_base_dn = ldap_config.username_base_dn + residence_dn
         member = Member.get_by_uid(self.user, residence_dn, member_uid)
 
+        mac = mac.strip()
+        name = name.strip()
+
         #Vérification que l'adresse mac soit correcte
         mac_match = re.match('^([0-9A-Fa-f]{2}[:-]?){5}([0-9A-Fa-f]{2})$', mac)
         if mac_match is None:
@@ -275,9 +278,9 @@ class MachineAddController(AuthenticatedRestController):
             raise Exception("mac address already exist")
         #endif
 
-        # Vérification que le nom de machine n'existe pas déjà
-        # Note : on cherche sur toute la résidence (residence_dn)
-        
+        # Nettoyage des erreurs communes
+        name = name.strip().replace(" ", "-").replace("_", "-")
+        name = Translations.strip_accents(name)
 
         # On modifie silencieusement le nom de la machine si il existe déjà
         def try_name(name, number):

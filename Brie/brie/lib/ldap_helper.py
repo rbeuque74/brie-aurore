@@ -41,6 +41,9 @@ class Ldap(object):
         scope : portée de recherche (SCOPE_SUBTREE, SCOPE_BASE, SCOPE_ONELEVEL)
     """
     def search(self, dn, filter, scope = ldap.SCOPE_SUBTREE):
+        dn = Ldap.str_attribute(dn)
+        filter = Ldap.str_attribute(filter)
+
         try:
             results = self.__connection.search_s(dn, scope, filter)
         except ldap.NO_SUCH_OBJECT:
@@ -90,13 +93,11 @@ class Ldap(object):
     @staticmethod
     def str_attributes(attributes):
         def str_value(value):
-            if isinstance(value, str):
-                return value
-            elif isinstance(value, list):
-                return [str(subval) for subval in value]
+            if isinstance(value, list):
+                return [Ldap.str_attribute(subval) for subval in value]
             #end if
 
-            return str(value)
+            return Ldap.str_attribute(value)
         #end def
 
         return dict([ 
@@ -104,6 +105,18 @@ class Ldap(object):
             for keyval in attributes.iteritems() 
         ])
     #end def
+
+    @staticmethod
+    def str_attribute(value):
+        if isinstance(value, str):
+            return value
+        elif isinstance(value, unicode):
+            return unicode.encode(value, "utf-8")
+        #end if
+        
+        return str(value)
+    #end def
+        
 
     """ Remplace les attributs d'un dn donné
         dn : adresse de l'élément
