@@ -14,7 +14,7 @@
         </div>
         <div>
             <span class="item_name">Extra payés</span>
-            <span py:for="extra in extras">${extra.description.first()} (${extra.get("x-amountPaid").first()} €) ; </span>
+            <span py:for="extra in extras" title="${extra.get('x-action-user-info').first()} / ${extra.get('x-time').first()}">${extra.description.first()} (${extra.get("x-amountPaid").first()} €) ; </span>
         </div>
     </div>
 </html>

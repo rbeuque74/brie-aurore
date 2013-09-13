@@ -113,7 +113,7 @@ class Wifi(object):
     #end def
 
     @staticmethod
-    def get_by_dn(user_session, dn):
+    def get_by_member_dn(user_session, dn):
         return user_session.ldap_bind.search_dn("cn=wifi," + dn)
     #end def
 

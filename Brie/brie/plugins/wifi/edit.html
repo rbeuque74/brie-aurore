@@ -1,26 +1,31 @@
 <html
     xmlns:py="http://genshi.edgewall.org/"
     xmlns:xi="http://www.w3.org/2001/XInclude">
-    <xi:include href="member_room_interface_edit_views.html" />
+    <xi:include href="../../templates/edit/member_room_interface_edit_views.html" />
     <head>
         <link type="text/css" rel="Stylesheet" href="/css/common.css" />
         <link type="text/css" rel="Stylesheet" href="/css/show.css" />
         <link type="text/css" rel="Stylesheet" href="/css/edit.css" />
+        <xi:include href="common-css-header.html" />
     </head>
     <body>
-        ${edit_banner()}
+        <xi:include href="navbar.html" />
         ${back_show("member", member_ldap.uid.first())}
         <div class="section">
             <span class="section_name show_section_name">WIFI :: ${member_ldap.cn.first()}</span>
-            <form action="/edit/wifi/${member_ldap.uid.first()}" method="POST">
+            <form action="/plugins/wifi/${residence}/${member_ldap.uid.first()}" method="POST">
                 <div>
                     <div>
-                        <input type="hidden" name="uid" value="${member_ldap.uid.first()}" />
-                        <span class="item_name">Mot de passe</span>
+                        <input type="hidden" name="residence" value="${residence}" />
+                        <input type="hidden" name="member_uid" value="${member_ldap.uid.first()}" />
+                        <span class="item_name">Nouveau mot de passe</span>
                         <input type="password" name="password" />
                     </div>
                 </div>
-                <input type="submit" value="ENREGISTRER" class="button"/>
+                <div>
+                    <span class="item_name"></span>
+                    <input  type="submit" value="ENREGISTRER" class="button"/>
+                </div>
             </form>
         </div>
     </body>

@@ -3,7 +3,7 @@
 from tg import session
 from tg.controllers import redirect
 from tg.decorators import expose, validate
-from brie.config import ldap_config
+from brie.config import ldap_config, groups_enum
 from brie.lib.ldap_helper import *
 from brie.lib.aurore_helper import *
 from brie.lib.plugins import *
@@ -16,6 +16,7 @@ from operator import itemgetter
 
 """ Controller d'affichage de details de membres, chambres et interfaces """ 
 class ShowController(AuthenticatedBaseController):
+    require_group = groups_enum.admin
 
     @expose("brie.templates.show.error")
     def error_no_entry(self):
