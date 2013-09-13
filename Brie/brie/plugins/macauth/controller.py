@@ -2,7 +2,7 @@ from tg.decorators import expose
 
 from brie.model.ldap import Machine
 
-class Mac_auth:
+class Macauth:
 
     @staticmethod
     @expose("")

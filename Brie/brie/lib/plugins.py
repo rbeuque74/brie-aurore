@@ -20,6 +20,11 @@ class PluginVars:
 #end class
 
 
+def plugin_name_from_function(function, suffix = ".controller", prefix = "brie.plugins."):
+    return function.__module__[len(prefix):-len(suffix)]
+#end def
+    
+
 """ Decorateur plugin, execute toutes les fonctions du scope donné """
 def plugins(scope):
     def plugin(f, *args, **kw):
@@ -35,7 +40,9 @@ def plugins(scope):
 
             scope_mappings = plugins_config.mappings[scope]
             
-            for plugin_name, function in scope_mappings:
+            for function in scope_mappings:
+                plugin_name = plugin_name_from_function(function)
+
                 plugin_activated = Plugins.get_by_name(user, residence_dn, plugin_name)
 
                 if plugin_activated is None:
@@ -99,7 +106,8 @@ def plugin_action(scope):
 
             scope_mappings = plugins_config.mappings[scope]
             
-            for plugin_name, function in scope_mappings:
+            for function in scope_mappings:
+                plugin_name = plugin_name_from_function(function)
                 plugin_activated = Plugins.get_by_name(user, residence_dn, plugin_name)
 
                 if plugin_activated is None:

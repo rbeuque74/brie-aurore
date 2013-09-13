@@ -1,13 +1,13 @@
-from brie.plugins.wifi.controller import *
-from brie.plugins.unix.controller import *
-from brie.plugins.macauth.controller import *
+import brie.lib.plugins_loader as plugins_loader
+
+plugins = plugins_loader.load()
 
 mappings = {
     "brie.controllers.show.member" : [
-        ("wifi", Wifi.show),
-        ("unix", Unix.show)
+        plugins.wifi.Wifi.show,
+        plugins.unix.Unix.show
     ],
     "brie.controllers.edit.machine.post" : [
-        ("macauth", Mac_auth.add_machine)
+        plugins.macauth.Macauth.add_machine
     ]
 }
