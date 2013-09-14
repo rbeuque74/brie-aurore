@@ -4,6 +4,7 @@
     <head>
         <link type="text/css" rel="Stylesheet" href="/css/common.css" />
         <link type="text/css" rel="Stylesheet" href="/css/show.css" />
+        <script  src="/js/mac_address_changer.js" />
         <xi:include href="common-css-header.html" />
     </head>
     <body> 
@@ -44,7 +45,7 @@
                 <div>
                     <div>
                        <input type="text" name="first_machine_name" placeholder="nom de la machine" class="item_name"/>
-                       <input type="text" name="first_machine_mac" placeholder="adresse mac" />
+                       <input type="text" name="first_machine_mac" onkeyup="mac_address_correcter()" id="mac_adress_input" placeholder="adresse mac" />
                     </div>
                 </div>
             </div>
