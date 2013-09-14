@@ -21,6 +21,12 @@ function mac_address_correcter(event){
     valeur = valeur.replace(regex, "9");    
     var regex = /à/g;
     valeur = valeur.replace(regex, "0");
+    if(valeur.length == 2 || valeur.length == 5 || valeur.length == 8 || valeur.length == 11 || valeur.length == 14){
+        valeur = valeur + ":";
+        document.getElementById("mac_adress_input").value = valeur;
+    }
+    var regex = /::/g;
+    valeur = valeur.replace(regex, ":");
     if(document.getElementById("mac_adress_input").value != valeur){
         document.getElementById("mac_adress_input").value = valeur;
     }
