@@ -238,7 +238,8 @@ class MachineAddController(AuthenticatedRestController):
         member = Member.get_by_uid(self.user, residence_dn, member_uid)
 
         mac = mac.strip()
-        name = name.strip()
+        name = name.strip().replace(" ", "-").replace("_", "-")
+        name = Translations.strip_accents(name)
 
         #Vérification que l'adresse mac soit correcte
         mac_match = re.match('^([0-9A-Fa-f]{2}[:-]?){5}([0-9A-Fa-f]{2})$', mac)
@@ -279,8 +280,6 @@ class MachineAddController(AuthenticatedRestController):
         #endif
 
         # Nettoyage des erreurs communes
-        name = name.strip().replace(" ", "-").replace("_", "-")
-        name = Translations.strip_accents(name)
 
         # On modifie silencieusement le nom de la machine si il existe déjà
         def try_name(name, number):
