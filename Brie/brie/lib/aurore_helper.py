@@ -95,4 +95,30 @@ class CotisationComputes:
         return months_price
     #end def
 
+    @staticmethod
+    def ldap_items_to_months_list(ldap_cotisations):
+        result = []
+
+        for cotisation in ldap_cotisations:
+            anniversary_data = cotisation.get("x-time").first()
+            anniversary_datetime = datetime.datetime.strptime(anniversary_data,
+                "%Y-%m-%d %H:%M:%S.%f") 
+            for month in cotisation.get("x-validMonth").all():
+                result.append((anniversary_datetime, int(month))) 
+            #end for
+        #end for
+
+        first_anniversary_day = 0
+        # tri par ordre d'inscription et pas ordre de mois
+        result = sorted(result)
+
+        if result != []:
+            # premier anniversaire
+            first_anniversary_day = result[0][0].day
+        #end if
+
+        months_without_anniversary = [item[1] for item in result]        
+
+        return months_without_anniversary, first_anniversary_day
+    #end def
 #end class

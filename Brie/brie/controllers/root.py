@@ -10,6 +10,8 @@ from brie.lib.base import BaseController
 from brie.lib.aurore_helper import *
 from brie import model
 
+import brie.controllers.scheduler as scheduler
+
 #from brie.controllers.secure import SecureController
 import brie.controllers.auth as auth_handler
 from brie.controllers.auth import AuthRestController

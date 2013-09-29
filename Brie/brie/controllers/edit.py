@@ -406,6 +406,19 @@ class CotisationAddController(AuthenticatedRestController):
         
         price_to_pay = CotisationComputes.price_to_pay(year_price, month_price, already_paid, len(available_months))
 
+        
+        # réactivation des machines du membre # FIXME 
+        if now.month in available_months:
+            dhcps = Machine.get_dhcps(self.user, member.dn)
+
+            machine_membre_tag = "machine_membre" # FIXME move to config
+
+            for dhcp_item in dhcps:
+                dhcp_item.uid.replace(dhcp_item.uid.first(), machine_membre_tag)
+                self.user.ldap_bind.save(dhcp_item)
+            #end for
+        #end if
+
         user_info = self.user.attrs.cn.first()
         return Cotisation.entry_attr(time, residence, current_year, self.user.attrs.dn, user_info, price_to_pay, available_months)
     #end def

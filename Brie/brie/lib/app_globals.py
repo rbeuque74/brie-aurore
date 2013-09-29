@@ -1,5 +1,7 @@
 # -*- coding: utf-8 -*-
 
+import brie.controllers.scheduler as scheduler
+
 """The application's Globals object"""
 
 __all__ = ['Globals']
@@ -15,4 +17,4 @@ class Globals(object):
 
     def __init__(self):
         """Do nothing, by default."""
-        pass
+        scheduler.sched.start()

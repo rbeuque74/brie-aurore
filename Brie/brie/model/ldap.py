@@ -206,6 +206,11 @@ class Machine(object):
     #end def
 
     @staticmethod
+    def get_dhcps(user_session, machine_dn):
+        return user_session.ldap_bind.search(machine_dn, "(objectClass=dhcpHost)")
+    #end def
+
+    @staticmethod
     def get_dhcp_by_mac(user_session, member_dn, mac):
         return user_session.ldap_bind.search_first(member_dn, "(dhcpHWAddress=ethernet "+mac+")")
     #end def
