@@ -3,6 +3,7 @@ import ldap
 #import ldap.modlist as modlist
 
 from brie.config import ldap_config
+from brie.model.ldap import Groupes
 
 
 class Groups(object):
