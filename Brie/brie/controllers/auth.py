@@ -10,41 +10,6 @@ from brie.lib.ldap_helper import *
 from brie.lib.aurore_helper import *
 from brie.model.ldap import Groupes
 
-class Groups(object):
-    __groups = list()
-
-    def __init__(self, groups):
-        self.__groups = groups
-    #end def
-
-    def __getattr__(self, name):
-        return name in self.__groups
-    #end def
-
-    def list(self):
-        return list(self.__groups)
-    #end def
- 
-#end class
-
-class User(object):
-    ldap_bind = None
-    attrs = None
-    groups =  None
-    residence_dn = None
-    
-    def __init__(self, ldap_bind, attrs, residence_dn = None):
-        self.ldap_bind = ldap_bind
-        self.attrs = attrs
-        self.residence_dn = residence_dn
-
-        if attrs is not None:
-            groups = Groupes.get_by_user_dn(self, residence_dn, self.attrs.dn)
-
-            self.groups = Groups(groups)
-        #end if
-    #end def
-#end class
 
 class AuthHandler(object):
     __users = dict()
