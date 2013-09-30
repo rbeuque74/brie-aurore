@@ -56,7 +56,7 @@ def disconnect_members_from_residence(admin_user, residence_dn):
             
 #end def
 
-@sched.interval_schedule(days=1)
+@sched.interval_schedule(days=1, start_date="2013-09-30 22:14:37")
 def disconnect_members_job():
     user = admin_user()
      
