@@ -48,7 +48,7 @@
     </div>
     <div py:for="area, floors in sorted_name(areas.iteritems())" class="area section">
         <div>
-            <span class="section_name">${("Aile " + area.cn.first()).upper()}</span>
+            <span class="section_name">${(area.cn.first()).upper()}</span>
             <div py:for="floor, rooms in reverse_sorted_name(floors.iteritems())" class="floor">
                 <span class="floor_name">étage ${floor.cn.first()}</span>
                 <div py:for="room in sorted(rooms, key=lambda t:t.cn.first())" class="room_number">
