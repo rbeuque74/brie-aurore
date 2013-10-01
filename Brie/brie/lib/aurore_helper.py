@@ -89,8 +89,8 @@ class CotisationComputes:
         months_price = number_months_to_pay * month_price
         print "already paid : " + str(already_paid)
         print "months price : " + str(months_price)
-        if already_paid + months_price > 50:
-            months_price = max(0, 50 - already_paid)
+        if already_paid + months_price > year_price:
+            months_price = max(0, year_price - already_paid)
 
         return months_price
     #end def
