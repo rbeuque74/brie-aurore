@@ -17,7 +17,7 @@
                 <td><a href="/show/member/${residence}/${member.uid.first()}">${member.cn.first()}</a></td>
                 <py:choose test="room">
                     <td py:when="None">sdf</td>
-                    <td py:otherwise=""><a href="/show/room/${residence}/${room.cn.first()}">${room.cn.first()}</a></td>
+                    <td py:otherwise=""><a href="/show/room/${residence}/${room.uid.first()}">${room.cn.first()}</a></td>
                 </py:choose>
             </tr>
         </table>
