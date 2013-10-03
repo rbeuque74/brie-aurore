@@ -8,7 +8,7 @@ import datetime
 class Member(object):
   
     @staticmethod
-    def entry_attr(uid, prenom, nom, mail, uid_number):
+    def entry_attr(uid, prenom, nom, mail, phone, uid_number):
         return  {
             "objectClass" : ["top", "person", "organizationalPerson", "inetOrgPerson", "pacatnetMember", "pykotaAccount", "posixAccount"],
             "uid" :uid.encode("utf-8"),
@@ -16,6 +16,7 @@ class Member(object):
             "sn" : (nom.upper()).encode("utf-8"),
             "givenName" : (prenom).encode("utf-8"),
             "uidNumber" : str(uid_number),
+            "mobile" : str(phone),
             "gidNumber" : "10000",
             "homeDirectory" : ("/net/home/" + uid).encode("utf-8"),
             "mail" : mail.encode("utf-8"),
@@ -181,11 +182,16 @@ class Machine(object):
             dns = user_session.ldap_bind.search_first(result.dn, "(objectClass=dlzGenericRecord)")
             if dhcp is not None and dns is not None:
                 mac = dhcp.dhcpHWAddress.first().replace("ethernet ", "")
+                disabled = ""
+                if dhcp.uid.first() == "machine_membre_disabled":
+                    disabled = "desactive"
+                #end if
                 machines.append(
                     (
                         result.cn.first(), 
                         mac, 
-                        dns.dlzData.first() 
+                        dns.dlzData.first(),
+                        disabled 
                     ) #tuple
                 ) 
             #end if

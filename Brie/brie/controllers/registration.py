@@ -128,7 +128,7 @@ class NewRegistrationController(AuthenticatedRestController):
         self.member_edit_controller = member_edit_controller
 
     @expose()
-    def post(self, residence, sn, givenName, mail, 
+    def post(self, residence, sn, givenName, mail, phone, 
         room_uid, first_machine_name, first_machine_mac,
         next_end, extra_name
     ):
@@ -138,7 +138,7 @@ class NewRegistrationController(AuthenticatedRestController):
         self.member_edit_controller.room.move.user = self.user
         self.member_edit_controller.cotisation.add.user = self.user
 
-        member_uid = self.member_edit_controller.add.post(residence, givenName, sn, mail, go_redirect = False)
+        member_uid = self.member_edit_controller.add.post(residence, givenName, sn, mail, phone, go_redirect = False)
         member = Member.get_by_uid(self.user, self.user.residence_dn, member_uid)
 
         if member is not None:

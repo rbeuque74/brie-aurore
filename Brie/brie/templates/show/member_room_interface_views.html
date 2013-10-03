@@ -25,6 +25,10 @@
                     <span>${member_ldap.mail.first('')}</span>
                 </div>
                 <div>
+                    <span class="item_name">Téléphone</span>
+                    <span>${member_ldap.mobile.first('')}</span>
+                </div>
+                <div>
                     <span class="item_name">Certificat</span>
                     <py:with vars="certif = member_ldap.get('x-certificatGiven')">
                         <span py:choose="">
@@ -73,9 +77,13 @@
         </div>
         <div class="section">
             <span class="section_name show_section_name">MACHINES</span>
-            <div py:for="name, mac, ip in machines">
+            <div py:for="name, mac, ip, disable in machines">
                 <span class="item_name">${name}</span>
                 <span>${mac} : ${ip}</span>
+                <py:choose test="">
+                    <span py:when="disable == ''"></span>
+                    <span py:otherwise="" style="color:red;">&nbsp;&nbsp;&gt;&gt;&nbsp; Machine désactivée</span>
+                </py:choose>
             </div>
         </div>
     </py:def>

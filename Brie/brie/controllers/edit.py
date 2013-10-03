@@ -68,10 +68,10 @@ class MemberAddController(AuthenticatedRestController):
 
 	""" Fonction de gestion de requete post sur le controller d'ajout """
 	@expose()
-	def post(self, residence, prenom, nom, mail, go_redirect = True):
+	def post(self, residence, prenom, nom, mail, phone, go_redirect = True):
 
 		member_uid = Translations.to_uid(prenom, nom)
-		member = Member.entry_attr(member_uid, prenom, nom, mail, -1)
+		member = Member.entry_attr(member_uid, prenom, nom, mail, phone, -1)
 
 		residence_dn = Residences.get_dn_by_name(self.user, residence)
 
@@ -186,7 +186,7 @@ class MemberModificationController(AuthenticatedRestController):
     #end def
 
     @expose()
-    def post(self, residence, member_uid, sn, givenName, mail, comment):
+    def post(self, residence, member_uid, sn, givenName, mail, phone, comment):
         residence_dn = Residences.get_dn_by_name(self.user, residence)
         member = Member.get_by_uid(self.user, residence_dn, member_uid)
 
@@ -200,6 +200,7 @@ class MemberModificationController(AuthenticatedRestController):
         member.givenName.replace(member.givenName.first(), givenName)
         member.cn.replace(member.cn.first(), givenName + " " + sn)
         member.mail.replace(member.mail.first(), mail)
+        member.mobile.replace(member.mobile.first(), phone)
         if comment != "":
             member.get("x-comment").replace(member.get("x-comment").first(), comment)
 

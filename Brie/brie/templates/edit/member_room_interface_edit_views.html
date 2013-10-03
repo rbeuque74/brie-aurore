@@ -30,6 +30,10 @@
                         <input type="text" name="mail" value="${member_ldap.mail.first('')}" />
                     </div>
                     <div>
+                        <span class="item_name">Téléphone</span>
+                        <input type="text" name="phone" value="${member_ldap.mobile.first('')}" />
+                    </div>
+                    <div>
                         <span class="item_name">Commentaire</span>
                         <input type="text" name="comment" value="${member_ldap.get('x-comment').first('')}" />
                     </div>
@@ -55,7 +59,7 @@
             <div>
                 <form action="/edit/machine/add/" method="post">
                    <input type="text" name="name" placeholder="nom de la machine" class="item_name"/>
-                   <input type="text" name="mac" placeholder="adresse mac" />
+                   <input type="text" name="mac" onkeyup="mac_address_correcter()" id="mac_adress_input" placeholder="adresse mac" />
                    <input type="hidden" name="residence" value="${residence}"/>
                    <input type="hidden" name="member_uid" value="${member_ldap.uid.first()}"/>
                    <input type="submit" value="ajouter" class="button"/>
