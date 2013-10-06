@@ -33,6 +33,17 @@ class TreasuryController(AuthenticatedBaseController):
         residence = Residences.get_name_by_dn(self.user, self.user.residence_dn)
 
         year = CotisationComputes.current_year()
+        all_payments = Cotisation.get_all_payment_by_year(self.user, residence_dn, year)
+        all_payments_cashed = Cotisation.get_all_cashed_payments_by_year(self.user, residence_dn, year)
+        total_earned = 0
+        total_earned_cashed = 0
+        for onepayment in all_payments:
+            total_earned += float(onepayment.get('x-amountPaid').first())
+        #end for
+        for onepayment in all_payments_cashed:
+            total_earned_cashed += float(onepayment.get('x-amountPaid').first())
+        #end for
+
         pending_payments = Cotisation.get_all_pending_payments(self.user, residence_dn, year)
 
         admin_totals = dict()
@@ -72,7 +83,9 @@ class TreasuryController(AuthenticatedBaseController):
             "residence" : residence, 
             "user" : self.user,  
             "admin_totals" : admin_totals,
-            "admin_payments_received" : admin_payments_received_ordered
+            "admin_payments_received" : admin_payments_received_ordered,
+            "total_earned" : total_earned,
+            "total_earned_cashed" : total_earned_cashed
         }
     #end def
 

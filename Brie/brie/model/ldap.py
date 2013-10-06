@@ -412,11 +412,22 @@ class Cotisation:
     #end def
 
     @staticmethod
+    def get_all_cashed_payments_by_year(user_session, residence_dn, year):
+        dn = ldap_config.username_base_dn + residence_dn
+        return user_session.ldap_bind.search(dn, "(&(&(objectClass=aurorePayment)(x-year=" + str(year) + "))(x-paymentCashed=TRUE))")
+    #end def
+
+    @staticmethod
     def get_pending_payments_of_admin(user_session, residence_dn, user_dn, year):
         dn = ldap_config.username_base_dn + residence_dn
         return user_session.ldap_bind.search(dn, "(&(&(&(objectClass=aurorePayment)(x-year=" + str(year) + "))(!(x-paymentCashed=TRUE)))(x-action-user=" + user_dn + "))")
     #end def
     
+    @staticmethod
+    def get_all_payments_of_admin(user_session, residence_dn, user_dn, year):
+        dn = ldap_config.username_base_dn + residence_dn
+        return user_session.ldap_bind.search(dn, "(&(&(&(objectClass=aurorePayment)(x-year=" + str(year) + ")))(x-action-user=" + user_dn + "))")
+    #end def
         
 
 #end class

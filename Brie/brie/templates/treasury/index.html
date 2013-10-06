@@ -10,6 +10,11 @@
     <body> 
         <xi:include href="navbar.html" />
         <div class="section">
+            <span class="section_name">PAIEMENTS ANNEE EN COURS</span><br />
+            ${total_earned} €<br />
+            ${total_earned_cashed} € déjà encaissés
+        </div>
+        <div class="section">
             <span class="section_name">PAIEMENTS EN ATTENTE</span><br />
         </div>
         <div py:for="admin_name, payments in admin_payments_received" class="section">
