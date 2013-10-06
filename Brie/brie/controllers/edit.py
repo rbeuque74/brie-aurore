@@ -71,6 +71,10 @@ class MemberAddController(AuthenticatedRestController):
 	def post(self, residence, prenom, nom, mail, phone, go_redirect = True):
 
 		member_uid = Translations.to_uid(prenom, nom)
+                if phone == '':
+                    phone = ' '
+                #end if
+
 		member = Member.entry_attr(member_uid, prenom, nom, mail, phone, -1)
 
 		residence_dn = Residences.get_dn_by_name(self.user, residence)
@@ -202,6 +206,9 @@ class MemberModificationController(AuthenticatedRestController):
         member.givenName.replace(member.givenName.first(), givenName)
         member.cn.replace(member.cn.first(), givenName + " " + sn)
         member.mail.replace(member.mail.first(), mail)
+        if phone == '':
+            phone = ' '
+        #end if
         member.mobile.replace(member.mobile.first(), phone)
         if comment != "":
             member.get("x-comment").replace(member.get("x-comment").first(), comment)

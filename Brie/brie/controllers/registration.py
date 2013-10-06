@@ -138,6 +138,10 @@ class NewRegistrationController(AuthenticatedRestController):
         self.member_edit_controller.room.move.user = self.user
         self.member_edit_controller.cotisation.add.user = self.user
 
+        if phone == '':
+            phone = ' '
+        #end if
+
         member_uid = self.member_edit_controller.add.post(residence, givenName, sn, mail, phone, go_redirect = False)
         member = Member.get_by_uid(self.user, self.user.residence_dn, member_uid)
 
