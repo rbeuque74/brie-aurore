@@ -177,9 +177,15 @@ class MemberModificationController(AuthenticatedRestController):
         index = 1
         
         for available_month in available_months:
-            available_months_prices.append(
-                (available_month, month_names[available_month - 1], CotisationComputes.price_to_pay(year_price, month_price, already_paid, index))
-            )
+            if available_month == 8:
+                available_months_prices.append(
+                    (available_month, "fin de l'année ".decode("utf-8"), CotisationComputes.price_to_pay(year_price, month_price, already_paid, index))
+                )
+            else: 
+                available_months_prices.append(
+                    (available_month, str(now.day) + " " + month_names[available_month % 12], CotisationComputes.price_to_pay(year_price, month_price, already_paid, index))
+                )
+            #end if
             index += 1
         #end for
 
