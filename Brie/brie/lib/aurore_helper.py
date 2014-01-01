@@ -36,7 +36,7 @@ class CotisationComputes:
     @staticmethod
     def current_year():
        now = datetime.datetime.now()
-       if now.year > 8:
+       if now.month > 8:
            return now.year + 1
 
        return now.year
