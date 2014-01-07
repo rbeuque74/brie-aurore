@@ -51,10 +51,10 @@ class CotisationComputes:
 
         if start > 8 and end > 8:
             next_months_available = range(start, end + 1)
+        elif start <= 8 and end < 9:
+            next_months_available = range(start, end + 1)
         elif start > 8:
             next_months_available =  range(start, 13) + range(1, end + 1 )
-        elif start <= 8 and end < 9:
-            next_months_available = range(start, 9)
         else:
             raise Exception("invalid start and end")
         #end if
