@@ -251,6 +251,8 @@ class MemberDisableController(AuthenticatedRestController):
             #end if
         #end for
 
+        print("[LOG] disable member "+member_uid+" by "+self.user.attrs.dn)
+
         # On redirige sur la page d'édition du membre
         redirect("/edit/member/" + residence + "/" + member_uid)
     #end def
@@ -282,6 +284,8 @@ class MemberEnableController(AuthenticatedRestController):
                 self.user.ldap_bind.save(dhcp_item)
             #end if
         #end for
+
+        print("[LOG] enable member "+member_uid+" by "+self.user.attrs.dn)
 
         # On redirige sur la page d'édition du membre
         redirect("/edit/member/" + residence + "/" + member_uid)
@@ -414,6 +418,9 @@ class MachineAddController(AuthenticatedRestController):
         # Construction du dn et ajout de l'objet dns 
         dns_dn = "cn=dns," + machine_dn
         self.user.ldap_bind.add_entry(dns_dn, machine_dns)
+
+        # Ajout de l'entrée dans les logs
+        print("[LOG] ajout machine " + mac + " pour l'utilisateur "+ member.dn + " par l'admin "+ self.user.attrs.dn)
         
         plugin_vars = {
             "machine_dn" : machine_dn,
@@ -597,6 +604,8 @@ class MachineDeleteController(AuthenticatedRestController):
 
         # Si la machine existe effectivement, on la supprime
         if machine is not None:
+            # Ajout de l'entrée dans les logs
+            print("[LOG] suppression machine " + Machine.get_dhcps(self.user, machine.dn)[0].get("dhcpHWAddress").values[0] + " pour l'utilisateur "+ member.dn + " par l'admin "+ self.user.attrs.dn)
 
             self.user.ldap_bind.delete_entry_subtree(machine.dn)
 
