@@ -449,10 +449,6 @@ class CotisationAddController(AuthenticatedRestController):
     require_group = groups_enum.admin
 
     def create_cotisation(self, member, time, current_year, residence, residence_dn, member_uid, next_end):
-        print residence
-        print member_uid
-        print next_end
-
 
         now = datetime.now()
         next_month = int(next_end)        
@@ -461,9 +457,6 @@ class CotisationAddController(AuthenticatedRestController):
             raise Exception("Invalid month") #FIXME
         #end if
 
-        print "current_year " + str(current_year)
-
-        print member.dn
         cotisations_existantes = Cotisation.cotisations_of_member(self.user, member.dn, current_year)
         paid_months = []
         already_paid = 0
@@ -475,8 +468,6 @@ class CotisationAddController(AuthenticatedRestController):
             already_paid += int(cotisation.get("x-amountPaid").first())
         #end for
 
-        print paid_months   
-       
         available_months = CotisationComputes.get_available_months(now.month, next_month, paid_months)
 
         if available_months == []:
@@ -547,7 +538,6 @@ class CotisationAddController(AuthenticatedRestController):
         #end if
             
         folder_dn = ldap_config.cotisation_member_base_dn + member.dn
-        print folder_dn
         year_dn = "cn=" + str(current_year) + "," + folder_dn
    
         try:
@@ -567,13 +557,11 @@ class CotisationAddController(AuthenticatedRestController):
         
         if cotisation is not None:
             cotisation_dn = "cn=cotisation-" + time + "," + year_dn
-            print cotisation
             self.user.ldap_bind.add_entry(cotisation_dn, cotisation)
         #end if        
 
         if extra is not None:
             extra_dn = "cn=extra-" + time + "," + year_dn
-            print extra
             self.user.ldap_bind.add_entry(extra_dn, extra)
         #end if
 
@@ -731,11 +719,17 @@ class RoomMoveController(AuthenticatedRestController):
                 self.user.ldap_bind.delete_attr(old_room.dn, memberIn_attribute)
             #end if
             self.user.ldap_bind.add_attr(room.dn, memberIn_attribute)
+            if old_room is not None:
+                print("[LOG] demenagement member "+member_uid+" from "+ old_room.uid.first() +" to "+ room_uid +" by "+self.user.attrs.dn)
+            else:
+                print("[LOG] demenagement member "+member_uid+" to "+ room_uid +" by "+self.user.attrs.dn)
             #end if
         else:
             old_room = Room.get_by_member_dn(self.user, residence_dn, member.dn)
             memberIn_attribute = Room.memberIn_attr(str(member.dn))
             self.user.ldap_bind.delete_attr(old_room.dn, memberIn_attribute)
+
+            print("[LOG] retrait de chambre pour le member "+member_uid+" from "+ old_room.uid.first() +" by "+self.user.attrs.dn)
         #end if
             
             #self.user.ldap_bind.delete_entry_subtree(machine.dn)
@@ -785,11 +779,13 @@ class RoomChangeMemberController(AuthenticatedRestController):
         if room.get("x-memberIn") is not None and room.get("x-memberIn").first() != 'None':
             memberIn_attribute = Room.memberIn_attr(str(room.get("x-memberIn").first()))
             self.user.ldap_bind.delete_attr(room.dn, memberIn_attribute)
+            print("[LOG] retrait de chambre pour le member "+room.get("x-memberIn").first() +" from "+ room_uid +" by "+self.user.attrs.dn)
         #end if
 
         if member is not None:
             memberIn_attribute = Room.memberIn_attr(str(member.dn))
             self.user.ldap_bind.add_attr(room.dn, memberIn_attribute)
+            print("[LOG] ajout de chambre pour le member "+ member_uid +" to "+ room_uid +" by "+self.user.attrs.dn)
         #end if    
 
         # On redirige sur la page d'édition du membre

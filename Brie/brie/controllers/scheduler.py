@@ -44,6 +44,7 @@ def disconnect_members_from_residence(admin_user, residence_dn):
 
                 for dhcp_item in dhcps:
                     if dhcp_item.uid.first() == machine_membre_tag:
+                        print("[LOG] scheduler disable machine " + dhcp_item.get("dhcpHWAddress").values[0] + " pour l'utilisateur "+ member.dn + " -- "+ dhcp_item.dn)
                         dhcp_item.uid.replace(machine_membre_tag, machine_membre_tag + "_disabled")
                         admin_user.ldap_bind.save(dhcp_item)
                     #end if
