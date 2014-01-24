@@ -1,0 +1,47 @@
+<html xmlns:py="http://genshi.edgewall.org/" xmlns:xi="http://www.w3.org/2001/XInclude">
+    <head>
+        <link rel="stylesheet" type="text/css" href="/css/common.css" />
+        <link rel="stylesheet" type="text/css" href="/css/show.css" />
+        <xi:include href="common-css-header.html" />
+    </head>
+    <body>
+        <xi:include href="navbar.html" />
+        <div class="section" >
+                <span class="section_name show_section_name">Adresses mails des adhérents de ${residence}</span>
+<!--
+                    <div>
+                        <div class="room_number ok_color">${"%03d" % members_stats[residence]['number_of_cotisation_paid_members']}</div>
+                        <span>Cotisations à jour</span>
+                    </div>
+                    <div>
+                        <div class="room_number non_certif_color">${"%03d" % members_stats[residence]['number_of_cotisation_late_members']}</div>
+                        <span>Cotisations en retard</span>
+                    </div>
+                    <div>
+                        <div class="room_number non_paye_color">${"%03d" % members_stats[residence]['number_of_no_cotisation_members']}</div>
+                        <span>Sans cotisations</span>
+                    </div>
+                    <div>
+                        <div class="room_number vide_color">${"%03d" % members_stats[residence]['number_of_current_members']}</div>
+                        <span>Adhérents actuels</span>
+                        <form action="/getemails/" method="post" class="inline_block">
+                            <input type="hidden" name="residence" value="${residence}"/>
+                            <input type="submit" value="Récupérer toutes les adresses mails" class="button"/>
+                        </form>
+                    </div>
+                    <div>
+                        <div class="room_number vide_color">${"%03d" % members_stats[residence]['number_of_old_members']}</div>
+                        <span>Anciens membres</span>
+                    </div>
+                    <div>
+                        <div class="room_number vide_color">${"%03d" % rooms_stats[residence]['number_of_rooms']}</div>
+                        <span>Pièces</span>
+                    </div>
+                    <div>
+                        <div class="room_number vide_color">${"%03d" % len(rooms_stats[residence]['empty_rooms'])}</div>
+                        <span>Pièces vides</span>
+                    </div> 
+-->
+        </div>
+    </body>
+</html>

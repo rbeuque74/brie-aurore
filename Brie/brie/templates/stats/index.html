@@ -1,0 +1,81 @@
+<html xmlns:py="http://genshi.edgewall.org/" xmlns:xi="http://www.w3.org/2001/XInclude">
+    <head>
+        <link rel="stylesheet" type="text/css" href="/css/common.css" />
+        <link rel="stylesheet" type="text/css" href="/css/rooms.css" />
+        <xi:include href="common-css-header.html" />
+    </head>
+    <body>
+        <xi:include href="navbar.html" />
+        <div class="section" >
+            <div py:for="residence in residences">
+                <span class="section_name show_section_name">${residence}</span>
+                <div>
+                    <div>
+                        <div class="room_number ok_color">${"%03d" % members_stats[residence]['number_of_cotisation_paid_members']}</div>
+                        <span>Cotisations à jour</span>
+                    </div>
+                    <div>
+                        <div class="room_number non_certif_color">${"%03d" % members_stats[residence]['number_of_cotisation_late_members']}</div>
+                        <span>Cotisations en retard</span>
+                    </div>
+                    <div>
+                        <div class="room_number non_paye_color">${"%03d" % members_stats[residence]['number_of_no_cotisation_members']}</div>
+                        <span>Sans cotisations</span>
+                    </div>
+                    <div>
+                        <div class="room_number vide_color">${"%03d" % members_stats[residence]['number_of_current_members']}</div>
+                        <span>Adhérents actuels</span>
+                        <form action="/getemails/" method="post" class="inline_block">
+                            <input type="hidden" name="residence" value="${residence}"/>
+                            <input type="submit" value="Récupérer toutes les adresses mails" class="button"/>
+                        </form>
+                    </div>
+                    <div>
+                        <div class="room_number vide_color">${"%03d" % members_stats[residence]['number_of_old_members']}</div>
+                        <span>Anciens membres</span>
+                    </div>
+                    <div>
+                        <div class="room_number vide_color">${"%03d" % rooms_stats[residence]['number_of_rooms']}</div>
+                        <span>Pièces</span>
+                    </div>
+                    <div>
+                        <div class="room_number vide_color">${"%03d" % len(rooms_stats[residence]['empty_rooms'])}</div>
+                        <span>Pièces vides</span>
+                    </div> 
+
+                </div>
+            </div>
+
+<!--
+            <span class="section_name show_section_name">GROUPES</span>
+            <div py:for="group in groups_ldap">
+                <span class="item_name">${group.cn.first()}</span>
+                <div class="inline_block param_block" py:choose="group.uniqueMember">
+                    <py:when test="None">
+                        <span class="enum_block">aucun membre</span>
+                    </py:when>
+                    <py:otherwise>
+                        <span class="enum_block" py:for="member in group.uniqueMember.values">${member}  <a class="link_button" href="groups/delete_member/${group.cn.first()}/${member}">retirer</a></span>
+                    </py:otherwise>
+                </div>
+            </div>
+        </div>
+        <div class="section">
+            <div>
+                <span class="item_name">ajouter</span>
+                <form class="inline_block" method="post" action="groups/add_member/">
+                    <select name="user_dn">
+                        <option py:for="user in all_users" value="${user.dn}">${user.cn.first()}</option>
+                    </select>
+                    &nbsp;à&nbsp;
+                    <select name="group_cn">
+                        <option py:for="group in groups_ldap" value="${group.cn.first()}">
+                            ${group.cn.first()}
+                        </option>
+                    </select>
+                    <input type="submit" class="button" value="GO"></input>
+                </form>
+            </div> -->
+        </div>
+    </body>
+</html>
