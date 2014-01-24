@@ -42,14 +42,16 @@ class RoomsController(AuthenticatedBaseController):
 
     @expose("brie.templates.rooms.index")
     def index(self, residence_name):
-        stats = dict()
+        status = dict()
         areas = dict()
         
         residence_dn = Residences.get_dn_by_name(self.user, residence_name)
         if residence_dn is None:
             raise Exception("unknown residence")
         #end if
-        status = CotisationComputes.members_status_from_residence(self.user, residence_dn)
+        stats = CotisationComputes.members_status_from_residence(self.user, residence_dn)
+        stats['number_of_rooms'] = Room.get_number_of_rooms(self.user, residence_dn)
+        stats['empty_rooms'] = []
         for area in Room.get_areas(self.user, residence_dn):
             areas[area] = dict()
 
@@ -58,13 +60,14 @@ class RoomsController(AuthenticatedBaseController):
 
                 for room in Room.get_rooms_of_floor(self.user, floor.dn):
                     areas[area][floor].append(room)
-
+                    if not room.has("x-memberIn"):
+                        stats['empty_rooms'].append(room)
 
                     color = self.color_picker("foobar")
-                    if color in stats:
-                        stats[color] = stats[color] + 1
+                    if color in status:
+                        status[color] = status[color] + 1
                     else:
-                        stats[color] = 0
+                        status[color] = 0
                     #end if
 
                 #end for room

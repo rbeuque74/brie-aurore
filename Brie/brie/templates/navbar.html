@@ -10,12 +10,12 @@
             <div class="navbar-inner">
                 <a class="brand" href="/">Brie d'Aurore</a>
                 <ul class="nav">
-                    <li py:if="user.groups.admin"><a href="/rooms/index/${residence}">CHAMBRES</a></li>
+                    <li py:if="user.groups.admin"><a href="/rooms/index/${residence}">PIÈCES</a></li>
                     <li py:if="user.groups.admin"><a href="/members/index/${residence}">MEMBRES</a></li>
                     <li py:if="user.groups.admin"><a href="/registration/">INSCRIPTION</a></li>
-                    <li py:if="user.groups.tresorier"><a href="/treasury/">TRESORIE</a></li>
+                    <li py:if="user.groups.tresorier"><a href="/treasury/">TRÉSORIE</a></li>
                     <li py:if="user.groups.responsablereseau"><a href="/administration/">ADMINISTRATION</a></li>
-
+                    <li py:if="user.residence_dn == 'dc=aurore,dc=u-psud,dc=fr'"><a href="/stats/">STATISTIQUES</a></li>
                 </ul>
             </div>
         </div>

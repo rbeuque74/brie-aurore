@@ -55,11 +55,9 @@ def disconnect_members_job():
      
     residences = Residences.get_residences(user)
 
-
     for residence in residences:
         print "Disconnect job on : " + residence.uniqueMember.first()
-        disconnect_members_from_residence(
-            user, residence.uniqueMember.first())
+        disconnect_members_from_residence(user, residence.uniqueMember.first())
     #end for
 
 #    user.ldap_bind.disconnect()

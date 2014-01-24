@@ -11,32 +11,37 @@
     
     <xi:include href="navbar.html" />
     <div class="rooms_legend">
-        <py:def function="display_stat(name)">
-            <div class="room_number ok_color">${"%03d" % stats[name]}</div>
+        <py:def function="display_status(name)">
+            <div class="room_number ok_color">${"%03d" % status[name]}</div>
         </py:def>
         <div>
-            <div class="room_number ok_color">${"%03d" % len(status['cotisation_paid_members'])}</div>
+            <div class="room_number ok_color">${"%03d" % len(stats['cotisation_paid_members'])}</div>
             <span>Cotisations à jour</span>
         </div>
         <div>
-            <div class="room_number non_certif_color">${"%03d" % len(status['cotisation_late_members'])}</div>
+            <div class="room_number non_certif_color">${"%03d" % len(stats['cotisation_late_members'])}</div>
             <span>Cotisations en retard</span>
         </div>
         <div>
-            <div class="room_number non_paye_color">${"%03d" % len(status['no_cotisation_members'])}</div>
+            <div class="room_number non_paye_color">${"%03d" % len(stats['no_cotisation_members'])}</div>
             <span>Sans cotisations</span>
         </div>
         <div>
-            <div class="room_number vide_color">${"%03d" % len(status['old_members'])}</div>
+            <div class="room_number vide_color">${"%03d" % len(stats['old_members'])}</div>
             <span>Anciens membres</span>
         </div>
         <div>
-            <div class="room_number vide_color">${"%03d" % len(status['WTF_members'])}</div>
+            <div class="room_number vide_color">${"%03d" % len(stats['WTF_members'])}</div>
             <span>Membres WTF</span>
         </div>
         <div>
-            <!--${display_stat("vide_color")}-->
-            <span>Chambres vides</span>
+            <div class="room_number vide_color">${"%03d" % stats['number_of_rooms']}</div>
+            <span>Pièces</span>
+        </div>
+        <div>
+            <!--${display_status("vide_color")}-->
+            <div class="room_number vide_color">${"%03d" % len(stats['empty_rooms'])}</div>
+            <span>Pièces vides</span>
         </div>
     </div>
     <div class="area section">
@@ -48,7 +53,7 @@
                 </div>
                 <div class="preview_part preview_name" py:choose="member_ldap is not None">
                     <span py:when="True"><a href="/show/member/${residence}/${member_ldap.uid.first()}">${member_ldap.cn.first()}</a></span>
-                    <span py:otherwise=""><a href="/show/room/${residence}/${room_preview.uid.first()}">Chambre Vide</a></span>
+                    <span py:otherwise=""><a href="/show/room/${residence}/${room_preview.uid.first()}">Pièce Vide</a></span>
                 </div>
             </py:with>
         </div>

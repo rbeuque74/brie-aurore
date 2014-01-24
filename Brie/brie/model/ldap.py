@@ -92,6 +92,11 @@ class Room(object):
         return user_session.ldap_bind.search(ldap_config.room_base_dn + residence_dn, "(objectClass=pacaterieRoom)")
     #end def
 
+    @staticmethod
+    def get_number_of_rooms(user_session, residence_dn):
+        return len(Room.get_rooms(user_session, residence_dn))
+    #end def
+
 #end class
 
 
