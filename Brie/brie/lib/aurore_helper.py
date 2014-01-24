@@ -190,7 +190,6 @@ class CotisationComputes:
         cotisation_paid_members = []
         cotisation_late_members = []
         no_cotisation_members = []
-        WTF_members = []
         for member in members:
             if CotisationComputes.is_old_member(member, user_session, residence_dn):
                 old_members.append(member)
@@ -202,11 +201,11 @@ class CotisationComputes:
             elif CotisationComputes.is_no_cotisation(member, user_session, residence_dn):
                 no_cotisation_members.append(member)
             else:
-                WTF_members.append(member)
+                print "DEBUG : member with weird status !"
             #end if
 
         #end for
-        return dict(old_members=old_members, cotisation_paid_members=cotisation_paid_members, cotisation_late_members=cotisation_late_members, no_cotisation_members=no_cotisation_members, WTF_members=WTF_members)
+        return dict(old_members=old_members, cotisation_paid_members=cotisation_paid_members, cotisation_late_members=cotisation_late_members, no_cotisation_members=no_cotisation_members)
     #end def
 
 #end class

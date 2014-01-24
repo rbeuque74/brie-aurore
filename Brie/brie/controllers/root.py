@@ -22,6 +22,7 @@ from brie.controllers.search import SearchController
 from brie.controllers.edit import EditController
 from brie.controllers.administration import AdministrationController
 from brie.controllers.stats import StatsController
+from brie.controllers.getemails import GetEmailsController
 from brie.controllers.error import ErrorController
 from brie.controllers.registration import RegistrationController
 from brie.controllers.treasury import TreasuryController
@@ -54,6 +55,7 @@ class RootController(BaseController):
     edit = EditController(show)
     administration = AdministrationController()
     stats = StatsController()
+    getemails = GetEmailsController()
     error = ErrorController()
     search = SearchController()
     registration = RegistrationController(edit)
