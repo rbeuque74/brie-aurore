@@ -8,30 +8,37 @@
         <xi:include href="common-css-header.html" />
     </head>
     <body>
-<!--
+    
+    <xi:include href="navbar.html" />
     <div class="rooms_legend">
         <py:def function="display_stat(name)">
-            <div class="room_number ${name}">${"%03d" % stats[name]}</div>
+            <div class="room_number ok_color">${"%03d" % stats[name]}</div>
         </py:def>
         <div>
-            ${display_stat("ok_color")}
-            <span>ordinateurs connectés</span>
+            <div class="room_number ok_color">${"%03d" % len(status['cotisation_paid_members'])}</div>
+            <span>Cotisations à jour</span>
         </div>
         <div>
-            ${display_stat("non_certif_color")}
-            <span>certifs manquants</span>
+            <div class="room_number non_certif_color">${"%03d" % len(status['cotisation_late_members'])}</div>
+            <span>Cotisations en retard</span>
         </div>
         <div>
-            ${display_stat("non_paye_color")}
-            <span>fins de connexions passées</span>
+            <div class="room_number non_paye_color">${"%03d" % len(status['no_cotisation_members'])}</div>
+            <span>Sans cotisations</span>
         </div>
         <div>
-            ${display_stat("vide_color")}
-            <span>chambres vides</span>
+            <div class="room_number vide_color">${"%03d" % len(status['old_members'])}</div>
+            <span>Anciens membres</span>
+        </div>
+        <div>
+            <div class="room_number vide_color">${"%03d" % len(status['WTF_members'])}</div>
+            <span>Membres WTF</span>
+        </div>
+        <div>
+            <!--${display_stat("vide_color")}-->
+            <span>Chambres vides</span>
         </div>
     </div>
--->
-    <xi:include href="navbar.html" />
     <div class="area section">
         <span class="section_name">PREVIEW</span>
         <div py:if="defined('preview')">

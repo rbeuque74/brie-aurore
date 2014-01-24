@@ -792,3 +792,71 @@ class RoomChangeMemberController(AuthenticatedRestController):
         redirect("/edit/room/index/" + residence + "/" + room_uid)
     #end def
 #end def
+
+# TODO :
+""" Controller REST de gestion de la deconnexion globale. """
+class AllMembersDisableController(AuthenticatedRestController):
+    require_group = groups_enum.admin
+
+    """ Gestion des requêtes post sur ce controller """
+    @expose()
+    def post(self, residence):
+        residence_dn = Residences.get_dn_by_name(self.user, residence)
+
+        # Récupération du membre et de la machine
+        # Note : on cherche la machine seulement sur le membre (member.dn)
+        members = Member.get_all(self.user, residence_dn)
+        for member in members:
+            member = Member.get_by_uid(self.user, residence_dn, member_uid)
+            if member is None:
+                raise Exception('membre inconnu')
+            #end if
+
+            dhcps = Machine.get_dhcps(self.user, member.dn)
+        
+            machine_membre_tag = "machine_membre" # FIXME move to config
+
+            for dhcp_item in dhcps:
+                if dhcp_item.uid.first() == machine_membre_tag:
+                    dhcp_item.uid.replace(machine_membre_tag, machine_membre_tag + "_disabled")
+                    self.user.ldap_bind.save(dhcp_item)
+                #end if
+            #end for
+
+        # On redirige sur la page d'édition du membre
+        redirect("/edit/member/" + residence + "/" + member_uid)
+    #end def
+
+# TODO :
+""" Controller REST de gestion de la reconnexion globale. """
+class AllMembersEnableController(AuthenticatedRestController):
+    require_group = groups_enum.admin
+
+    """ Gestion des requêtes post sur ce controller """
+    @expose()
+    def post(self, residence):
+        residence_dn = Residences.get_dn_by_name(self.user, residence)
+
+        # Récupération du membre et de la machine
+        # Note : on cherche la machine seulement sur le membre (member.dn)
+        member = Member.get_by_uid(self.user, residence_dn, member_uid)
+        if member is None:
+            raise Exception('membre inconnu')
+        #end if
+
+        dhcps = Machine.get_dhcps(self.user, member.dn)
+    
+        machine_membre_tag = "machine_membre" # FIXME move to config
+        machine_membre_disabled = machine_membre_tag + "_disabled" # FIXME move to config
+
+        for dhcp_item in dhcps:
+            if dhcp_item.uid.first() == machine_membre_disabled:
+                dhcp_item.uid.replace(machine_membre_disabled, machine_membre_tag)
+                self.user.ldap_bind.save(dhcp_item)
+            #end if
+        #end for
+
+        # On redirige sur la page d'édition du membre
+        redirect("/edit/member/" + residence + "/" + member_uid)
+    #end def
+

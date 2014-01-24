@@ -22,24 +22,16 @@ def admin_user():
 
 sched = Scheduler()
 
-
 def disconnect_members_from_residence(admin_user, residence_dn):
-    current_year = CotisationComputes.current_year()
-    now = datetime.datetime.now()
-    
     members =  Member.get_all(admin_user, residence_dn)
 
     for member in members:
         
         machines_tuples = Machine.get_machine_tuples_of_member(admin_user, member.dn)
         if machines_tuples != []:
-            cotisations = Cotisation.cotisations_of_member(admin_user, member.dn, current_year)
-            months_list, anniversary = CotisationComputes.ldap_items_to_months_list(cotisations)
             
-            if not (now.month in months_list 
-                    or ((now.month - 1) in months_list and now.day <= (anniversary + 7))):
+            if not CotisationComputes.is_cotisation_paid(member, admin_user, residence_dn):
                 dhcps = Machine.get_dhcps(admin_user, member.dn)
-    
                 machine_membre_tag = "machine_membre" # FIXME move to config
 
                 for dhcp_item in dhcps:

@@ -6,7 +6,7 @@
         <meta name="description" content=""/>
         <meta name="author" content=""/>
 
-        <!-- Le styles -->
+        <!-- Le style -->
         <xi:include href="common-css-header.html" />
     </head>
     <body>
@@ -35,6 +35,13 @@
                         <input type="hidden" name="residence" value="${residence}"/>
                         <input type="text" name="name"/>
                         <input type="submit" value="Search" class="button"/>
+                    </form>
+            </div>
+            <!-- Ne fonctionne pas encore : -->
+            <div class="section">
+                    <form action="/disconnectall/" method="post" class="inline_block">
+                        <input type="hidden" name="residence" value="${residence}"/>
+                        <input type="submit" value="Déconnexion globale" class="button"/>
                     </form>
             </div>
         </div>

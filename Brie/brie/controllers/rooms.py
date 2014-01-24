@@ -49,7 +49,7 @@ class RoomsController(AuthenticatedBaseController):
         if residence_dn is None:
             raise Exception("unknown residence")
         #end if
-
+        status = CotisationComputes.members_status_from_residence(self.user, residence_dn)
         for area in Room.get_areas(self.user, residence_dn):
             areas[area] = dict()
 
@@ -78,6 +78,7 @@ class RoomsController(AuthenticatedBaseController):
             "reverse_sorted_name" : self.reverse_sort_name, 
             "sorted_name" : self.sort_name, 
             "stats" : stats, 
+            "status" : status, 
             "residence" : residence_name
         }
     #end def        

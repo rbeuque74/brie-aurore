@@ -1,4 +1,5 @@
 from brie.config import ldap_config
+from brie.model.ldap import *
 import datetime
 
 class Residences:
@@ -96,29 +97,116 @@ class CotisationComputes:
     #end def
 
     @staticmethod
-    def ldap_items_to_months_list(ldap_cotisations):
+    def anniversary_from_ldap_items(ldap_cotisations):
         result = []
-
         for cotisation in ldap_cotisations:
             anniversary_data = cotisation.get("x-time").first()
             anniversary_datetime = datetime.datetime.strptime(anniversary_data,
                 "%Y-%m-%d %H:%M:%S.%f") 
+            months = []
             for month in cotisation.get("x-validMonth").all():
-                result.append((anniversary_datetime, int(month))) 
+                months.append(int(month)) 
             #end for
+            result.append((anniversary_datetime, months))
         #end for
 
-        first_anniversary_day = 0
-        # tri par ordre d'inscription et pas ordre de mois
+        anniversary = 0
+        # tri par ordre d'inscription
         result = sorted(result)
 
         if result != []:
-            # premier anniversaire
-            first_anniversary_day = result[0][0].day
+            anniversary_day = result[0][0].day
+            months = result[0][1]
+            SORT_ORDER = {9: 0, 10: 1, 11: 2, 12: 3, 1: 4, 2: 5, 3: 6, 4: 7, 5: 8, 6: 9, 7: 10, 8: 11}
+            months.sort(key=lambda val: SORT_ORDER[val])
+            anniversary_month = months[-1] + 1
+            if anniversary_month == 13:
+                anniversary_month = 1
+            if anniversary_month > 9:
+                anniversary_year = result[0][0].year
+            else :
+                anniversary_year = result[0][0].year + 1
+            anniversary = datetime.datetime.strptime(str(anniversary_year) + "-" + str(anniversary_month) + "-1 0:0", "%Y-%m-%d %H:%M") + datetime.timedelta(days=(anniversary_day - 1))
         #end if
-
-        months_without_anniversary = [item[1] for item in result]        
-
-        return months_without_anniversary, first_anniversary_day
+        return anniversary
     #end def
+
+    @staticmethod
+    # old = SDF or no cotisation this year
+    def is_old_member(member, user_session, residence_dn):
+        current_year = CotisationComputes.current_year()
+        cotisations = Cotisation.cotisations_of_member(user_session, member.dn, current_year)
+        return Room.get_by_member_dn(user_session, residence_dn, member.dn) == None or cotisations == []
+    #end def
+
+    @staticmethod
+    # 7 days grace period
+    def is_cotisation_paid(member, user_session, residence_dn):
+        if CotisationComputes.is_old_member(member, user_session, residence_dn):
+            return False
+        current_year = CotisationComputes.current_year()
+        now = datetime.datetime.now()
+
+        cotisations = Cotisation.cotisations_of_member(user_session, member.dn, current_year)
+        anniversary = CotisationComputes.anniversary_from_ldap_items(cotisations)
+        delta = (now - anniversary)
+        return delta.days <= 7
+    #end def
+
+    @staticmethod
+    # less than a month late but more than a week
+    def is_cotisation_late(member, user_session, residence_dn):
+        if CotisationComputes.is_old_member(member, user_session, residence_dn):
+            return False
+        current_year = CotisationComputes.current_year()
+        now = datetime.datetime.now()
+
+        cotisations = Cotisation.cotisations_of_member(user_session, member.dn, current_year)
+        anniversary = CotisationComputes.anniversary_from_ldap_items(cotisations)
+        delta = (now - anniversary)
+        #print("[DEBUG] cotisation en retard pour l'utilisateur "+ member.dn +" now="+ str(now) +" anniversary="+ str(anniversary) +" delta="+ str(delta))
+        return delta.days <= 30 and delta.days > 7
+    #end def
+
+    @staticmethod
+    # more than a month late
+    def is_no_cotisation(member, user_session, residence_dn):
+        if CotisationComputes.is_old_member(member, user_session, residence_dn):
+            return False
+        current_year = CotisationComputes.current_year()
+        now = datetime.datetime.now()
+
+        cotisations = Cotisation.cotisations_of_member(user_session, member.dn, current_year)
+        anniversary = CotisationComputes.anniversary_from_ldap_items(cotisations)
+        delta = (now - anniversary)
+        return delta.days > 30
+    #end def
+
+    @staticmethod
+    def members_status_from_residence(user_session, residence_dn):
+        members =  Member.get_all(user_session, residence_dn)
+
+        old_members = []
+        cotisation_paid_members = []
+        cotisation_late_members = []
+        no_cotisation_members = []
+        WTF_members = []
+        for member in members:
+            if CotisationComputes.is_old_member(member, user_session, residence_dn):
+                old_members.append(member)
+            elif CotisationComputes.is_cotisation_paid(member, user_session, residence_dn):
+                cotisation_paid_members.append(member)
+            elif CotisationComputes.is_cotisation_late(member, user_session, residence_dn):
+                cotisation_late_members.append(member)
+                #print("[DEBUG] cotisation en retard pour l'utilisateur "+ member.dn)
+            elif CotisationComputes.is_no_cotisation(member, user_session, residence_dn):
+                no_cotisation_members.append(member)
+            else:
+                WTF_members.append(member)
+            #end if
+
+        #end for
+        return dict(old_members=old_members, cotisation_paid_members=cotisation_paid_members, cotisation_late_members=cotisation_late_members, no_cotisation_members=no_cotisation_members, WTF_members=WTF_members)
+    #end def
+
 #end class
