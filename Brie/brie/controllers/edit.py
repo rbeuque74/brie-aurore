@@ -113,6 +113,8 @@ class MemberModificationController(AuthenticatedRestController):
         self.show = new_show
         self.disable = MemberDisableController()
         self.enable = MemberEnableController()
+        self.disconnectall = AllMembersDisableController()
+        self.reconnectall = AllMembersEnableController()
     #end def
 
     """ Affiche les détails éditables du membre et de la chambre """
@@ -793,13 +795,12 @@ class RoomChangeMemberController(AuthenticatedRestController):
     #end def
 #end def
 
-# TODO :
 """ Controller REST de gestion de la deconnexion globale. """
 class AllMembersDisableController(AuthenticatedRestController):
     require_group = groups_enum.admin
 
     """ Gestion des requêtes post sur ce controller """
-    @expose()
+    @expose("brie.templates.index")
     def post(self, residence):
         residence_dn = Residences.get_dn_by_name(self.user, residence)
 
@@ -807,56 +808,61 @@ class AllMembersDisableController(AuthenticatedRestController):
         # Note : on cherche la machine seulement sur le membre (member.dn)
         members = Member.get_all(self.user, residence_dn)
         for member in members:
-            member = Member.get_by_uid(self.user, residence_dn, member_uid)
             if member is None:
                 raise Exception('membre inconnu')
             #end if
+            groups_of_user = Groupes.get_by_user_dn(self.user, residence_dn, member.dn)
+            if "exemptdecoglobale" not in groups_of_user:
+                dhcps = Machine.get_dhcps(self.user, member.dn)
+            
+                machine_membre_tag = "machine_membre" # FIXME move to config
 
-            dhcps = Machine.get_dhcps(self.user, member.dn)
-        
-            machine_membre_tag = "machine_membre" # FIXME move to config
+                for dhcp_item in dhcps:
+                    if dhcp_item.uid.first() == machine_membre_tag:
+                        dhcp_item.uid.replace(machine_membre_tag, machine_membre_tag + "_disabled")
+                        self.user.ldap_bind.save(dhcp_item)
+                    #end if
+                #end for
+            #end if
+        #end for
 
-            for dhcp_item in dhcps:
-                if dhcp_item.uid.first() == machine_membre_tag:
-                    dhcp_item.uid.replace(machine_membre_tag, machine_membre_tag + "_disabled")
-                    self.user.ldap_bind.save(dhcp_item)
-                #end if
-            #end for
-
-        # On redirige sur la page d'édition du membre
-        redirect("/edit/member/" + residence + "/" + member_uid)
+        # On redirige sur la page d'accueil
+        redirect("/")
     #end def
 
-# TODO :
 """ Controller REST de gestion de la reconnexion globale. """
 class AllMembersEnableController(AuthenticatedRestController):
     require_group = groups_enum.admin
 
     """ Gestion des requêtes post sur ce controller """
-    @expose()
+    @expose("brie.templates.index")
     def post(self, residence):
         residence_dn = Residences.get_dn_by_name(self.user, residence)
 
         # Récupération du membre et de la machine
         # Note : on cherche la machine seulement sur le membre (member.dn)
-        member = Member.get_by_uid(self.user, residence_dn, member_uid)
-        if member is None:
-            raise Exception('membre inconnu')
-        #end if
+        members = Member.get_all(self.user, residence_dn)
+        for member in members:
+            if member is None:
+                raise Exception('membre inconnu')
+            #end if
+            # On ne reconnecte que les membres ayant payé leur cotisation.
+            if CotisationComputes.is_cotisation_paid(member, self.user, residence_dn):
+                dhcps = Machine.get_dhcps(self.user, member.dn)
+            
+                machine_membre_tag = "machine_membre" # FIXME move to config
+                machine_membre_disabled = machine_membre_tag + "_disabled" # FIXME move to config
 
-        dhcps = Machine.get_dhcps(self.user, member.dn)
-    
-        machine_membre_tag = "machine_membre" # FIXME move to config
-        machine_membre_disabled = machine_membre_tag + "_disabled" # FIXME move to config
-
-        for dhcp_item in dhcps:
-            if dhcp_item.uid.first() == machine_membre_disabled:
-                dhcp_item.uid.replace(machine_membre_disabled, machine_membre_tag)
-                self.user.ldap_bind.save(dhcp_item)
+                for dhcp_item in dhcps:
+                    if dhcp_item.uid.first() == machine_membre_disabled:
+                        dhcp_item.uid.replace(machine_membre_disabled, machine_membre_tag)
+                        self.user.ldap_bind.save(dhcp_item)
+                    #end if
+                #end for
             #end if
         #end for
 
-        # On redirige sur la page d'édition du membre
-        redirect("/edit/member/" + residence + "/" + member_uid)
+        # On redirige sur la page d'accueil
+        redirect("/")
     #end def
 

@@ -37,11 +37,14 @@
                         <input type="submit" value="Search" class="button"/>
                     </form>
             </div>
-            <!-- Ne fonctionne pas encore : -->
             <div class="section">
-                    <form action="/disconnectall/" method="post" class="inline_block">
+                    <form action="/edit/member/disconnectall/" method="post" class="inline_block">
                         <input type="hidden" name="residence" value="${residence}"/>
                         <input type="submit" value="Déconnexion globale" class="button"/>
+                    </form>
+                    <form action="/edit/member/reconnectall/" method="post" class="inline_block">
+                        <input type="hidden" name="residence" value="${residence}"/>
+                        <input type="submit" value="Reconnexion globale" class="button"/>
                     </form>
             </div>
         </div>
