@@ -50,8 +50,17 @@ class RoomsController(AuthenticatedBaseController):
             raise Exception("unknown residence")
         #end if
         stats = CotisationComputes.members_status_from_residence(self.user, residence_dn)
+
+        members = dict()
+        for label in stats:
+            for member in stats[label]:
+                members[member.dn] = label
+            #end for member
+        #end for stats
+
         stats['number_of_rooms'] = Room.get_number_of_rooms(self.user, residence_dn)
         stats['empty_rooms'] = []
+
         for area in Room.get_areas(self.user, residence_dn):
             areas[area] = dict()
 
@@ -59,9 +68,15 @@ class RoomsController(AuthenticatedBaseController):
                 areas[area][floor] = list()
 
                 for room in Room.get_rooms_of_floor(self.user, floor.dn):
-                    areas[area][floor].append(room)
                     if not room.has("x-memberIn"):
                         stats['empty_rooms'].append(room)
+                        room.add('status', "empty_room")
+                    elif room.get("x-memberIn").first() in members:
+                        room.add('status', members[room.get("x-memberIn").first()])
+                    #endif
+
+                    areas[area][floor].append(room)
+
 
                     color = self.color_picker("foobar")
                     if color in status:

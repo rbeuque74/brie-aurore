@@ -99,11 +99,11 @@ class CotisationComputes:
     @staticmethod
     def anniversary_from_ldap_items(ldap_cotisations):
         result = []
+        months = []
         for cotisation in ldap_cotisations:
             anniversary_data = cotisation.get("x-time").first()
             anniversary_datetime = datetime.datetime.strptime(anniversary_data,
                 "%Y-%m-%d %H:%M:%S.%f") 
-            months = []
             for month in cotisation.get("x-validMonth").all():
                 months.append(int(month)) 
             #end for
@@ -116,7 +116,6 @@ class CotisationComputes:
 
         if result != []:
             anniversary_day = result[0][0].day
-            months = result[0][1]
             SORT_ORDER = {9: 0, 10: 1, 11: 2, 12: 3, 1: 4, 2: 5, 3: 6, 4: 7, 5: 8, 6: 9, 7: 10, 8: 11}
             months.sort(key=lambda val: SORT_ORDER[val])
             anniversary_month = months[-1] + 1

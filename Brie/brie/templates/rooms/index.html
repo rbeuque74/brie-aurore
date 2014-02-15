@@ -21,10 +21,16 @@
         <div>
             <div class="room_number non_certif_color">${"%03d" % len(stats['cotisation_late_members'])}</div>
             <span>Cotisations en retard</span>
+            <div py:for="member in stats['cotisation_late_members']">
+                <span><a href="/show/member/${residence}/${member.uid.first()}">${member.cn.first()}</a></span><br />
+            </div>
         </div>
         <div>
             <div class="room_number non_paye_color">${"%03d" % len(stats['no_cotisation_members'])}</div>
             <span>Sans cotisations</span>
+            <div py:for="member in stats['no_cotisation_members']">
+                <span><a href="/show/member/${residence}/${member.uid.first()}">${member.cn.first()}</a></span><br />
+            </div>
         </div>
         <div>
             <div class="room_number vide_color">${"%03d" % len(stats['old_members'])}</div>
@@ -59,9 +65,30 @@
             <span class="section_name">${(area.cn.first()).upper()}</span>
             <div py:for="floor, rooms in reverse_sorted_name(floors.iteritems())" class="floor">
                 <span class="floor_name">étage ${floor.cn.first()}</span>
-                <div py:for="room in sorted(rooms, key=lambda t:t.cn.first())" class="room_number">
-                    <a href="/rooms/preview/${residence}/${room.uid.first()}"><span>${room.cn.first()}</span></a>
-                </div>
+                <py:for each="room in sorted(rooms, key=lambda t:t.cn.first())" class="room_number">
+                    <py:choose test="room.status.first()">
+                        <py:when test="'cotisation_paid_members'">
+                            <div class="room_number ok_color">
+                                <a href="/rooms/preview/${residence}/${room.uid.first()}"><span>${room.cn.first()}</span></a>
+                            </div>
+                        </py:when>
+                        <py:when test="'cotisation_late_members'">
+                            <div class="room_number non_certif_color">
+                                <a href="/rooms/preview/${residence}/${room.uid.first()}"><span>${room.cn.first()}</span></a>
+                            </div>
+                        </py:when>
+                        <py:when test="'no_cotisation_members'">
+                            <div class="room_number non_paye_color">
+                                <a href="/rooms/preview/${residence}/${room.uid.first()}"><span>${room.cn.first()}</span></a>
+                            </div>
+                        </py:when>
+                        <py:otherwise>
+                            <div class="room_number vide_color">
+                                <a href="/rooms/preview/${residence}/${room.uid.first()}"><span>${room.cn.first()}</span></a>
+                            </div>
+                        </py:otherwise>
+                    </py:choose>
+                </py:for>
             </div>
         </div>
     </div>
