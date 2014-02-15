@@ -9,7 +9,7 @@ from brie.lib.ldap_helper import *
 from brie.lib.aurore_helper import *
 from brie.model.ldap import *
 
-import datetime
+from datetime import datetime
 
 from brie.controllers import auth
 from brie.controllers.auth import AuthenticatedBaseController, AuthenticatedRestController
@@ -17,10 +17,16 @@ from brie.controllers.auth import AuthenticatedBaseController, AuthenticatedRest
 class MembersController(AuthenticatedBaseController):
 	require_group = groups_enum.admin
 
-        @staticmethod
+	member_edit_controller = None
+
+	def __init__(self, member_edit_controller):
+		self.member_edit_controller = member_edit_controller
+
+	@staticmethod
 	def sort_name(name_items):
-		return sorted(name_items, key=lambda t:t.sn.first())        
-	
+		return sorted(name_items, key=lambda t:t.sn.first())
+	#end if
+
 	@expose("brie.templates.search.member")
 	def index(self, residence_name):
 		residence_dn = Residences.get_dn_by_name(self.user, residence_name)
@@ -29,22 +35,22 @@ class MembersController(AuthenticatedBaseController):
 		#end if
 
 		members = Member.get_all(self.user, residence_dn)
-                members = MembersController.sort_name(members)
+		members = MembersController.sort_name(members)
 
-                members_rooms = [
-                        (member, Room.get_by_member_dn(self.user, residence_dn, member.dn))
-                        for member in members
-                ]
+		members_rooms = [
+			(member, Room.get_by_member_dn(self.user, residence_dn, member.dn))
+			for member in members
+		]
 
-                #    machines = Machine.get_machine_tuples_of_member(self.user, member.dn)
-    
-                #    groups = Groupes.get_by_user_dn(self.user, residence_dn, member.dn)
+		#    machines = Machine.get_machine_tuples_of_member(self.user, member.dn)
 
-                return { 
-                    "residence" : residence_name, 
-                    "user" : self.user,  
-                    "members_rooms" : members_rooms
-                }
+		#    groups = Groupes.get_by_user_dn(self.user, residence_dn, member.dn)
+
+		return { 
+			"residence" : residence_name, 
+			"user" : self.user,  
+			"members_rooms" : members_rooms
+		}
 
 	#end def
 
@@ -53,6 +59,78 @@ class MembersController(AuthenticatedBaseController):
 #            responses = index(self, residence_name)
 
 #            retu
-                
 
 
+	@expose()
+	def demenageResidence(self, member_dn):
+		# Initialisation des Users des Controllers Existant appelles 
+		self.member_edit_controller.machine.add.user = self.user
+		self.member_edit_controller.add.user = self.user
+		self.member_edit_controller.cotisation.add.user = self.user
+
+		residence_dn = self.user.residence_dn
+		residence_name = Residences.get_name_by_dn(self.user, residence_dn)
+
+		member = Member.get_by_dn(self.user, member_dn)
+
+		machines = Machine.get_machine_tuples_of_member(self.user, member_dn)
+
+		current_year = CotisationComputes.current_year()
+		cotisations = Cotisation.cotisations_of_member(self.user, member_dn, current_year)
+
+		now = datetime.now()
+		registration_year = 0
+
+		if now.month >= 8:
+			registration_year = now.year
+		else:
+			registration_year = now.year - 1 
+		#endif
+
+		member_dn = "uid=" + member.uid.first() + ",ou=" + str(registration_year) + "," + ldap_config.username_base_dn + residence_dn
+		#phone = ' '
+		#if member.has('mobile'):
+		#	phone = member.mobile.first()
+		#member_uid = self.member_edit_controller.add.post(residence_name, member.givenName.first(), member.sn.first(), member.mail.first(), phone, False)
+		
+		self.user.ldap_bind.clone_entry(member_dn, member)
+		member = Member.get_by_uid(self.user, self.user.residence_dn, member.uid.first())
+
+		folder_dn = ldap_config.cotisation_member_base_dn + member.dn
+		year_dn = "cn=" + str(current_year) + "," + folder_dn
+
+		try:
+			folder = Cotisation.folder_attr()
+			self.user.ldap_bind.add_entry(folder_dn, folder)
+		except ldap.ALREADY_EXISTS:
+			pass # OKAY
+		#end try
+
+		try:
+			year = Cotisation.year_attr(current_year)
+			self.user.ldap_bind.add_entry(year_dn, year)
+		except ldap.ALREADY_EXISTS:
+			pass # OKAY
+		#end try
+
+		for cotisation in cotisations:
+			cotisation_dn = ""
+			if cotisation.has("description") and cotisation.description.first() == "cotisation":
+				cotisation_dn = "cn=cotisation-" 
+			else:
+				cotisation_dn = "cn=extra-" 
+			#end if
+
+			cotisation_dn = cotisation_dn + cotisation.get("x-time").first() + "," + year_dn
+			self.user.ldap_bind.clone_entry(cotisation_dn, cotisation)
+		#end for
+
+		for machine_name, machine_mac, machine_ip, machine_disabled in machines:
+			self.member_edit_controller.machine.add.post(residence_name, member.uid.first(), machine_name, machine_mac, go_redirect = False)
+		#end for
+
+
+		redirect("/show/member/" + residence_name + "/" + member.uid.first()) 
+
+	#end def
+#end class

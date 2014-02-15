@@ -50,9 +50,9 @@ class RootController(BaseController):
  
     auth = AuthRestController()
     rooms = RoomsController()
-    members = MembersController()
     show = ShowController()
     edit = EditController(show)
+    members = MembersController(edit)
     administration = AdministrationController()
     stats = StatsController()
     getemails = GetEmailsController()

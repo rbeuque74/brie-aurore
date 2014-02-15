@@ -144,6 +144,24 @@ class Ldap(object):
     #end def
 
     @staticmethod
+    def str_attributes_list(attributes):
+        def str_value(value):
+            if isinstance(value, list):
+                return [Ldap.str_attribute(subval) for subval in value]
+            elif isinstance(value, LdapAttribute):
+                return [Ldap.str_attribute(subval) for subval in value.all()]
+            #end if
+
+            return Ldap.str_attribute(value)
+        #end def
+
+        return dict([ 
+            (keyval, str_value(attributes[keyval]))
+            for keyval in attributes 
+        ])
+    #end def
+
+    @staticmethod
     def str_attribute(value):
         if isinstance(value, str):
             return value
@@ -214,7 +232,26 @@ class Ldap(object):
         for attribute in attributes.iteritems():
             modlist.append((attribute[0], attribute[1]))
         #end for
+        
+        ##try:
+        self.__connection.add_s(dn, modlist)
+        ##except:
+        ##    pass
+    #end def
 
+    """ Clone un élément 
+        dn : adresse du nouvelle élément
+        attributes : l'élément à cloner
+    """
+    def clone_entry(self, dn, ldap_entry):
+        attributes = Ldap.str_attributes_list(ldap_entry.__dict__)
+        del attributes['dn']
+
+        modlist = []
+        for attribute in attributes.iteritems():
+            modlist.append((attribute[0], attribute[1]))
+        #end for
+        
         ##try:
         self.__connection.add_s(dn, modlist)
         ##except:

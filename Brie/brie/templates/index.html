@@ -36,6 +36,24 @@
                         <input type="text" name="name"/>
                         <input type="submit" value="Search" class="button"/>
                     </form>
+                    <form action="/search/member_global/" method="post" class="inline_block">
+                        <input type="hidden" name="myresidence" value="${residence}"/>
+                        <input type="text" name="name"/>
+                        <input type="submit" value="Search global" class="button"/>
+                    </form>
+            </div>
+            <div class="section">
+                <span class="section_name show_section_name">Email</span>
+                    <form action="/search/email/" method="post" class="inline_block">
+                        <input type="hidden" name="residence" value="${residence}"/>
+                        <input type="text" name="email"/>
+                        <input type="submit" value="Search" class="button"/>
+                    </form>
+                    <form action="/search/email_global/" method="post" class="inline_block">
+                        <input type="hidden" name="myresidence" value="${residence}"/>
+                        <input type="text" name="email"/>
+                        <input type="submit" value="Search global" class="button"/>
+                    </form>
             </div>
             <div class="section">
                     <form action="/edit/member/disconnectall/" method="post" class="inline_block">
