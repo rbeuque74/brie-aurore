@@ -1,0 +1,34 @@
+<html 
+    xmlns:py="http://genshi.edgewall.org/"
+    xmlns:xi="http://www.w3.org/2001/XInclude">
+    <head>
+        <link type="text/css" rel="Stylesheet" href="/css/common.css" />
+        <link type="text/css" rel="Stylesheet" href="/css/rooms.css" />
+        <xi:include href="common-css-header.html" />
+    </head>
+    <body> 
+        <xi:include href="navbar.html" />
+         <table class="table table-hover">
+            <tr>
+                <th>membre</th>
+                <th>résidence</th>
+                <th>chambre</th>
+                <th>déménager</th>
+            </tr>
+            <tr py:for="member, room, mresidence in members_rooms">
+                <td><a href="/show/member/${mresidence}/${member.uid.first()}">${member.cn.first()}</a></td>
+                <td>${mresidence}</td>
+                <py:choose test="room">
+                    <td py:when="None">sdf</td>
+                    <td py:otherwise=""><a href="/show/room/${mresidence}/${room.uid.first()}">${room.cn.first()}</a></td>
+                </py:choose>
+                <td>
+                    <form action="/members/demenageResidence/" style="margin-bottom:0px" method="post" class="inline_block">
+                        <input type="hidden" name="member_dn" value="${member.dn}"/>
+                        <input type="submit" value="Move" class="button"/>
+                    </form>
+                </td>
+            </tr>
+        </table>
+    </body>
+</html>

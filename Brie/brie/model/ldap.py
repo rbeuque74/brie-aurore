@@ -222,6 +222,11 @@ class Machine(object):
     #end def
 
     @staticmethod
+    def get_dns_by_ip(user_session, search_dn, ip):
+        return user_session.ldap_bind.search(search_dn, "(dlzData="+ ip +")")
+    #end def
+
+    @staticmethod
     def get_dhcps(user_session, machine_dn):
         return user_session.ldap_bind.search(machine_dn, "(objectClass=dhcpHost)")
     #end def

@@ -76,6 +76,83 @@ class SearchController(AuthenticatedBaseController):
     #end def
 
 
+    @expose("brie.templates.search.member")
+    def mac(self, residence, mac):
+        residence_dn = Residences.get_dn_by_name(self.user, residence) 
+        machine = Machine.get_dhcp_by_mac(self.user, residence_dn, mac)
+
+        if machine is None:
+            return self.error_no_entry()
+        
+        machine = machine.dn.split(',')
+
+        i = 0
+        member_dn = ""
+        for sub in machine:
+            if i >= 3:
+                if member_dn != "":
+                    member_dn += ","
+                #end if
+                member_dn += sub
+            #end if
+            i += 1
+        #end for
+
+        member = Member.get_by_dn(self.user, member_dn)
+
+        if member is None:
+            return self.error_no_entry()
+        #end if
+
+        redirect("/show/member/"+ residence +"/" + member.uid.first())
+    #end def
+
+
+    @expose("brie.templates.search.ip")
+    def ip(self, residence, ip):
+        residence_dn = Residences.get_dn_by_name(self.user, residence) 
+        machines = Machine.get_dns_by_ip(self.user, residence_dn, ip)
+
+        if len(machines) == 0:
+            return self.error_no_entry()
+        
+        results = []
+
+        for machine in machines:
+            membre_dn = machine.dn.split(',')
+
+            i = 0
+            member_dn = ""
+            for sub in membre_dn:
+                if i >= 3:
+                    if member_dn != "":
+                        member_dn += ","
+                    #end if
+                    member_dn += sub
+                #end if
+                i += 1
+            #end for
+
+            member = Member.get_by_dn(self.user, member_dn)
+            if member is None:
+                return self.error_no_entry()
+            #end if
+
+            if len(machines) == 1:
+                redirect("/show/member/"+ residence +"/"+ member.uid.first())
+            #end if
+
+            results.append((member, machine))
+        #end for
+
+        return { 
+            "residence" : residence,
+            "user" : self.user,  
+            "results" : results
+        }
+    #end def
+
+
     @expose("brie.templates.search.member_global")
     def member_global(self, myresidence, name):
         residences = Residences.get_residences(self.user)

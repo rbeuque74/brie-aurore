@@ -56,6 +56,22 @@
                     </form>
             </div>
             <div class="section">
+                <span class="section_name show_section_name">Adresse mac</span>
+                    <form action="/search/mac/" method="post" class="inline_block">
+                        <input type="hidden" name="residence" value="${residence}"/>
+                        <input type="text" name="mac"/>
+                        <input type="submit" value="Search" class="button"/>
+                    </form>
+            </div>
+            <div class="section">
+                <span class="section_name show_section_name">Adresse IP</span>
+                    <form action="/search/ip/" method="post" class="inline_block">
+                        <input type="hidden" name="residence" value="${residence}"/>
+                        <input type="text" name="ip"/>
+                        <input type="submit" value="Search" class="button"/>
+                    </form>
+            </div>
+            <div class="section">
                     <form action="/edit/member/disconnectall/" method="post" class="inline_block">
                         <input type="hidden" name="residence" value="${residence}"/>
                         <input type="submit" value="Déconnexion globale" class="button"/>
