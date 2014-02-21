@@ -403,6 +403,11 @@ class Cotisation:
     #end def
 
     @staticmethod
+    def get_payment_by_name(user_session, member_dn, payment_cn, year):
+        return user_session.ldap_bind.search_first("cn=" + str(year) + "," + ldap_config.cotisation_member_base_dn + member_dn, "(&(objectClass=aurorePayment)(cn="+payment_cn+"))")
+    #end def
+
+    @staticmethod
     def get_all_extras(user_session, residence_dn):
         dn = ldap_config.extra_base_dn + residence_dn
         return user_session.ldap_bind.search(dn, "(objectClass=organizationalRole)", scope = ldap.SCOPE_ONELEVEL)

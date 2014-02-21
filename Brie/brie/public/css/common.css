@@ -8,7 +8,7 @@ a {
    text-decoration: none;
 }
 
-a:hover, input[type="button"]
+a:hover, input[type="button"], button
 {
     color: white;
     background-color: black;
@@ -51,9 +51,10 @@ a:hover, input[type="button"]
     width: 70%;
 }
 
-input[type="submit"]
+input[type="submit"], button
 {
     border: none;
+    color:black;
     padding: 5px;
 }
 
