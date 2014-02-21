@@ -37,7 +37,7 @@
         <span class="section_name">PREVIEW</span>
     </div>
     <div>
-    <form method="post" action="/members/add/">
+    <form py:if="user.groups.admin" method="post" action="/members/add/">
         <input type="hidden" name="residence" value="${residence}" />
         <input type="text" placeholder="prenom" name="prenom" /><br />
         <input type="text" placeholder="nom" name="nom" /><br />

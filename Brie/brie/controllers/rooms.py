@@ -44,13 +44,19 @@ class RoomsController(AuthenticatedBaseController):
     def index(self, residence_name):
         status = dict()
         areas = dict()
-        
+       
+        print "here 1"
+ 
         residence_dn = Residences.get_dn_by_name(self.user, residence_name)
         if residence_dn is None:
             raise Exception("unknown residence")
         #end if
-        stats = CotisationComputes.members_status_from_residence(self.user, residence_dn)
 
+        print "here 1 bis"
+
+        stats = CotisationComputes.members_status_from_residence(self.user, residence_dn)
+        print "here 2"
+      
         members = dict()
         for label in stats:
             for member in stats[label]:
@@ -58,8 +64,12 @@ class RoomsController(AuthenticatedBaseController):
             #end for member
         #end for stats
 
+        print "here 3"
+
         stats['number_of_rooms'] = Room.get_number_of_rooms(self.user, residence_dn)
         stats['empty_rooms'] = []
+
+        print "here 4"
 
         for area in Room.get_areas(self.user, residence_dn):
             areas[area] = dict()

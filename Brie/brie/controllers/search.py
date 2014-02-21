@@ -24,7 +24,15 @@ class SearchController(AuthenticatedBaseController):
 
     """ Affiche les résultats """
     @expose("brie.templates.search.member")
-    def member(self, residence, name):
+    def member(self, residence, name, global_search = None):
+        if global_search is not None and self.user.groups.admin:
+            return self.member_global(residence, name)
+        else:
+            return self.member_local(residence, name)
+        #end if
+    #end def
+
+    def member_local(self, residence, name):
         residence_dn = Residences.get_dn_by_name(self.user, residence)    
         members = Member.get_by_name(self.user, residence_dn, name)
 
@@ -49,9 +57,16 @@ class SearchController(AuthenticatedBaseController):
         }
     #end def
 
-
     @expose("brie.templates.search.member")
-    def email(self, residence, email):
+    def email(self, residence, email, global_search = None):
+        if global_search is not None and self.user.groups.admin:
+            self.email_global(residence, email)
+        else:
+            self.email_local(residence, email)
+        #end if
+    #end def
+
+    def email_local(self, residence, email):
         residence_dn = Residences.get_dn_by_name(self.user, residence) 
         members = Member.get_by_email(self.user, residence_dn, email)
 
@@ -186,7 +201,6 @@ class SearchController(AuthenticatedBaseController):
     #end def
 
 
-    @expose("brie.templates.search.member_global")
     def email_global(self, myresidence, email):
         residences = Residences.get_residences(self.user)
         members = []

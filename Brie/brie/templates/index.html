@@ -30,48 +30,69 @@
                 </div>
             </div>
             <div class="section">
-                <span class="section_name show_section_name">Nom</span>
+                <span class="section_name show_section_name">RECHERCHES</span>
+                <div>
+                    <span class="item_name">Nom</span>
                     <form action="/search/member/" method="post" class="inline_block">
                         <input type="hidden" name="residence" value="${residence}"/>
                         <input type="text" name="name"/>
                         <input type="submit" value="Search" class="button"/>
+                        <input py:if="user.groups.admin" 
+                                type="submit" name="global_search" 
+                                value="Search global" class="button"/>
                     </form>
-                    <form action="/search/member_global/" method="post" class="inline_block">
-                        <input type="hidden" name="myresidence" value="${residence}"/>
-                        <input type="text" name="name"/>
-                        <input type="submit" value="Search global" class="button"/>
-                    </form>
-            </div>
-            <div class="section">
-                <span class="section_name show_section_name">Email</span>
+                </div>
+                <div>
+                    <span class="item_name">E-mail</span>
                     <form action="/search/email/" method="post" class="inline_block">
                         <input type="hidden" name="residence" value="${residence}"/>
                         <input type="text" name="email"/>
                         <input type="submit" value="Search" class="button"/>
+                        <input py:if="user.groups.admin" 
+                                type="submit" name="global_search" 
+                                value="Search global" class="button"/>
                     </form>
-                    <form action="/search/email_global/" method="post" class="inline_block">
-                        <input type="hidden" name="myresidence" value="${residence}"/>
-                        <input type="text" name="email"/>
-                        <input type="submit" value="Search global" class="button"/>
-                    </form>
-            </div>
-            <div class="section">
-                <span class="section_name show_section_name">Adresse mac</span>
+                </div>
+                <div>
+                    <span class="item_name">Mac</span>
                     <form action="/search/mac/" method="post" class="inline_block">
                         <input type="hidden" name="residence" value="${residence}"/>
                         <input type="text" name="mac"/>
                         <input type="submit" value="Search" class="button"/>
                     </form>
-            </div>
-            <div class="section">
-                <span class="section_name show_section_name">Adresse IP</span>
+                </div>
+                <div>
+                    <span class="item_name">IP</span>
                     <form action="/search/ip/" method="post" class="inline_block">
                         <input type="hidden" name="residence" value="${residence}"/>
                         <input type="text" name="ip"/>
                         <input type="submit" value="Search" class="button"/>
                     </form>
+                </div>
+<!--                    <form action="/search/member_global/" method="post" class="inline_block">
+                        <input type="hidden" name="myresidence" value="${residence}"/>
+                        <input type="text" name="name"/>
+                    </form> -->
+            </div>
+<!--
+            <div class="section">
+                <span class="section_name show_section_name">Email</span>
+                    <form action="/search/email_global/" method="post" class="inline_block">
+                        <input type="hidden" name="myresidence" value="${residence}"/>
+                        <input type="text" name="email"/>
+                    </form>
             </div>
             <div class="section">
+                <span class="section_name show_section_name">Adresse mac</span>
+            </div>
+            <div class="section">
+                <span class="section_name show_section_name">Adresse IP</span>
+            </div>
+-->
+            <div py:if="user.groups.responsablereseau" class="section">
+                <span class="section_name show_section_name">DECONNEXION GLOBALE</span>
+                <div>
+                    <span class="item_name"></span>
                     <form action="/edit/member/disconnectall/" method="post" class="inline_block">
                         <input type="hidden" name="residence" value="${residence}"/>
                         <input type="submit" value="Déconnexion globale" class="button"/>
@@ -79,7 +100,8 @@
                     <form action="/edit/member/reconnectall/" method="post" class="inline_block">
                         <input type="hidden" name="residence" value="${residence}"/>
                         <input type="submit" value="Reconnexion globale" class="button"/>
-                    </form>
+                </form>
+                </div>
             </div>
         </div>
     </body>

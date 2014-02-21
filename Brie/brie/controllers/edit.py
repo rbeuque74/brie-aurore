@@ -797,7 +797,7 @@ class RoomChangeMemberController(AuthenticatedRestController):
 
 """ Controller REST de gestion de la deconnexion globale. """
 class AllMembersDisableController(AuthenticatedRestController):
-    require_group = groups_enum.admin
+    require_group = groups_enum.responsablereseau
 
     """ Gestion des requêtes post sur ce controller """
     @expose("brie.templates.index")
@@ -832,7 +832,7 @@ class AllMembersDisableController(AuthenticatedRestController):
 
 """ Controller REST de gestion de la reconnexion globale. """
 class AllMembersEnableController(AuthenticatedRestController):
-    require_group = groups_enum.admin
+    require_group = groups_enum.responsablereseau
 
     """ Gestion des requêtes post sur ce controller """
     @expose("brie.templates.index")
