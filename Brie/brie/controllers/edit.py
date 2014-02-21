@@ -303,9 +303,15 @@ class MachineController(AuthenticatedBaseController):
     add  = None
     """ Controller fils de suppression de machine """
     delete = None
+    """ Controller fils de desactivation de machine """
+    disable  = None
+    """ Controller fils d'activation de machine """
+    enable = None
     def __init__(self):
         self.add = MachineAddController()
         self.delete = MachineDeleteController()
+        self.enable = MachineEnableController()
+        self.disable = MachineDisableController()
 
 #end class
 
@@ -443,9 +449,48 @@ class CotisationController(AuthenticatedBaseController):
     require_group = groups_enum.admin
 
     add  = None
+    delete = None
     def __init__(self):
         self.add = CotisationAddController()
+        self.delete = CotisationDeleteController()
+
+
+    #end def
+
+
 #end class
+
+
+
+class CotisationDeleteController(AuthenticatedRestController):
+    require_group = groups_enum.admin
+
+    @expose()
+    def post(self, residence, member_uid, cotisation_cn):
+        residence_dn = Residences.get_dn_by_name(self.user, residence)
+        member = Member.get_by_uid(self.user, residence_dn, member_uid)
+        print "WTF"
+        if member is None:
+            raise Exception('membre inconnu')
+        #end if
+
+        current_year = CotisationComputes.current_year()
+
+        cotisation = Cotisation.get_payment_by_name(self.user, member.dn, cotisation_cn, current_year)
+
+        if cotisation.has('x-paymentCashed') and cotisation.get('x-paymentCashed').first() == 'TRUE':
+            raise Exception('Impossible de supprimer une cotisation encaissée')
+        #end if
+
+        self.user.ldap_bind.delete_entry_subtree(cotisation.dn)
+
+        redirect("/edit/member/"+residence+"/"+member_uid)
+
+    #end def
+
+#end class
+
+
 
 class CotisationAddController(AuthenticatedRestController):
     require_group = groups_enum.admin
@@ -607,6 +652,78 @@ class MachineDeleteController(AuthenticatedRestController):
         redirect("/edit/member/" + residence + "/" + member_uid)
     #end def
 #end def
+
+
+""" Controller REST de gestion de la deconnexion d'une machine. """
+class MachineDisableController(AuthenticatedRestController):
+    require_group = groups_enum.admin
+
+    """ Gestion des requêtes post sur ce controller """
+    @expose()
+    def post(self, residence, member_uid, mac):
+        residence_dn = Residences.get_dn_by_name(self.user, residence)
+
+        # Récupération du membre et de la machine
+        # Note : on cherche la machine seulement sur le membre (member.dn)
+        member = Member.get_by_uid(self.user, residence_dn, member_uid)
+        if member is None:
+            raise Exception('membre inconnu')
+        #end if
+
+        machine = Machine.get_dhcp_by_mac(self.user, member.dn, mac)
+        if machine is None:
+            raise Exception('machine inconnue')
+        #end if
+
+        machine_membre_tag = "machine_membre" # FIXME move to config
+
+        if machine.uid.first() == machine_membre_tag:
+            machine.uid.replace(machine_membre_tag, machine_membre_tag + "_disabled")
+            self.user.ldap_bind.save(machine)
+        #end if
+
+        print("[LOG] disable member "+member_uid+" machine "+ machine.dhcpStatements.first().split(" ")[1] +" by "+self.user.attrs.dn)
+
+        # On redirige sur la page d'édition du membre
+        redirect("/edit/member/" + residence + "/" + member_uid)
+    #end def
+
+""" Controller REST de gestion de la reconnexion d'une machine. """
+class MachineEnableController(AuthenticatedRestController):
+    require_group = groups_enum.admin
+
+    """ Gestion des requêtes post sur ce controller """
+    @expose()
+    def post(self, residence, member_uid, mac):
+        residence_dn = Residences.get_dn_by_name(self.user, residence)
+
+        # Récupération du membre et de la machine
+        # Note : on cherche la machine seulement sur le membre (member.dn)
+        member = Member.get_by_uid(self.user, residence_dn, member_uid)
+        if member is None:
+            raise Exception('membre inconnu')
+        #end if
+
+        machine = Machine.get_dhcp_by_mac(self.user, member.dn, mac)
+        if machine is None:
+            raise Exception('machine inconnue')
+        #end if
+
+        machine_membre_tag = "machine_membre" # FIXME move to config
+        machine_membre_disabled = machine_membre_tag + "_disabled" # FIXME move to config
+
+        if machine.uid.first() == machine_membre_disabled:
+            machine.uid.replace(machine_membre_disabled, machine_membre_tag)
+            self.user.ldap_bind.save(machine)
+        #end if
+
+        print("[LOG] enable member "+member_uid+" machine "+ mac +" by "+self.user.attrs.dn)
+
+        # On redirige sur la page d'édition du membre
+        redirect("/edit/member/" + residence + "/" + member_uid)
+    #end def
+
+
 
 
 class WifiRestController(AuthenticatedRestController):
