@@ -636,6 +636,7 @@ class MachineDeleteController(AuthenticatedRestController):
         machine = Machine.get_machine_by_id(self.user, member.dn, machine_id)
         dns = Machine.get_dns_by_id(self.user, machine.dn)
         ip = IpReservation.get_ip(self.user, residence_dn, dns.dlzData.first())
+        ip_machines = Machine.get_dns_by_ip(self.user, residence_dn, ip.cn.first())
 
         # Si la machine existe effectivement, on la supprime
         if machine is not None:
@@ -644,8 +645,10 @@ class MachineDeleteController(AuthenticatedRestController):
 
             self.user.ldap_bind.delete_entry_subtree(machine.dn)
 
-            taken_attribute = IpReservation.taken_attr(ip.get("x-taken").first())
-            self.user.ldap_bind.delete_attr(ip.dn, taken_attribute)
+            if len(ip_machines) == 1:
+                taken_attribute = IpReservation.taken_attr(ip.get("x-taken").first())
+                self.user.ldap_bind.delete_attr(ip.dn, taken_attribute)
+            #end if
         #end if
 
         # On redirige sur la page d'édition du membre
