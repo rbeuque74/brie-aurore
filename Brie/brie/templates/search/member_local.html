@@ -1,0 +1,25 @@
+<html 
+    xmlns:py="http://genshi.edgewall.org/"
+    xmlns:xi="http://www.w3.org/2001/XInclude">
+    <head>
+        <link type="text/css" rel="Stylesheet" href="/css/common.css" />
+        <link type="text/css" rel="Stylesheet" href="/css/rooms.css" />
+        <xi:include href="common-css-header.html" />
+    </head>
+    <body> 
+        <xi:include href="navbar.html" />
+         <table class="table table-hover">
+            <tr>
+                <th>membre</th>
+                <th>chambre</th>
+            </tr>
+            <tr py:for="member, room in members_rooms">
+                <td><a href="/show/member/${residence}/${member.uid.first()}">${member.cn.first()}</a></td>
+                <py:choose test="room">
+                    <td py:when="None">sdf</td>
+                    <td py:otherwise=""><a href="/show/room/${residence}/${room.uid.first()}">${room.cn.first()}</a></td>
+                </py:choose>
+            </tr>
+        </table>
+    </body>
+</html>
