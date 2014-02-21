@@ -168,7 +168,6 @@ class SearchController(AuthenticatedBaseController):
     #end def
 
 
-    @expose("brie.templates.search.member_global")
     def member_global(self, myresidence, name):
         residences = Residences.get_residences(self.user)
         members = []
@@ -196,7 +195,8 @@ class SearchController(AuthenticatedBaseController):
         return { 
             "residence" : myresidence,
             "user" : self.user,  
-            "members_rooms" : members_rooms
+            "members_rooms" : members_rooms,
+            "type" : "global"
         }
     #end def
 
@@ -228,7 +228,8 @@ class SearchController(AuthenticatedBaseController):
         return { 
             "residence" : myresidence,
             "user" : self.user,  
-            "members_rooms" : members_rooms
+            "members_rooms" : members_rooms,
+            "type" : "global"
         }
     #end def
 
