@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 
-uri = "ldaps://172.17.31.4"
+uri = "ldaps://localhost"
 
 username_base_dn = "ou=membres,"
 room_base_dn = "ou=chambres,"
