@@ -8,6 +8,9 @@
         <xi:include href="navbar.html" />
         <div class="section" >
                 <span class="section_name show_section_name">Adresses mails des adhérents de ${residence}</span>
+                <div py:for="email in emails">
+                    ${email}<br />
+                </div>
 <!--
                     <div>
                         <div class="room_number ok_color">${"%03d" % members_stats[residence]['number_of_cotisation_paid_members']}</div>
