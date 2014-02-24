@@ -469,7 +469,7 @@ class CotisationDeleteController(AuthenticatedRestController):
     def post(self, residence, member_uid, cotisation_cn):
         residence_dn = Residences.get_dn_by_name(self.user, residence)
         member = Member.get_by_uid(self.user, residence_dn, member_uid)
-        print "WTF"
+
         if member is None:
             raise Exception('membre inconnu')
         #end if
@@ -483,6 +483,8 @@ class CotisationDeleteController(AuthenticatedRestController):
         #end if
 
         self.user.ldap_bind.delete_entry_subtree(cotisation.dn)
+
+        print("[LOG] suppression cotisation (" + cotisation.get('x-amountPaid').first() + "EUR) pour l'utilisateur "+ member.dn + " par l'admin "+ self.user.attrs.dn)
 
         redirect("/edit/member/"+residence+"/"+member_uid)
 

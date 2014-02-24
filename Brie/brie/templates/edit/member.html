@@ -42,7 +42,7 @@
         <div class="section">
             <div py:for="cotisation in cotisations">
                 <span class="item_name"></span>
-                ${cotisation.cn.first()} - ${cotisation.get('x-action-user-info').first()}
+                ${cotisation.cn.first()} - ${cotisation.get('x-action-user-info').first()} (${cotisation.get('x-amountPaid').first()})
                 <form method="post" action="/edit/cotisation/delete" style="display:inline;"  py:if="cotisation.get('x-paymentCashed').first() != 'TRUE'">
                     <input type="hidden" name="residence" value="${residence}" />
                     <input type="hidden" name="member_uid" value="${member_ldap.uid.first()}" />
@@ -52,7 +52,7 @@
             </div>
             <div py:for="cotisation in extras">
                 <span class="item_name"></span>
-                ${cotisation.cn.first()} - ${cotisation.get('x-action-user-info').first()} 
+                ${cotisation.cn.first()} - ${cotisation.get('x-action-user-info').first()} (${cotisation.get('x-amountPaid').first()})
                 <form method="post" action="/edit/cotisation/delete" style="display:inline;" py:if="cotisation.get('x-paymentCashed').first() != 'TRUE'">
                     <input type="hidden" name="residence" value="${residence}" />
                     <input type="hidden" name="member_uid" value="${member_ldap.uid.first()}" />
