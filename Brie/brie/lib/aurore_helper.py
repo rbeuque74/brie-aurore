@@ -113,7 +113,6 @@ class CotisationComputes:
         anniversary = 0
         # tri par ordre d'inscription
         result = sorted(result)
-
         if result != []:
             anniversary_day = result[0][0].day
             SORT_ORDER = {9: 0, 10: 1, 11: 2, 12: 3, 1: 4, 2: 5, 3: 6, 4: 7, 5: 8, 6: 9, 7: 10, 8: 11}
@@ -139,6 +138,15 @@ class CotisationComputes:
     #end def
 
     @staticmethod
+    # no cotisation for 2 years
+    def is_member_to_delete(member, user_session, residence_dn):
+        current_year = CotisationComputes.current_year()
+        cotisations_this_year = Cotisation.cotisations_of_member(user_session, member.dn, current_year)
+        cotisations_previous_year = Cotisation.cotisations_of_member(user_session, member.dn, current_year - 1)
+        return cotisations_this_year == [] and cotisations_previous_year == []
+    #end def
+
+    @staticmethod
     # 7 days grace period
     def is_cotisation_paid(member, user_session, residence_dn):
         if CotisationComputes.is_old_member(member, user_session, residence_dn):
@@ -149,6 +157,8 @@ class CotisationComputes:
         cotisations = Cotisation.cotisations_of_member(user_session, member.dn, current_year)
         anniversary = CotisationComputes.anniversary_from_ldap_items(cotisations)
         delta = (now - anniversary)
+        if member.dn == "uid=emir.kort,ou=2013,ou=membres,dc=ile,dc=u-psud,dc=fr":
+            print "member :" + member.dn + "delta :" + str(delta) + "now :" + str(now) + "anniversary :" + str(anniversary)
         return delta.days <= 7
     #end def
 

@@ -4,7 +4,7 @@ from brie.config import ldap_config
 from brie.lib.ldap_helper import *
 from brie.lib.aurore_helper import *
 from brie.model.ldap import *
-
+import sys
 import datetime
 import brie.config.credentials as credentials
 
@@ -24,6 +24,7 @@ sched = Scheduler()
 
 def disconnect_members_from_residence(admin_user, residence_dn):
     members =  Member.get_all(admin_user, residence_dn)
+    print (CotisationComputes.current_year())
 
     for member in members:
         
@@ -44,12 +45,33 @@ def disconnect_members_from_residence(admin_user, residence_dn):
             #end if
             
         #end if
+        if CotisationComputes.is_member_to_delete(member, admin_user, residence_dn):
+            # supprime les machines mais pas le membre (il pourrait avoir besoin du compte ex : Yohan, le LDAP d'Aurores, etc)
+            # alors test a ajouter pour ne supprimer que si membre d'aucun groupe
+            # duplication de code avec class MachineDeleteController
+            machine_dn = ldap_config.machine_base_dn + member.dn
+            machines = admin_user.ldap_bind.search(machine_dn, "(objectClass=organizationalRole)", scope = ldap.SCOPE_ONELEVEL)
+            for machine in machines:
+                    dns = Machine.get_dns_by_id(admin_user, machine.dn)
+                    ip = IpReservation.get_ip(admin_user, residence_dn, dns.dlzData.first())
+                    print("[LOG] suppression machine " + Machine.get_dhcps(admin_user, machine.dn)[0].get("dhcpHWAddress").values[0] + " pour l'utilisateur "+ member.dn + " par le scheduler")
+                    #sys.stdout.flush()
+                    admin_user.ldap_bind.delete_entry_subtree(machine.dn)
+                    if ip is not None:
+                        taken_attribute = ip.get("x-taken").first()
+                        if taken_attribute is not None:
+                            admin_user.ldap_bind.delete_attr(ip.dn, IpReservation.taken_attr(taken_attribute))
+                        #end if
+                    #end if
+            #end for
+        #end if
 
     #end for
             
 #end def
 
 @sched.interval_schedule(days=1, start_date="2013-09-30 22:14:37")
+#@sched.interval_schedule(minutes=1, start_date="2013-09-30 22:14:37")
 def disconnect_members_job():
     user = admin_user()
      
