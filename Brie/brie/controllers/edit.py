@@ -162,8 +162,16 @@ class MemberModificationController(AuthenticatedRestController):
         #end for
 
         now = datetime.now()
-
-        available_months = CotisationComputes.get_available_months(now.month, 8, paid_months)
+        #si le membre est en retard, on doit pas lui faire de cadeau sur sa cotisation si nous sommes dans le mois calendaire suivant de sa due date
+        if CotisationComputes.is_cotisation_late(show_values["member_ldap"], self.user, residence_dn) and CotisationComputes.anniversary_from_ldap_items(cotisations).day > now.day:
+            start_month = now.month - 1
+            if start_month < 0:
+                start_month = 12
+            #end if
+        else :
+            start_month = now.month
+        #end if
+        available_months = CotisationComputes.get_available_months(start_month, 8, paid_months)
 
         year_price = 0
         month_price = 0
@@ -178,6 +186,8 @@ class MemberModificationController(AuthenticatedRestController):
         available_months_prices = []
         index = 1
         
+        anniversary = CotisationComputes.generate_new_anniversary_from_ldap_items(cotisations)
+
         for available_month in available_months:
             if available_month == 8:
                 available_months_prices.append(
@@ -185,7 +195,7 @@ class MemberModificationController(AuthenticatedRestController):
                 )
             else: 
                 available_months_prices.append(
-                    (available_month, str(now.day) + " " + month_names[available_month % 12], CotisationComputes.price_to_pay(year_price, month_price, already_paid, index))
+                    (available_month, str(anniversary.day) + " " + month_names[available_month % 12], CotisationComputes.price_to_pay(year_price, month_price, already_paid, index))
                 )
             #end if
             index += 1

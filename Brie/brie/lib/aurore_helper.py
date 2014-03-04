@@ -100,33 +100,59 @@ class CotisationComputes:
     def anniversary_from_ldap_items(ldap_cotisations):
         result = []
         months = []
+        SORT_ORDER = {9: 0, 10: 1, 11: 2, 12: 3, 1: 4, 2: 5, 3: 6, 4: 7, 5: 8, 6: 9, 7: 10, 8: 11}
         for cotisation in ldap_cotisations:
+            cotisation_months = []
             anniversary_data = cotisation.get("x-time").first()
             anniversary_datetime = datetime.datetime.strptime(anniversary_data,
                 "%Y-%m-%d %H:%M:%S.%f") 
             for month in cotisation.get("x-validMonth").all():
                 months.append(int(month)) 
+                cotisation_months.append(int(month))
             #end for
-            result.append((anniversary_datetime, months))
+            cotisation_months.sort(key=lambda val: SORT_ORDER[val])
+            result.append((anniversary_datetime, cotisation_months))
         #end for
 
         anniversary = 0
         # tri par ordre d'inscription
         result = sorted(result)
-        if result != []:
-            anniversary_day = result[0][0].day
-            SORT_ORDER = {9: 0, 10: 1, 11: 2, 12: 3, 1: 4, 2: 5, 3: 6, 4: 7, 5: 8, 6: 9, 7: 10, 8: 11}
-            months.sort(key=lambda val: SORT_ORDER[val])
+        previousMonth = -1
+        months.sort(key=lambda val: SORT_ORDER[val])
+        #on scanne chaque cotisation
+        for resultat in result:
+            #si on n'est pas la premiere cotisation et que les cotisations sont sans interruptions (pas de mois manquants)
+            #la date anniversaire reste la meme
+            if previousMonth != -1 and ( (resultat[1][0] == 1 and previousMonth == 12) or (resultat[1][0] == previousMonth + 1) ):
+                previousMonth = resultat[1][-1]
+                continue;
+            #sinon on recalcule la date anniversaire
+            else : 
+                previousMonth = resultat[1][-1]
+            #end if
+            anniversary_day = resultat[0].day
             anniversary_month = months[-1] + 1
             if anniversary_month == 13:
                 anniversary_month = 1
             if anniversary_month > 9:
-                anniversary_year = result[0][0].year
+                anniversary_year = resultat[0].year
             else :
-                anniversary_year = result[0][0].year + 1
+                anniversary_year = resultat[0].year + 1
             anniversary = datetime.datetime.strptime(str(anniversary_year) + "-" + str(anniversary_month) + "-1 0:0", "%Y-%m-%d %H:%M") + datetime.timedelta(days=(anniversary_day - 1))
-        #end if
+        #end for
         return anniversary
+    #end def
+
+    @staticmethod
+    # fonction de renvoi de la date anniversaire qui est la date actuelle au cas ou il n'a pas cotise depuis 30 jours, sinon date anniversaire actuelle
+    def generate_new_anniversary_from_ldap_items(ldap_cotisations):
+        anniversary = CotisationComputes.anniversary_from_ldap_items(ldap_cotisations)
+        now = datetime.datetime.now()
+        if anniversary == 0 or (now - anniversary).days > 30:
+            return now
+        else : 
+            return anniversary
+        #end if
     #end def
 
     @staticmethod
