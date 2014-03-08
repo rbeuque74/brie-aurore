@@ -60,6 +60,7 @@ def disconnect_members_from_residence(admin_user, residence_dn):
                     if ip is not None:
                         taken_attribute = ip.get("x-taken").first()
                         if taken_attribute is not None:
+                            print ("[LOG] deleting taken_attribute")
                             admin_user.ldap_bind.delete_attr(ip.dn, IpReservation.taken_attr(taken_attribute))
                         #end if
                     #end if

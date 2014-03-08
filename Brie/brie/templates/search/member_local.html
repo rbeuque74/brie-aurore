@@ -8,7 +8,13 @@
     </head>
     <body> 
         <xi:include href="navbar.html" />
-         <table class="table table-hover">
+        <div class="section">                                                                                                                                                                                        
+            <form action="/getemails/" method="post" class="inline_block">
+                <input type="hidden" name="residence" value="${residence}"/>
+                <input type="submit" value="Récupérer toutes les adresses mails" class="button"/>
+            </form>
+        </div>
+        <table class="table table-hover">
             <tr>
                 <th>membre</th>
                 <th>chambre</th>

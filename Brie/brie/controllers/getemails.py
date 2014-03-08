@@ -22,9 +22,8 @@ class GetEmailsController(AuthenticatedBaseController):
         residence_dn = Residences.get_dn_by_name(self.user, residence_name)
         members = Member.get_all(self.user, residence_dn)
         emails = []
-        current_year = CotisationComputes.current_year()
         for member in members:
-            if len(Cotisation.cotisations_of_member(self.user, member.dn, current_year)) > 0:
+            if not CotisationComputes.is_old_member(member, self.user, residence_dn):
                 emails.append(member.mail.first())
             #end if
         #end for
