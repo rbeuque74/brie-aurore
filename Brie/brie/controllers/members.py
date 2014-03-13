@@ -36,11 +36,24 @@ class MembersController(AuthenticatedBaseController):
 
 		members = Member.get_all(self.user, residence_dn)
 		members = MembersController.sort_name(members)
+                
+                rooms = Room.get_rooms(self.user, residence_dn)
+                rooms_dict = dict()
+                for room in rooms:
+                    if room.get("x-memberIn").first is not None:
+                        rooms_dict[room.get("x-memberIn").first()] = room
+                    #end if
+                #end for
 
-		members_rooms = [
-			(member, Room.get_by_member_dn(self.user, residence_dn, member.dn))
-			for member in members
-		]
+                #raise Exception("ee")
+                members_rooms = []
+		for member in members:
+                    if member.dn in rooms_dict:
+                        members_rooms.append((member, rooms_dict[member.dn]))
+                    else:
+                        members_rooms.append((member, None))
+                    #end if
+                #end for
 
 		#    machines = Machine.get_machine_tuples_of_member(self.user, member.dn)
 

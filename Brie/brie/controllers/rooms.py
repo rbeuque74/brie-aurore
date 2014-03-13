@@ -45,26 +45,34 @@ class RoomsController(AuthenticatedBaseController):
         status = dict()
         areas = dict()
        
-        print "here 1"
- 
         residence_dn = Residences.get_dn_by_name(self.user, residence_name)
         if residence_dn is None:
             raise Exception("unknown residence")
         #end if
 
-        print "here 1 bis"
-
-        stats = CotisationComputes.members_status_from_residence(self.user, residence_dn)
-        print "here 2"
-      
+        current_year = CotisationComputes.current_year()
+        cotisations_year = Cotisation.get_all_cotisation_by_year(self.user, residence_dn, current_year)
+        
+        stats = CotisationComputes.members_status_from_list_cotisations(self.user, residence_dn, cotisations_year)
+        
         members = dict()
+        members_entries = Member.get_all(self.user, residence_dn)
+        members_entries_dict = dict()
+        for member in members_entries:
+            members_entries_dict[member.dn] = member
+        #end for
         for label in stats:
-            for member in stats[label]:
-                members[member.dn] = label
+            liste = []
+            for member_dn in stats[label]:
+                members[member_dn] = label
+                liste.append(member_dn)
             #end for member
+            for item in liste:
+                stats[label].remove(item)
+                stats[label].append(members_entries_dict[item])
+            #end for item liste
         #end for stats
-
-        print "here 3"
+            
 
         stats['number_of_rooms'] = Room.get_number_of_rooms(self.user, residence_dn)
         stats['empty_rooms'] = []

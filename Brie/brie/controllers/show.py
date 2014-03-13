@@ -29,6 +29,8 @@ class ShowController(AuthenticatedBaseController):
         residence_dn = Residences.get_dn_by_name(self.user, residence)    
     
         member = Member.get_by_uid(self.user, residence_dn, uid)
+#        truc = self.user.ldap_bind.get_childs("uid=romain.beuque,ou=2012,ou=membres,dc=emilie,dc=u-psud,dc=fr") 
+#        raise Exception("")
 
         if member is None:
             return self.error_no_entry()
