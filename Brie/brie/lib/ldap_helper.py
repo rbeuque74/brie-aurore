@@ -108,6 +108,33 @@ class Ldap(object):
         return ldap_results
     #end def
 
+    def get_childs(self, dn, filter = "(objectClass=*)"):
+        results = self.search(dn, filter)
+        tree = [None, dict()]
+
+        for result in results:
+            if result.dn == dn:
+                tree[0] = result
+            else:
+                result_dn = result.dn.replace(dn, "").split(",")
+                tree_c = tree
+                result_dn.reverse()
+                for dn_split in result_dn:
+                    if dn_split != "":
+                        if not dn_split in tree_c[1]:
+                            tree_c[1][dn_split] = [None, dict()]
+                            tree_c = tree_c[1][dn_split]
+                        else:
+                            tree_c = tree_c[1][dn_split]
+                        #end if
+                    #end if
+                #end for
+                tree_c[0] = result
+            #end if 
+        #end for
+        return LdapEntryTree(tree[0], tree[1])
+    #end def 
+
     """ Recherche le premier resultat sur la base
         appel la methode "search" en interne
     """
@@ -499,4 +526,28 @@ class LdapAttribute(object):
     #end def
 
 #end class
-    
+   
+class LdapEntryTree(LdapEntry):
+    childs = None
+    val = None
+
+    def __init__(self, val, childs):
+        self.__dict__ = val.__dict__
+        if len(childs) > 0:
+            self.childs = dict()
+            for key,child in childs.iteritems():
+                key = key.split("=")[1]
+                self.childs[key] = LdapEntryTree(child[0], child[1])
+                self.__dict__[key] = self.childs[key]
+            #end for
+        #end if
+    #end def
+
+    def __getattr__(self, name):
+        attr = LdapAttribute(name, [])
+        self.__dict__[name] = attr
+        
+        return attr
+    #end def
+
+#end class 

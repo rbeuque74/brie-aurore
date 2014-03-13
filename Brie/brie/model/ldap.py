@@ -420,6 +420,18 @@ class Cotisation:
     #end def
 
     @staticmethod
+    def get_all_cotisation_by_year(user_session, residence_dn, year):
+        dn = ldap_config.username_base_dn + residence_dn
+        return user_session.ldap_bind.search(dn, "(&(objectClass=auroreCotisation)(x-year=" + str(year) + "))")
+    #end def
+
+    @staticmethod
+    def get_all_cotisation(user_session, residence_dn):
+        dn = ldap_config.username_base_dn + residence_dn
+        return user_session.ldap_bind.search(dn, "(objectClass=auroreCotisation)")
+    #end def
+
+    @staticmethod
     def get_all_payment_by_year(user_session, residence_dn, year):
         dn = ldap_config.username_base_dn + residence_dn
         return user_session.ldap_bind.search(dn, "(&(objectClass=aurorePayment)(x-year=" + str(year) + "))")
