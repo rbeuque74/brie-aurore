@@ -163,7 +163,7 @@ class MemberModificationController(AuthenticatedRestController):
 
         now = datetime.now()
         #si le membre est en retard, on doit pas lui faire de cadeau sur sa cotisation si nous sommes dans le mois calendaire suivant de sa due date
-        if CotisationComputes.is_cotisation_late(show_values["member_ldap"], self.user, residence_dn) and CotisationComputes.anniversary_from_ldap_items(cotisations).day > now.day:
+        if CotisationComputes.is_cotisation_late(show_values["member_ldap"].dn, self.user, residence_dn) and CotisationComputes.anniversary_from_ldap_items(cotisations).day > now.day:
             start_month = now.month - 1
             if start_month < 0:
                 start_month = 12
@@ -400,6 +400,9 @@ class MachineAddController(AuthenticatedRestController):
         #endif
 
         name = try_name(name, 0)
+        
+        #On retire les underscore interdits
+        name = re.sub('_', '-', name)
 
         # Génération de l'id de la machine et recherche d'une ip libre
         ip = IpReservation.get_first_free(self.user, residence_dn)
