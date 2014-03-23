@@ -399,11 +399,11 @@ class MachineAddController(AuthenticatedRestController):
             #end if
         #endif
 
-        name = try_name(name, 0)
-        
         #On retire les underscore interdits
         name = re.sub('_', '-', name)
 
+        name = try_name(name, 0)
+        
         # Génération de l'id de la machine et recherche d'une ip libre
         ip = IpReservation.get_first_free(self.user, residence_dn)
 

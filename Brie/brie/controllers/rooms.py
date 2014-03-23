@@ -44,7 +44,7 @@ class RoomsController(AuthenticatedBaseController):
     def index(self, residence_name):
         status = dict()
         areas = dict()
-       
+        print str(datetime.datetime.now()) + "RoomsIndex0"
         residence_dn = Residences.get_dn_by_name(self.user, residence_name)
         if residence_dn is None:
             raise Exception("unknown residence")
@@ -52,11 +52,12 @@ class RoomsController(AuthenticatedBaseController):
 
         current_year = CotisationComputes.current_year()
         cotisations_year = Cotisation.get_all_cotisation_by_year(self.user, residence_dn, current_year)
-        
+        print str(datetime.datetime.now()) + "RoomsIndex1 - cotis"
         stats = CotisationComputes.members_status_from_list_cotisations(self.user, residence_dn, cotisations_year)
-        
+        print str(datetime.datetime.now()) + "RoomsIndex2 - cotisComput"
         members = dict()
         members_entries = Member.get_all(self.user, residence_dn)
+        print str(datetime.datetime.now()) + "RoomsIndex3 - members"
         members_entries_dict = dict()
         for member in members_entries:
             members_entries_dict[member.dn] = member
@@ -77,7 +78,7 @@ class RoomsController(AuthenticatedBaseController):
         stats['number_of_rooms'] = Room.get_number_of_rooms(self.user, residence_dn)
         stats['empty_rooms'] = []
 
-        print "here 4"
+        print str(datetime.datetime.now()) + "RoomsIndex4"
 
         for area in Room.get_areas(self.user, residence_dn):
             areas[area] = dict()
