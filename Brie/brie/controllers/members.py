@@ -107,13 +107,17 @@ class MembersController(AuthenticatedBaseController):
 		#	phone = member.mobile.first()
 		#member_uid = self.member_edit_controller.add.post(residence_name, member.givenName.first(), member.sn.first(), member.mail.first(), phone, False)
                 
-                member = Member.get_by_dn(self.user, member_dn)
-                member_uid = member.uid.first()
+                member_new_res = Member.get_by_dn(self.user, member_dn)
+                member_uid_origin = member.uid.first()
+                new_member_uid = member.uid.first()
                 number = 1
-                while member is not None:
-		    member_dn = "uid=" + member_uid + number + ",ou=" + str(registration_year) + "," + ldap_config.username_base_dn + residence_dn
+                while member_new_res is not None:
+                    member.uid.values.remove(new_member_uid)
+                    new_member_uid = member_uid_origin + number
+                    member_dn = "uid=" + new_member_uid + ",ou=" + str(registration_year) + "," + ldap_config.username_base_dn + residence_dn
                     number = number + 1
-                    member = Member.get_by_dn(self.user, member_dn)
+                    member.uid.values.append(new_member_uid)
+                    member_new_res = Member.get_by_dn(self.user, member_dn)
                 #end while
  
 		self.user.ldap_bind.clone_entry(member_dn, member)
