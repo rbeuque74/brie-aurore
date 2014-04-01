@@ -60,9 +60,9 @@ class SearchController(AuthenticatedBaseController):
     @expose("brie.templates.search.member")
     def email(self, residence, email, global_search = None):
         if global_search is not None and self.user.groups.admin:
-            self.email_global(residence, email)
+            return self.email_global(residence, email)
         else:
-            self.email_local(residence, email)
+            return self.email_local(residence, email)
         #end if
     #end def
 

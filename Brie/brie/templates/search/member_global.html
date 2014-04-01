@@ -23,7 +23,7 @@
                     <td py:otherwise=""><a href="/show/room/${mresidence}/${room.uid.first()}">${room.cn.first()}</a></td>
                 </py:choose>
                 <td>
-                    <form action="/members/demenageResidence/" style="margin-bottom:0px" method="post" class="inline_block">
+                    <form action="/members/demenageResidence/" style="margin-bottom:0px" method="post" class="inline_block" py:if="mresidence != residence">
                         <input type="hidden" name="member_dn" value="${member.dn}"/>
                         <input type="submit" value="Move" class="button"/>
                     </form>
