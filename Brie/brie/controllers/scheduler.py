@@ -31,7 +31,7 @@ def disconnect_members_from_residence(admin_user, residence_dn):
         machines_tuples = Machine.get_machine_tuples_of_member(admin_user, member.dn)
         if machines_tuples != []:
             
-            if not CotisationComputes.is_cotisation_paid(member, admin_user, residence_dn):
+            if not CotisationComputes.is_cotisation_paid(member.dn, admin_user, residence_dn):
                 dhcps = Machine.get_dhcps(admin_user, member.dn)
                 machine_membre_tag = "machine_membre" # FIXME move to config
 
