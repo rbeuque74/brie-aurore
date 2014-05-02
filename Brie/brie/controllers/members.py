@@ -41,7 +41,7 @@ class MembersController(AuthenticatedBaseController):
                 rooms = Room.get_rooms(self.user, residence_dn)
                 rooms_dict = dict()
                 for room in rooms:
-                    if room.get("x-memberIn").first is not None:
+                    if room.get("x-memberIn").first() is not None:
                         rooms_dict[room.get("x-memberIn").first()] = room
                     #end if
                 #end for

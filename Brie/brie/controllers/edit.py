@@ -913,7 +913,7 @@ class RoomChangeMemberController(AuthenticatedRestController):
         if room is None:
             raise Exception("room inconnue")
 
-        if room.get("x-memberIn") is not None and room.get("x-memberIn").first() != 'None':
+        if room.get("x-memberIn") is not None and room.get("x-memberIn").first() is not None:
             memberIn_attribute = Room.memberIn_attr(str(room.get("x-memberIn").first()))
             self.user.ldap_bind.delete_attr(room.dn, memberIn_attribute)
             print("[LOG] retrait de chambre pour le member "+room.get("x-memberIn").first() +" from "+ room_uid +" by "+self.user.attrs.dn)
