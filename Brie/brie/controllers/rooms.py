@@ -80,32 +80,37 @@ class RoomsController(AuthenticatedBaseController):
 
         print str(datetime.datetime.now()) + "RoomsIndex4"
 
-        for area in Room.get_areas(self.user, residence_dn):
-            areas[area] = dict()
+        myResidence = self.user.ldap_bind.get_childs(ldap_config.room_base_dn + residence_dn);
+        for batKey, bat in myResidence.childs.iteritems():
+            if 'pacateriearea' in bat.objectClass.all() or 'pacaterieArea' in bat.objectClass.all():
+                areas[bat.value] = dict()
 
-            for floor in Room.get_floors(self.user, area.dn):
-                areas[area][floor] = list()
+                for floorKey, floor in bat.childs.iteritems():
+                    if 'pacateriefloor' in floor.objectClass.all() or 'pacaterieFloor' in floor.objectClass.all():
+                        areas[bat.value][floor.value] = list()
 
-                for room in Room.get_rooms_of_floor(self.user, floor.dn):
-                    if not room.has("x-memberIn"):
-                        stats['empty_rooms'].append(room)
-                        room.add('status', "empty_room")
-                    elif room.get("x-memberIn").first() in members:
-                        room.add('status', members[room.get("x-memberIn").first()])
-                    #endif
+                        for roomKey, room in floor.childs.iteritems():
+                            if 'pacaterieroom' in room.objectClass.all() or 'pacaterieRoom' in room.objectClass.all():
+                                if not room.has("x-memberIn"):
+                                    stats['empty_rooms'].append(room)
+                                    room.add('status', "empty_room")
+                                elif room.get("x-memberIn").first() in members:
+                                    room.add('status', members[room.get("x-memberIn").first()])
+                                #endif
 
-                    areas[area][floor].append(room)
+                                areas[bat.value][floor.value].append(room)
 
-
-                    color = self.color_picker("foobar")
-                    if color in status:
-                        status[color] = status[color] + 1
-                    else:
-                        status[color] = 0
-                    #end if
-
-                #end for room
-            #end for floor
+                                color = self.color_picker("foobar")
+                                if color in status:
+                                    status[color] = status[color] + 1
+                                else:
+                                    status[color] = 0
+                                #end if
+                            #end if room
+                        #end for room
+                    #end if floor
+                #end for floor
+            #end if area
         #end for area
 
         return {

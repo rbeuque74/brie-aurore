@@ -532,7 +532,9 @@ class LdapEntryTree(LdapEntry):
     val = None
 
     def __init__(self, val, childs):
+        self.val = val
         self.__dict__ = val.__dict__
+        self.__dict__['value'] = val
         if len(childs) > 0:
             self.childs = dict()
             for key,child in childs.iteritems():

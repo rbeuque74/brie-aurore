@@ -176,8 +176,8 @@ class CotisationComputes:
 
     @staticmethod
     # 7 days grace period
-    def is_cotisation_paid(member_dn, user_session, residence_dn, cotisations = None):
-        if CotisationComputes.is_old_member(member_dn, user_session, residence_dn, cotisations):
+    def is_cotisation_paid(member_dn, user_session, residence_dn, cotisations = None, anniversary = None, verification_old_member = True):
+        if verification_old_member and CotisationComputes.is_old_member(member_dn, user_session, residence_dn, cotisations):
             return False
         if cotisations is None:
             current_year = CotisationComputes.current_year()
@@ -187,15 +187,19 @@ class CotisationComputes:
         if cotisations is None:
             cotisations = Cotisation.cotisations_of_member(user_session, member_dn, current_year)
         #end if
-        anniversary = CotisationComputes.anniversary_from_ldap_items(cotisations)
+
+        if anniversary is None:
+            anniversary = CotisationComputes.anniversary_from_ldap_items(cotisations)
+        #end if
+
         delta = (now - anniversary)
         return delta.days <= 7
     #end def
 
     @staticmethod
     # less than a month late but more than a week
-    def is_cotisation_late(member_dn, user_session, residence_dn, cotisations = None):
-        if CotisationComputes.is_old_member(member_dn, user_session, residence_dn, cotisations):
+    def is_cotisation_late(member_dn, user_session, residence_dn, cotisations = None, anniversary = None, verification_old_member = True):
+        if verification_old_member and CotisationComputes.is_old_member(member_dn, user_session, residence_dn, cotisations):
             return False
         if cotisations is None:
             current_year = CotisationComputes.current_year()
@@ -205,7 +209,11 @@ class CotisationComputes:
         if cotisations is None:
             cotisations = Cotisation.cotisations_of_member(user_session, member_dn, current_year)
         #end if
-        anniversary = CotisationComputes.anniversary_from_ldap_items(cotisations)
+
+        if anniversary is None:
+            anniversary = CotisationComputes.anniversary_from_ldap_items(cotisations)
+        #end if
+
         delta = (now - anniversary)
         #print("[DEBUG] cotisation en retard pour l'utilisateur "+ member.dn +" now="+ str(now) +" anniversary="+ str(anniversary) +" delta="+ str(delta))
         return delta.days <= 30 and delta.days > 7
@@ -213,8 +221,8 @@ class CotisationComputes:
 
     @staticmethod
     # more than a month late
-    def is_no_cotisation(member_dn, user_session, residence_dn, cotisations = None):
-        if CotisationComputes.is_old_member(member_dn, user_session, residence_dn, cotisations):
+    def is_no_cotisation(member_dn, user_session, residence_dn, cotisations = None, anniversary = None, verification_old_member = True):
+        if verification_old_member and CotisationComputes.is_old_member(member_dn, user_session, residence_dn, cotisations):
             return False
         if cotisations is None:
             current_year = CotisationComputes.current_year()
@@ -224,7 +232,11 @@ class CotisationComputes:
         if cotisations is None:
             cotisations = Cotisation.cotisations_of_member(user_session, member_dn, current_year)
         #end if
-        anniversary = CotisationComputes.anniversary_from_ldap_items(cotisations)
+
+        if anniversary is None:
+            anniversary = CotisationComputes.anniversary_from_ldap_items(cotisations)
+        #end if
+        
         delta = (now - anniversary)
         return delta.days > 30
     #end def
@@ -276,19 +288,35 @@ class CotisationComputes:
             #end if
         #end for
 
+        print str(datetime.datetime.now()) + "members_status_from_list_cotisations:" + str(len(members_dict))
+
         old_members = []
         cotisation_paid_members = []
         cotisation_late_members = []
         no_cotisation_members = []
+
+        #on va verifier en un block quels sont les old_members
         for member_dn, cotisations in members_dict.iteritems():
-            if CotisationComputes.is_old_member(member_dn, user_session, residence_dn, cotisations):
-                old_members.append(member_dn)
-            elif CotisationComputes.is_cotisation_paid(member_dn, user_session, residence_dn, cotisations):
+            old_members.append(member_dn)
+        #end for
+        rooms = Room.get_rooms(user_session, residence_dn)
+        for room in rooms:
+            #pour chaque chambre, on check si il a un proprietaire, et si ce dernier a des cotisations
+            if room.has("x-memberIn") and room.get("x-memberIn").first() in members_dict and room.get("x-memberIn").first() in old_members:
+                #si oui, bah on le retire des old_members
+                old_members.remove(room.get("x-memberIn").first())
+            #endif
+        #endfor
+
+
+        for member_dn, cotisations in members_dict.iteritems():
+            anniversary = CotisationComputes.anniversary_from_ldap_items(cotisations)
+            if CotisationComputes.is_cotisation_paid(member_dn, user_session, residence_dn, cotisations, anniversary, False):
                 cotisation_paid_members.append(member_dn)
-            elif CotisationComputes.is_cotisation_late(member_dn, user_session, residence_dn, cotisations):
+            elif CotisationComputes.is_cotisation_late(member_dn, user_session, residence_dn, cotisations, anniversary, False):
                 cotisation_late_members.append(member_dn)
                 #print("[DEBUG] cotisation en retard pour l'utilisateur "+ member.dn)
-            elif CotisationComputes.is_no_cotisation(member_dn, user_session, residence_dn, cotisations):
+            elif CotisationComputes.is_no_cotisation(member_dn, user_session, residence_dn, cotisations, anniversary, False):
                 no_cotisation_members.append(member_dn)
             else:
                 print "DEBUG : member with weird status !"
