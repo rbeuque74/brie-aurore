@@ -481,11 +481,11 @@ class CotisationController(AuthenticatedBaseController):
 
     add  = None
     delete = None
+    grace = None
     def __init__(self):
         self.add = CotisationAddController()
         self.delete = CotisationDeleteController()
-
-
+        self.grace = CotisationGraceController()
     #end def
 
 
@@ -523,6 +523,38 @@ class CotisationDeleteController(AuthenticatedRestController):
 
 #end class
 
+
+class CotisationGraceController(AuthenticatedRestController):
+    require_group = groups_enum.responsablereseau
+
+    @expose()
+    def post(self, residence, member_uid, cotisation_cn):
+        residence_dn = Residences.get_dn_by_name(self.user, residence)
+        member = Member.get_by_uid(self.user, residence_dn, member_uid)
+
+        if member is None:
+            raise Exception('membre inconnu')
+        #end if
+
+        current_year = CotisationComputes.current_year()
+
+        cotisation = Cotisation.get_payment_by_name(self.user, member.dn, cotisation_cn, current_year)
+
+        if cotisation.has('x-paymentCashed') and cotisation.get('x-paymentCashed').first() == 'TRUE':
+            raise Exception('Impossible de gracier une cotisation encaissée')
+        #end if
+
+        old_montant = cotisation.get("x-amountPaid").first()
+        cotisation.get("x-amountPaid").replace(cotisation.get("x-amountPaid").first(), 0)
+        self.user.ldap_bind.save(cotisation)
+
+        print("[LOG] cotisation graciee (" + old_montant + "EUR) pour l'utilisateur "+ member.dn + " par l'admin "+ self.user.attrs.dn)
+
+        redirect("/edit/member/"+residence+"/"+member_uid)
+
+    #end def
+
+#end class
 
 
 class CotisationAddController(AuthenticatedRestController):
