@@ -24,7 +24,7 @@ class RegistrationController(AuthenticatedBaseController):
 
     member_edit_controller = None
 
-    quick_last_registrations = []
+    quick_last_registrations = dict()
 
     def __init__(self, member_edit_controller):
         self.new = NewRegistrationController(member_edit_controller)
@@ -91,11 +91,17 @@ class RegistrationController(AuthenticatedBaseController):
 
         extras_available = Cotisation.get_all_extras(self.user, self.user.residence_dn)
 
+        if residence in RegistrationController.quick_last_registrations:
+            quick_last = RegistrationController.quick_last_registrations[residence]
+        else:
+            quick_last = []
+        #end if
+
         return {
             "user" : self.user,
             "residence" : residence,
             "rooms" : rooms,
-            "quick_last" : RegistrationController.quick_last_registrations,
+            "quick_last" : quick_last,
             "available_months_prices" : available_months_prices,
             "extras_available" : extras_available
         }
@@ -152,10 +158,15 @@ class NewRegistrationController(AuthenticatedRestController):
         member = Member.get_by_uid(self.user, self.user.residence_dn, member_uid)
 
         if member is not None:
-            RegistrationController.quick_last_registrations.append(member)
+            if residence not in RegistrationController.quick_last_registrations:
+                RegistrationController.quick_last_registrations[residence] = []
+            #end if
+            RegistrationController.quick_last_registrations[residence].append(member)
         #end if
 
-        self.member_edit_controller.room.move.post(residence, member_uid, room_uid, erase = True, go_redirect = False)
+        if room_uid != "":
+            self.member_edit_controller.room.move.post(residence, member_uid, room_uid, erase = True, go_redirect = False)
+        #end if
         try:
             self.member_edit_controller.machine.add.post(residence, member_uid, first_machine_name, first_machine_mac, go_redirect = False)
             self.member_edit_controller.cotisation.add.post(residence, member_uid, next_end, extra_name, go_redirect = False)        

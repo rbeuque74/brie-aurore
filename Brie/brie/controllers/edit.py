@@ -75,9 +75,27 @@ class MemberAddController(AuthenticatedRestController):
                     phone = ' '
                 #end if
 
-		member = Member.entry_attr(member_uid, prenom, nom, mail, phone, -1)
-
 		residence_dn = Residences.get_dn_by_name(self.user, residence)
+                
+                # On modifie silencieusement le nom de la machine si il existe déjà
+                def try_name(name, number):
+                    actual_name = name
+                    if number > 0:
+                        actual_name = name + str(number)
+                    #end if 
+        
+                    member = Member.get_by_uid(self.user, residence_dn, actual_name)
+                    if member is not None:
+                        return try_name(name, number + 1)
+                    else:
+                        return actual_name
+                    #end if
+                #endif
+
+                member_uid = try_name(member_uid, 0)
+        
+
+		member = Member.entry_attr(member_uid, prenom, nom, mail, phone, -1)
 
 		now = datetime.now()
 		year = 0
@@ -864,9 +882,10 @@ class RoomMoveController(AuthenticatedRestController):
         else:
             old_room = Room.get_by_member_dn(self.user, residence_dn, member.dn)
             memberIn_attribute = Room.memberIn_attr(str(member.dn))
-            self.user.ldap_bind.delete_attr(old_room.dn, memberIn_attribute)
-
-            print("[LOG] retrait de chambre pour le member "+member_uid+" from "+ old_room.uid.first() +" by "+self.user.attrs.dn)
+            if old_room is not None:
+                self.user.ldap_bind.delete_attr(old_room.dn, memberIn_attribute)
+                print("[LOG] retrait de chambre pour le member "+member_uid+" from "+ old_room.uid.first() +" by "+self.user.attrs.dn)
+            #end if
         #end if
             
             #self.user.ldap_bind.delete_entry_subtree(machine.dn)
