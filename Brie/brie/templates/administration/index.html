@@ -17,6 +17,7 @@
                     </py:when>
                     <py:otherwise>
                         <span class="enum_block" py:for="member in group.uniqueMember.values">${member}  <a class="link_button" href="groups/delete_member/${group.cn.first()}/${member}">retirer</a></span>
+                        <a href="groups/grace_cotisation/${group.cn.first()}" class="button">gracier le groupe</a>
                     </py:otherwise>
                 </div>
             </div>
