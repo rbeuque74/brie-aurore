@@ -27,7 +27,10 @@
                     <select name="room_uid">
                         <option value="">&lt;vide&gt;</option>
                         <py:for each="target_room in rooms">
-                            <option value="${target_room.uid.first()}">${target_room.cn.first()}</option>
+                            <py:choose test="target_room.uid.first()">
+                                <option value="${target_room.uid.first()}" py:when="room_ldap.uid.first()" selected="selected">${target_room.cn.first()} (actuelle)</option>
+                                <option value="${target_room.uid.first()}" py:otherwise="">${target_room.cn.first()}</option>
+                            </py:choose>
                         </py:for>
                     </select>
                     <input type="hidden" name="residence" value="${residence}"/>

@@ -182,8 +182,10 @@ class NewRegistrationController(AuthenticatedRestController):
         #end if
         try:
             self.member_edit_controller.machine.add.post(residence, member_uid, first_machine_name, first_machine_mac, go_redirect = False)
-            self.member_edit_controller.cotisation.add.post(residence, member_uid, next_end, extra_name, go_redirect = False)   
-            self.administration_controller.groups.add_member.post(group_cn, member.dn, go_redirect = False)
+            self.member_edit_controller.cotisation.add.post(residence, member_uid, next_end, extra_name, go_redirect = False)
+            if group_cn != "":
+                self.administration_controller.groups.add_member.post(group_cn, member.dn, go_redirect = False)
+            #end if
         except:
             redirect("/registration/error/" + member_uid)
 
