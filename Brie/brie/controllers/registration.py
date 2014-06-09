@@ -163,7 +163,8 @@ class NewRegistrationController(AuthenticatedRestController):
         #end if
 
         # On ne permet pas a des simples aides membres d'ajouter a des groupes
-        if group_cn != "" and groups_enum.responsablereseau not in self.user.groups.list():
+        groupsPredefinis = [groups_enum.responsablereseau, groups_enum.admin, groups_enum.membreca, groups_enum.tresorier, groups_enum.respsalleinfo, groups_enum.exemptdecoglobale]
+        if group_cn != "" and group_cn in groupsPredefinis and groups_enum.responsablereseau not in self.user.groups.list():
             group_cn = ""
         #end if
 
@@ -229,7 +230,8 @@ class ErrorRecoveryRegistrationController(AuthenticatedRestController):
                 self.member_edit_controller.cotisation.add.post(residence, member_uid, next_end, extra_name, go_redirect = False)
 
             # On ne permet pas a des simples aides membres d'ajouter a des groupes
-            if group_cn != "" and groups_enum.responsablereseau not in self.user.groups.list():
+            groupsPredefinis = [groups_enum.responsablereseau, groups_enum.admin, groups_enum.membreca, groups_enum.tresorier, groups_enum.respsalleinfo, groups_enum.exemptdecoglobale]
+            if group_cn != "" and group_cn in groupsPredefinis and groups_enum.responsablereseau not in self.user.groups.list():
                 group_cn = ""
             #end if
 
