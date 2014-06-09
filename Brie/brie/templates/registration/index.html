@@ -57,6 +57,17 @@
                 <span class="section_name show_section_name">COTISATION</span>
                 <xi:include href="../edit/cotisation-edit.html" />
             </div>
+            <div class="section">
+                <div>
+                    <span class="item_name">ajouter a un groupe // RESPONSABLE RESEAU UNIQUEMENT</span>
+                    <select name="group_cn">
+                        <option value="">---</option>
+                        <option py:for="group in groupes" value="${group.cn.first()}">
+                            ${group.cn.first()}
+                        </option>
+                    </select>
+                </div>
+            </div>
             <div class="section">                
                 <div>
                     <div>

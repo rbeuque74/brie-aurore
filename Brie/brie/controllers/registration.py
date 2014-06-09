@@ -23,13 +23,15 @@ class RegistrationController(AuthenticatedBaseController):
     require_group = groups_enum.admin    
 
     member_edit_controller = None
+    administration_controller = None
 
     quick_last_registrations = dict()
 
-    def __init__(self, member_edit_controller):
-        self.new = NewRegistrationController(member_edit_controller)
+    def __init__(self, member_edit_controller, administration_controller):
+        self.new = NewRegistrationController(member_edit_controller, administration_controller)
         self.recover = ErrorRecoveryRegistrationController(member_edit_controller)
         self.member_edit_controller = member_edit_controller
+        self.administration_controller = administration_controller
     #end def
 
     @expose("brie.templates.registration.index")
@@ -97,13 +99,16 @@ class RegistrationController(AuthenticatedBaseController):
             quick_last = []
         #end if
 
+        groupes = Groupes.get_all(self.user, self.user.residence_dn)
+
         return {
             "user" : self.user,
             "residence" : residence,
             "rooms" : rooms,
             "quick_last" : quick_last,
             "available_months_prices" : available_months_prices,
-            "extras_available" : extras_available
+            "extras_available" : extras_available,
+            "groupes" : groupes
         }
     #end class
 
@@ -135,23 +140,31 @@ class NewRegistrationController(AuthenticatedRestController):
     require_group = groups_enum.admin
 
     member_edit_controller = None
+    administration_controller = None
 
-    def __init__(self, member_edit_controller):
+    def __init__(self, member_edit_controller, administration_controller):
         self.member_edit_controller = member_edit_controller
+        self.administration_controller = administration_controller
 
     @expose()
     def post(self, residence, sn, givenName, mail, phone, 
         room_uid, first_machine_name, first_machine_mac,
-        next_end, extra_name
+        next_end, extra_name, group_cn
     ):
         # Initialisation des Users des Controllers Existant appellés 
         self.member_edit_controller.add.user = self.user
         self.member_edit_controller.machine.add.user = self.user
         self.member_edit_controller.room.move.user = self.user
         self.member_edit_controller.cotisation.add.user = self.user
+        self.administration_controller.groups.add_member.user = self.user
 
         if phone == '':
             phone = ' '
+        #end if
+
+        # On ne permet pas a des simples aides membres d'ajouter a des groupes
+        if group_cn != "" and groups_enum.responsablereseau not in self.user.groups.list():
+            group_cn = ""
         #end if
 
         member_uid = self.member_edit_controller.add.post(residence, givenName, sn, mail, phone, go_redirect = False)
@@ -169,8 +182,8 @@ class NewRegistrationController(AuthenticatedRestController):
         #end if
         try:
             self.member_edit_controller.machine.add.post(residence, member_uid, first_machine_name, first_machine_mac, go_redirect = False)
-            self.member_edit_controller.cotisation.add.post(residence, member_uid, next_end, extra_name, go_redirect = False)        
-
+            self.member_edit_controller.cotisation.add.post(residence, member_uid, next_end, extra_name, go_redirect = False)   
+            self.administration_controller.groups.add_member.post(group_cn, member.dn, go_redirect = False)
         except:
             redirect("/registration/error/" + member_uid)
 
@@ -190,7 +203,7 @@ class ErrorRecoveryRegistrationController(AuthenticatedRestController):
     @expose()
     def post(self, residence, member_uid, room_uid, 
             first_machine_name, first_machine_mac, 
-            next_end, extra_name):
+            next_end, extra_name, group_cn):
         member = Member.get_by_uid(self.user, self.user.residence_dn, member_uid)
         
         if member is None:
@@ -211,7 +224,16 @@ class ErrorRecoveryRegistrationController(AuthenticatedRestController):
 
 
             if next_end != "":
-                self.member_edit_controller.cotisation.add.post(residence, member_uid, next_end, extra_name, go_redirect = False)        
+                self.member_edit_controller.cotisation.add.post(residence, member_uid, next_end, extra_name, go_redirect = False)
+
+            # On ne permet pas a des simples aides membres d'ajouter a des groupes
+            if group_cn != "" and groups_enum.responsablereseau not in self.user.groups.list():
+                group_cn = ""
+            #end if
+
+            if group_cn != "":
+                self.administration_controller.groups.add_member.post(group_cn, member.dn, go_redirect = False)
+            #end if
         except:
             redirect("/registration/error/" + member_uid)
         #end try

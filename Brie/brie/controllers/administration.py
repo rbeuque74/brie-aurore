@@ -18,7 +18,7 @@ from operator import itemgetter
 class GroupAddMemberController(AuthenticatedRestController):
     
     @expose()
-    def post(self, group_cn, user_dn):
+    def post(self, group_cn, user_dn, go_redirect = True):
         groups_of_user = Groupes.get_by_user_dn(self.user, self.user.residence_dn, user_dn)
 
         if group_cn in groups_of_user:
@@ -34,7 +34,9 @@ class GroupAddMemberController(AuthenticatedRestController):
         attr = Groupes.unique_member_attr(user_dn)
         self.user.ldap_bind.add_attr(target_group.dn, attr)
 
-        redirect("/administration/")
+        if go_redirect:
+            redirect("/administration/")
+        #end if
     #end def
 
 #end class
