@@ -61,7 +61,6 @@ class RootController(BaseController):
     registration = RegistrationController(edit, administration)
     treasury = TreasuryController()
     plugins = PluginsController()
-    groups = GroupsController()
     
     @expose('brie.templates.index')
     def index(self):
