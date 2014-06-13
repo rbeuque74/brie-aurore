@@ -27,7 +27,6 @@ from brie.controllers.error import ErrorController
 from brie.controllers.registration import RegistrationController
 from brie.controllers.treasury import TreasuryController
 from brie.controllers.plugins import PluginsController
-from brie.controllers.groups import GroupsController
 
 
 __all__ = ['RootController']
