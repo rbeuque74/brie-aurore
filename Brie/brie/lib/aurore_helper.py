@@ -134,9 +134,11 @@ class CotisationComputes:
             anniversary_month = months[-1] + 1
             if anniversary_month == 13:
                 anniversary_month = 1
-            if anniversary_month > 9:
+            if anniversary_month > 9 or resultat[0].month < 9:
+                #on reste avec une annee d'anniversaire sur l'annee de la cotisation si l'anniversaire est entre septembre et decembre, mais on met aussi l'annee_anniversaire la meme annee que la cotisation si on a cotise entre janvier et aout
                 anniversary_year = resultat[0].year
             else :
+                #sinon, c'est qu'on a cotise entre septembre et decembre et que notre fin de cotisation est l'annee suivante, donc on fait un +1
                 anniversary_year = resultat[0].year + 1
             anniversary = datetime.datetime.strptime(str(anniversary_year) + "-" + str(anniversary_month) + "-1 0:0", "%Y-%m-%d %H:%M") + datetime.timedelta(days=(anniversary_day - 1))
         #end for
