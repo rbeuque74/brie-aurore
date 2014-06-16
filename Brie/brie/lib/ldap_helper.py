@@ -535,8 +535,8 @@ class LdapEntryTree(LdapEntry):
         self.val = val
         self.__dict__ = val.__dict__
         self.__dict__['value'] = val
+        self.childs = dict()
         if len(childs) > 0:
-            self.childs = dict()
             for key,child in childs.iteritems():
                 key = key.split("=")[1]
                 self.childs[key] = LdapEntryTree(child[0], child[1])
