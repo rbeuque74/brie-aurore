@@ -281,7 +281,7 @@ class MemberDisableController(AuthenticatedRestController):
             #end if
         #end for
 
-        print("[LOG] disable member "+member_uid+" by "+self.user.attrs.dn)
+        print("[LOG "+datetime.now().strftime("%Y-%m-%d %H:%M") +"] disable member "+member_uid+" by "+self.user.attrs.dn)
 
         # On redirige sur la page d'édition du membre
         redirect("/edit/member/" + residence + "/" + member_uid)
@@ -315,7 +315,7 @@ class MemberEnableController(AuthenticatedRestController):
             #end if
         #end for
 
-        print("[LOG] enable member "+member_uid+" by "+self.user.attrs.dn)
+        print("[LOG "+datetime.now().strftime("%Y-%m-%d %H:%M") +"] enable member "+member_uid+" by "+self.user.attrs.dn)
 
         # On redirige sur la page d'édition du membre
         redirect("/edit/member/" + residence + "/" + member_uid)
@@ -459,7 +459,7 @@ class MachineAddController(AuthenticatedRestController):
         self.user.ldap_bind.add_entry(dns_dn, machine_dns)
 
         # Ajout de l'entrée dans les logs
-        print("[LOG] ajout machine " + mac + " pour l'utilisateur "+ member.dn + " par l'admin "+ self.user.attrs.dn)
+        print("[LOG "+datetime.now().strftime("%Y-%m-%d %H:%M") +"] ajout machine " + mac + " pour l'utilisateur "+ member.dn + " par l'admin "+ self.user.attrs.dn)
         
         plugin_vars = {
             "machine_dn" : machine_dn,
@@ -515,7 +515,7 @@ class CotisationDeleteController(AuthenticatedRestController):
 
         self.user.ldap_bind.delete_entry_subtree(cotisation.dn)
 
-        print("[LOG] suppression cotisation (" + cotisation.get('x-amountPaid').first() + "EUR) pour l'utilisateur "+ member.dn + " par l'admin "+ self.user.attrs.dn)
+        print("[LOG "+datetime.now().strftime("%Y-%m-%d %H:%M") +"] suppression cotisation (" + cotisation.get('x-amountPaid').first() + "EUR) pour l'utilisateur "+ member.dn + " par l'admin "+ self.user.attrs.dn)
 
         redirect("/edit/member/"+residence+"/"+member_uid)
 
@@ -548,7 +548,7 @@ class CotisationGraceController(AuthenticatedRestController):
         cotisation.get("x-amountPaid").replace(cotisation.get("x-amountPaid").first(), 0)
         self.user.ldap_bind.save(cotisation)
 
-        print("[LOG] cotisation graciee (" + old_montant + "EUR) pour l'utilisateur "+ member.dn + " par l'admin "+ self.user.attrs.dn)
+        print("[LOG "+datetime.now().strftime("%Y-%m-%d %H:%M") + "cotisation graciee (" + old_montant + "EUR) pour l'utilisateur "+ member.dn + " par l'admin "+ self.user.attrs.dn)
 
         redirect("/edit/member/"+residence+"/"+member_uid)
 
@@ -706,7 +706,7 @@ class MachineDeleteController(AuthenticatedRestController):
         # Si la machine existe effectivement, on la supprime
         if machine is not None:
             # Ajout de l'entrée dans les logs
-            print("[LOG] suppression machine " + Machine.get_dhcps(self.user, machine.dn)[0].get("dhcpHWAddress").values[0] + " pour l'utilisateur "+ member.dn + " par l'admin "+ self.user.attrs.dn)
+            print("[LOG "+datetime.now().strftime("%Y-%m-%d %H:%M") +"] suppression machine " + Machine.get_dhcps(self.user, machine.dn)[0].get("dhcpHWAddress").values[0] + " pour l'utilisateur "+ member.dn + " par l'admin "+ self.user.attrs.dn)
 
             self.user.ldap_bind.delete_entry_subtree(machine.dn)
 
@@ -750,7 +750,7 @@ class MachineDisableController(AuthenticatedRestController):
             self.user.ldap_bind.save(machine)
         #end if
 
-        print("[LOG] disable member "+member_uid+" machine "+ machine.dhcpStatements.first().split(" ")[1] +" by "+self.user.attrs.dn)
+        print("[LOG "+datetime.now().strftime("%Y-%m-%d %H:%M") +"] disable member "+member_uid+" machine "+ machine.dhcpStatements.first().split(" ")[1] +" by "+self.user.attrs.dn)
 
         # On redirige sur la page d'édition du membre
         redirect("/edit/member/" + residence + "/" + member_uid)
@@ -785,7 +785,7 @@ class MachineEnableController(AuthenticatedRestController):
             self.user.ldap_bind.save(machine)
         #end if
 
-        print("[LOG] enable member "+member_uid+" machine "+ mac +" by "+self.user.attrs.dn)
+        print("[LOG "+datetime.now().strftime("%Y-%m-%d %H:%M") +"] enable member "+member_uid+" machine "+ mac +" by "+self.user.attrs.dn)
 
         # On redirige sur la page d'édition du membre
         redirect("/edit/member/" + residence + "/" + member_uid)
@@ -907,16 +907,16 @@ class RoomMoveController(AuthenticatedRestController):
             #end if
             self.user.ldap_bind.add_attr(room.dn, memberIn_attribute)
             if old_room is not None:
-                print("[LOG] demenagement member "+member_uid+" from "+ old_room.uid.first() +" to "+ room_uid +" by "+self.user.attrs.dn)
+                print("[LOG "+datetime.now().strftime("%Y-%m-%d %H:%M") +"] demenagement member "+member_uid+" from "+ old_room.uid.first() +" to "+ room_uid +" by "+self.user.attrs.dn)
             else:
-                print("[LOG] demenagement member "+member_uid+" to "+ room_uid +" by "+self.user.attrs.dn)
+                print("[LOG "+datetime.now().strftime("%Y-%m-%d %H:%M") +"] demenagement member "+member_uid+" to "+ room_uid +" by "+self.user.attrs.dn)
             #end if
         else:
             old_room = Room.get_by_member_dn(self.user, residence_dn, member.dn)
             memberIn_attribute = Room.memberIn_attr(str(member.dn))
             if old_room is not None:
                 self.user.ldap_bind.delete_attr(old_room.dn, memberIn_attribute)
-                print("[LOG] retrait de chambre pour le member "+member_uid+" from "+ old_room.uid.first() +" by "+self.user.attrs.dn)
+                print("[LOG "+datetime.now().strftime("%Y-%m-%d %H:%M") +"] retrait de chambre pour le member "+member_uid+" from "+ old_room.uid.first() +" by "+self.user.attrs.dn)
             #end if
         #end if
             
@@ -967,13 +967,13 @@ class RoomChangeMemberController(AuthenticatedRestController):
         if room.get("x-memberIn") is not None and room.get("x-memberIn").first() is not None:
             memberIn_attribute = Room.memberIn_attr(str(room.get("x-memberIn").first()))
             self.user.ldap_bind.delete_attr(room.dn, memberIn_attribute)
-            print("[LOG] retrait de chambre pour le member "+room.get("x-memberIn").first() +" from "+ room_uid +" by "+self.user.attrs.dn)
+            print("[LOG "+datetime.now().strftime("%Y-%m-%d %H:%M") +"] retrait de chambre pour le member "+room.get("x-memberIn").first() +" from "+ room_uid +" by "+self.user.attrs.dn)
         #end if
 
         if member is not None:
             memberIn_attribute = Room.memberIn_attr(str(member.dn))
             self.user.ldap_bind.add_attr(room.dn, memberIn_attribute)
-            print("[LOG] ajout de chambre pour le member "+ member_uid +" to "+ room_uid +" by "+self.user.attrs.dn)
+            print("[LOG "+datetime.now().strftime("%Y-%m-%d %H:%M") +"] ajout de chambre pour le member "+ member_uid +" to "+ room_uid +" by "+self.user.attrs.dn)
         #end if    
 
         # On redirige sur la page d'édition du membre
