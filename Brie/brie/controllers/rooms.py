@@ -127,7 +127,7 @@ class RoomsController(AuthenticatedBaseController):
 
     @expose("brie.templates.rooms.index")
     def preview(self, residence, number):
-        if not number.isdigit(): redirect("/rooms/" + residence)
+        if not number.isdigit(): redirect("/rooms/index/" + residence)
     
         index_result = self.index(residence) 
 
