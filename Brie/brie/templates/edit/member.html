@@ -26,12 +26,19 @@
                     <span class="item_name">Changer de chambre</span>
                     <select name="room_uid">
                         <option value="">&lt;vide&gt;</option>
-                        <py:for each="target_room in rooms">
-                            <py:choose test="target_room.uid.first()">
-                                <option value="${target_room.uid.first()}" py:when="room_ldap.uid.first()" selected="selected">${target_room.cn.first()} (actuelle)</option>
-                                <option value="${target_room.uid.first()}" py:otherwise="">${target_room.cn.first()}</option>
-                            </py:choose>
-                        </py:for>
+                        <py:if test="room_ldap is None">
+                            <py:for each="target_room in rooms">
+                                <option value="${target_room.uid.first()}">${target_room.cn.first()}</option>
+                            </py:for>
+                        </py:if>
+                        <py:if test="room_ldap is not None">
+                            <py:for each="target_room in rooms">
+                                <py:choose test="target_room.uid.first()">
+                                    <option value="${target_room.uid.first()}" py:when="room_ldap.uid.first()" selected="selected">${target_room.cn.first()} (actuelle)</option>
+                                    <option value="${target_room.uid.first()}" py:otherwise="">${target_room.cn.first()}</option>
+                                </py:choose>
+                            </py:for>
+                        </py:if>
                     </select>
                     <input type="hidden" name="residence" value="${residence}"/>
                     <input type="hidden" name="member_uid" value="${member_ldap.uid.first()}"/>
