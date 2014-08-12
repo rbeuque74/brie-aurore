@@ -23,7 +23,7 @@ def admin_user():
 sched = Scheduler()
 
 def disconnect_members_from_residence(admin_user, residence_dn):
-    members =  Member.get_all(admin_user, residence_dn)
+    members =  Member.get_all_non_admin(admin_user, residence_dn)
     print (CotisationComputes.current_year())
 
     for member in members:
