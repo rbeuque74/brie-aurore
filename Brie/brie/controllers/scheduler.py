@@ -37,7 +37,7 @@ def disconnect_members_from_residence(admin_user, residence_dn):
 
                 for dhcp_item in dhcps:
                     if dhcp_item.uid.first() == machine_membre_tag:
-                        print("[LOG] scheduler disable machine " + dhcp_item.get("dhcpHWAddress").values[0] + " pour l'utilisateur "+ member.dn + " -- "+ dhcp_item.dn)
+                        print("[LOG "+datetime.now().strftime("%Y-%m-%d %H:%M")+"] scheduler disable machine " + dhcp_item.get("dhcpHWAddress").values[0] + " pour l'utilisateur "+ member.dn + " -- "+ dhcp_item.dn)
                         dhcp_item.uid.replace(machine_membre_tag, machine_membre_tag + "_disabled")
                         admin_user.ldap_bind.save(dhcp_item)
                     #end if
@@ -54,13 +54,13 @@ def disconnect_members_from_residence(admin_user, residence_dn):
             for machine in machines:
                     dns = Machine.get_dns_by_id(admin_user, machine.dn)
                     ip = IpReservation.get_ip(admin_user, residence_dn, dns.dlzData.first())
-                    print("[LOG] suppression machine " + Machine.get_dhcps(admin_user, machine.dn)[0].get("dhcpHWAddress").values[0] + " pour l'utilisateur "+ member.dn + " par le scheduler")
+                    print("[LOG "+datetime.now().strftime("%Y-%m-%d %H:%M")+"] suppression machine " + Machine.get_dhcps(admin_user, machine.dn)[0].get("dhcpHWAddress").values[0] + " pour l'utilisateur "+ member.dn + " par le scheduler")
                     #sys.stdout.flush()
                     admin_user.ldap_bind.delete_entry_subtree(machine.dn)
                     if ip is not None:
                         taken_attribute = ip.get("x-taken").first()
                         if taken_attribute is not None:
-                            print ("[LOG] deleting taken_attribute")
+                            print ("[LOG "+datetime.now().strftime("%Y-%m-%d %H:%M")+"] deleting taken_attribute")
                             admin_user.ldap_bind.delete_attr(ip.dn, IpReservation.taken_attr(taken_attribute))
                         #end if
                     #end if
