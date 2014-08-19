@@ -37,7 +37,7 @@ class Member(object):
 
     @staticmethod
     def get_all(user_session, residence_dn):
-    	return user_session.ldap_bind.search(ldap_config.username_base_dn + residence_dn, "(objectClass=pacatnetMember)")
+        return user_session.ldap_bind.search(ldap_config.username_base_dn + residence_dn, "(objectClass=pacatnetMember)")
     #end def
 
     @staticmethod

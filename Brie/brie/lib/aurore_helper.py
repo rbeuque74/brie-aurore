@@ -178,6 +178,32 @@ class CotisationComputes:
 
     @staticmethod
     # 7 days grace period
+    def is_cotisation_was_paid_last_year(member_dn, user_session, residence_dn, cotisations = None, anniversary = None):
+        if cotisations is None:
+            current_year = CotisationComputes.current_year() - 1
+        #end if
+
+        now = datetime.datetime.now()
+        if now.month < 9:
+            last_year = datetime.datetime(now.year - 1, 8, 31, 12, 0)
+        else:
+            last_year = datetime.datetime(now, 8, 31, 12, 0)
+        #end if
+
+        if cotisations is None:
+            cotisations = Cotisation.cotisations_of_member(user_session, member_dn, current_year)
+        #end if
+
+        if anniversary is None:
+            anniversary = CotisationComputes.anniversary_from_ldap_items(cotisations)
+        #end if
+
+        delta = (last_year - anniversary)
+        return delta.days <= 7
+    #end def
+
+    @staticmethod
+    # 7 days grace period
     def is_cotisation_paid(member_dn, user_session, residence_dn, cotisations = None, anniversary = None, verification_old_member = True):
         if verification_old_member and CotisationComputes.is_old_member(member_dn, user_session, residence_dn, cotisations):
             return False
