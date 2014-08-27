@@ -92,15 +92,27 @@ class MemberAddController(AuthenticatedRestController):
                     #end if
                 #endif
 
+                def year_directory_exists(year):
+                    search = self.user.ldap_bind.search_s(ldap_config.username_base_dn + residence_dn,ldap.SCOPE_SUBTREE,"(ou="+str(year)+")")
+                    if len(search) == 0:
+                        print "[LOG]Year "+str(year)+" directory does not exist. Creating."
+                        directory_attrs = {
+                                "objectClass" : ["top","organizationalUnit"],
+                                "ou" : str(year).encode("utf-8")
+                                        }
+                        directory_dn = "ou="+str(year)+","+ ldap_config.username_base_dn + residence_dn
+                        self.user.ldap_bind.add_entry(directory_dn,directory_attrs)
+
+
                 member_uid = try_name(member_uid, 0)
         
-
-		member = Member.entry_attr(member_uid, prenom, nom, mail, phone, -1)
+                member = Member.entry_attr(member_uid, prenom, nom, mail, phone, -1)
 
                 year = CotisationComputes.registration_current_year()
 
 		member_dn = "uid=" + member_uid + ",ou=" + str(year) + "," + ldap_config.username_base_dn + residence_dn
-		self.user.ldap_bind.add_entry(member_dn, member)
+		year_directory_exists(year)
+                self.user.ldap_bind.add_entry(member_dn, member)
 		
 
 		#preview = member, room
