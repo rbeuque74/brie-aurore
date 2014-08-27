@@ -97,14 +97,7 @@ class MemberAddController(AuthenticatedRestController):
 
 		member = Member.entry_attr(member_uid, prenom, nom, mail, phone, -1)
 
-		now = datetime.now()
-		year = 0
-
-		if now.month >= 8:
-			year = now.year
-		else:
-			year = now.year - 1 
-		#endif
+                year = CotisationComputes.registration_current_year()
 
 		member_dn = "uid=" + member_uid + ",ou=" + str(year) + "," + ldap_config.username_base_dn + residence_dn
 		self.user.ldap_bind.add_entry(member_dn, member)

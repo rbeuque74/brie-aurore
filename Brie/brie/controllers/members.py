@@ -93,13 +93,7 @@ class MembersController(AuthenticatedBaseController):
 		cotisations = Cotisation.cotisations_of_member(self.user, member_dn, current_year)
 
 		now = datetime.now()
-		registration_year = 0
-
-		if now.month >= 8:
-			registration_year = now.year
-		else:
-			registration_year = now.year - 1 
-		#endif
+		registration_year = CotisationComputes.registration_current_year()
 
 		member_dn = "uid=" + member.uid.first() + ",ou=" + str(registration_year) + "," + ldap_config.username_base_dn + residence_dn
 		#phone = ' '

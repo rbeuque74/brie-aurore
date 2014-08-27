@@ -34,7 +34,7 @@ def disconnect_members_from_residence(admin_user, residence_dn):
             
             if not CotisationComputes.is_cotisation_paid(member.dn, admin_user, residence_dn):
                 #verification de grace pour septembre : si le membre avait cotise en Aout, on lui accorde un delai de paiement pour Septembre, et on ne le deconnecte pas
-                if date_actuelle.month = 9 and is_cotisation_was_paid_last_year(member_dn, admin_user, residence_dn):
+                if date_actuelle.month == 9 and is_cotisation_was_paid_last_year(member_dn, admin_user, residence_dn):
                     #le membre etait a jour en aout, on lui autorise un delai de paiement en septembre - pas de deconnexion
                     break
                 #end if

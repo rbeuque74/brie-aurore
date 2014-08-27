@@ -44,6 +44,15 @@ class CotisationComputes:
     #end def
 
     @staticmethod
+    def registration_current_year():
+       now = datetime.datetime.now()
+       if now.month > 8:
+           return now.year
+
+       return now.year - 1
+    #end def
+
+    @staticmethod
     def get_available_months(start, end, paid_months = []):
         next_months_available = []
 
