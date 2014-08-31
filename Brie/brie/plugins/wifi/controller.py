@@ -1,16 +1,18 @@
+# -*- coding: utf-8 -*-
 from tg.decorators import expose
 from tg.controllers import redirect
 
 from brie.config import ldap_config, groups_enum
 from brie.lib.ldap_helper import *
 from brie.lib.aurore_helper import *
+from brie.lib.name_translation_helpers import Passwords
 from brie.model.ldap import *
 
 from brie.model.ldap import Wifi as WifiModel
 
 from brie.controllers import auth
 from brie.controllers.auth import AuthenticatedBaseController, AuthenticatedRestController
-
+import smtplib
 
 
 class Wifi:
@@ -50,7 +52,7 @@ class DirectController(AuthenticatedRestController):
 
 
     @expose("")
-    def post(self, residence, member_uid, password):
+    def post(self, residence, member_uid):
         residence_dn = Residences.get_dn_by_name(self.user, residence)
         member = Member.get_by_uid(self.user, residence_dn, member_uid)
         if member is None:
@@ -58,6 +60,7 @@ class DirectController(AuthenticatedRestController):
         
 
         wifi = WifiModel.get_by_member_dn(self.user, member.dn)
+        password = Passwords.generate_password_wifi()
 
         if wifi is None:
             wifi_dn = "cn=wifi," + member.dn
@@ -66,7 +69,26 @@ class DirectController(AuthenticatedRestController):
         else:
             wifi.userPassword.replace(wifi.userPassword.first(), password)
             self.user.ldap_bind.save(wifi)
-        #end     
+        #end
+
+        sender = "noreply@fede-aurore.net"
+        receivers = [member.mail.first()]
+        
+        message = """From: Federation Aurore <noreply@fede-aurore.net>
+To: """ + member.cn.first().decode("utf-8").encode("ascii", "ignore") + """ <""" + member.mail.first().decode("utf-8").encode("ascii", "ignore") + """> 
+Subject: Votre mot de passe WiFi : residence universitaire
+
+        Bienvenue dans votre residence etudiante de Paris Sud
+        Votre mot de passe WiFi est : """ + password
+
+        message = message.encode("utf-8")
+
+        try:
+           smtpObj = smtplib.SMTP('smtp.u-psud.fr')
+           smtpObj.sendmail(sender, receivers, message)         
+           print "Successfully sent email"
+        except SMTPException:
+           print "Error: unable to send email"
 
         redirect("/show/member/" + residence + "/" + member_uid)
     #end def
