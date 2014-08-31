@@ -93,7 +93,7 @@ class MemberAddController(AuthenticatedRestController):
                 #endif
 
                 def year_directory_exists(year):
-                    search = self.user.ldap_bind.search_s(ldap_config.username_base_dn + residence_dn,ldap.SCOPE_SUBTREE,"(ou="+str(year)+")")
+                    search = self.user.ldap_bind.search(ldap_config.username_base_dn + residence_dn,"(ou="+str(year)+")")
                     if len(search) == 0:
                         print "[LOG]Year "+str(year)+" directory does not exist. Creating."
                         directory_attrs = {
