@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 import unicodedata
-
+from random import randint
 
 class Translations(object):
     
@@ -40,3 +40,27 @@ class Translations(object):
     def strip_accents(s):
         return ''.join((c for c in unicodedata.normalize('NFD', s) if unicodedata.category(c) != 'Mn'))
     #end def
+
+class Passwords(object):
+
+    @staticmethod
+    def generate_password_wifi():
+
+        password = ""
+
+        for i in range(8):
+            nb_chosen = randint(0,35)
+            if nb_chosen > 25:
+                password = password + str(nb_chosen - 26)
+            else:
+                if randint(0,1) is 1:
+                    password = password + chr(ord('A') + nb_chosen)
+                else:
+                    password = password + chr(ord('a') + nb_chosen)
+                #end if
+            #end if
+        #end for
+        return password
+    #end def
+#end class
+
