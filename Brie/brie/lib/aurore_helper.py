@@ -1,6 +1,7 @@
 from brie.config import ldap_config
 from brie.model.ldap import *
 import datetime
+import smtplib
 
 class Residences:
     
@@ -275,6 +276,32 @@ class CotisationComputes:
         return delta.days <= 30 and delta.days > 7
     #end def
 
+    def cotisation_late_reminder(member_dn, user_session, residence_dn):
+        member = Member.get_by_dn(user_session,member_dn)
+        from_mail = "noreply@fede-aurore.net"
+        to_mail = [member.mail.first()]
+        residence_name = Residences.get_name_by_dn(user_session,residence_dn).decode("utf-8").encode("ascii", "ignore")
+        
+        message = """From: Federation Aurore <noreply@fede-aurore.net>
+        To: """ + member.cn.first().decode("utf-8").encode("ascii", "ignore") + """ <""" + member.mail.first().decode("utf-8").encode("ascii", "ignore") + """> 
+        Subject: Rappel: Votre cotisation """ + residence_name + """
+
+        Cher membre,
+
+        Ceci est un message de la federation Aurore concernant votre cotisation a l'association """ + residence_name.encode("ascii","ignore") + """.
+        En effet celle-ci arrive a son terme dans moins de 7 jours, si vous souhaitez renouveller votre acces internet il est necessaire de recotiser a l'association a""" + residence_name + """ dans les délais les plus courts. 
+
+        Cordialement,
+
+        Federation Aurore """
+        message = message.encode("utf-8")
+
+        try:
+           smtpObj = smtplib.SMTP('smtp.u-psud.fr')
+           smtpObj.sendmail(sender, receivers, message)         
+        except SMTPException:
+           print "Error: unable to send email"
+    #end def
     @staticmethod
     # more than a month late
     def is_no_cotisation(member_dn, user_session, residence_dn, cotisations = None, anniversary = None, verification_old_member = True):

@@ -1,6 +1,8 @@
 # -*- coding: utf-8 -*-
 import unicodedata
 from random import randint
+from os import urandom
+from binascii import b2a_hex
 
 class Translations(object):
     
@@ -62,5 +64,10 @@ class Passwords(object):
         #end for
         return password
     #end def
+
+    @static_method
+    def generate_password_admin():
+        return b2a_hex(os.urandom(4))
+
 #end class
 
