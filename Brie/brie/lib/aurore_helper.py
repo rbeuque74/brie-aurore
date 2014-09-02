@@ -151,6 +151,10 @@ class CotisationComputes:
                 anniversary_year = resultat[0].year + 1
             anniversary = datetime.datetime.strptime(str(anniversary_year) + "-" + str(anniversary_month) + "-1 0:0", "%Y-%m-%d %H:%M") + datetime.timedelta(days=(anniversary_day - 1))
         #end for
+
+        if anniversary == 0:
+            anniversary = datetime.datetime(1999, 1, 31, 12, 0)
+
         return anniversary
     #end def
 

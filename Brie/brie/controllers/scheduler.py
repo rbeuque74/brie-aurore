@@ -60,6 +60,10 @@ def disconnect_members_from_residence(admin_user, residence_dn):
             machines = admin_user.ldap_bind.search(machine_dn, "(objectClass=organizationalRole)", scope = ldap.SCOPE_ONELEVEL)
             for machine in machines:
                     dns = Machine.get_dns_by_id(admin_user, machine.dn)
+                    if dns is None:
+                        print "[LOG] Suppression machine erreur (dns is None): " + machine.dn
+                        continue
+                    #end if
                     ip = IpReservation.get_ip(admin_user, residence_dn, dns.dlzData.first())
                     print("[LOG "+datetime.datetime.now().strftime("%Y-%m-%d %H:%M")+"] suppression machine " + Machine.get_dhcps(admin_user, machine.dn)[0].get("dhcpHWAddress").values[0] + " pour l'utilisateur "+ member.dn + " par le scheduler")
                     #sys.stdout.flush()
@@ -87,7 +91,11 @@ def disconnect_members_job():
 
     for residence in residences:
         print "Disconnect job on : " + residence.uniqueMember.first()
-        disconnect_members_from_residence(user, residence.uniqueMember.first())
+        try:
+            disconnect_members_from_residence(user, residence.uniqueMember.first())
+        except Exception as inst:
+            print "[LOG "+datetime.datetime.now().strftime("%Y-%m-%d %H:%M")+"] Exception sur le scheduler ("+ residence.uniqueMember.first() +")"
+            print type(inst)
     #end for
 
 #    user.ldap_bind.disconnect()
