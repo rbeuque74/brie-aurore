@@ -288,7 +288,7 @@ class CotisationComputes:
 
         Cher membre,
 
-        Ceci est un message de la federation Aurore concernant votre cotisation a l'association """ + residence_name.encode("ascii","ignore") + """.
+        Ceci est un message de la federation Aurore concernant votre cotisation a l'association """ + residence_name + """.
         En effet celle-ci arrive a son terme dans moins de 7 jours, si vous souhaitez renouveller votre acces internet il est necessaire de recotiser a l'association a""" + residence_name + """ dans les délais les plus courts. 
 
         Cordialement,
