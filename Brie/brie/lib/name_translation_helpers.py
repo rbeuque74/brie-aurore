@@ -67,7 +67,7 @@ class Passwords(object):
 
     @static_method
     def generate_password_admin():
-        return b2a_hex(os.urandom(4))
+        return b2a_hex(urandom(4))
 
 #end class
 
