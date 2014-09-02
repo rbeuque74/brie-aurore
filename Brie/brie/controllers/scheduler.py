@@ -34,7 +34,7 @@ def disconnect_members_from_residence(admin_user, residence_dn):
             
             if not CotisationComputes.is_cotisation_paid(member.dn, admin_user, residence_dn):
                 #verification de grace pour septembre : si le membre avait cotise en Aout, on lui accorde un delai de paiement pour Septembre, et on ne le deconnecte pas
-                if date_actuelle.month == 9 and is_cotisation_was_paid_last_year(member_dn, admin_user, residence_dn):
+                if date_actuelle.month == 9 and CotisationComputes.is_cotisation_was_paid_last_year(member.dn, admin_user, residence_dn):
                     #le membre etait a jour en aout, on lui autorise un delai de paiement en septembre - pas de deconnexion
                     continue
                 #end if
@@ -44,7 +44,7 @@ def disconnect_members_from_residence(admin_user, residence_dn):
 
                 for dhcp_item in dhcps:
                     if dhcp_item.uid.first() == machine_membre_tag:
-                        print("[LOG "+datetime.now().strftime("%Y-%m-%d %H:%M")+"] scheduler disable machine " + dhcp_item.get("dhcpHWAddress").values[0] + " pour l'utilisateur "+ member.dn + " -- "+ dhcp_item.dn)
+                        print("[LOG "+datetime.datetime.now().strftime("%Y-%m-%d %H:%M")+"] scheduler disable machine " + dhcp_item.get("dhcpHWAddress").values[0] + " pour l'utilisateur "+ member.dn + " -- "+ dhcp_item.dn)
                         dhcp_item.uid.replace(machine_membre_tag, machine_membre_tag + "_disabled")
                         admin_user.ldap_bind.save(dhcp_item)
                     #end if
@@ -61,13 +61,13 @@ def disconnect_members_from_residence(admin_user, residence_dn):
             for machine in machines:
                     dns = Machine.get_dns_by_id(admin_user, machine.dn)
                     ip = IpReservation.get_ip(admin_user, residence_dn, dns.dlzData.first())
-                    print("[LOG "+datetime.now().strftime("%Y-%m-%d %H:%M")+"] suppression machine " + Machine.get_dhcps(admin_user, machine.dn)[0].get("dhcpHWAddress").values[0] + " pour l'utilisateur "+ member.dn + " par le scheduler")
+                    print("[LOG "+datetime.datetime.now().strftime("%Y-%m-%d %H:%M")+"] suppression machine " + Machine.get_dhcps(admin_user, machine.dn)[0].get("dhcpHWAddress").values[0] + " pour l'utilisateur "+ member.dn + " par le scheduler")
                     #sys.stdout.flush()
                     admin_user.ldap_bind.delete_entry_subtree(machine.dn)
                     if ip is not None:
                         taken_attribute = ip.get("x-taken").first()
                         if taken_attribute is not None:
-                            print ("[LOG "+datetime.now().strftime("%Y-%m-%d %H:%M")+"] deleting taken_attribute")
+                            print ("[LOG "+datetime.datetime.now().strftime("%Y-%m-%d %H:%M")+"] deleting taken_attribute")
                             admin_user.ldap_bind.delete_attr(ip.dn, IpReservation.taken_attr(taken_attribute))
                         #end if
                     #end if

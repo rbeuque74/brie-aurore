@@ -177,12 +177,27 @@ class CotisationComputes:
     #end def
 
     @staticmethod
-    # no cotisation for 2 years
+    # no cotisation for the new year and last year august didn't payed
     def is_member_to_delete(member, user_session, residence_dn):
         current_year = CotisationComputes.current_year()
         cotisations_this_year = Cotisation.cotisations_of_member(user_session, member.dn, current_year)
         cotisations_previous_year = Cotisation.cotisations_of_member(user_session, member.dn, current_year - 1)
-        return cotisations_this_year == [] and cotisations_previous_year == []
+
+        if cotisations_this_year == [] and cotisations_previous_year == []:
+            return True
+
+        now = datetime.datetime.now()
+        if now.month < 9:
+            last_year = datetime.datetime(now.year - 1, 8, 31, 12, 0)
+        else:
+            last_year = datetime.datetime(now.year, 8, 31, 12, 0)
+        #end if
+
+        anniversary = CotisationComputes.anniversary_from_ldap_items(cotisations_previous_year)
+        #end if
+        delta = (last_year - anniversary)
+        return cotisations_this_year == [] and delta.days > 7
+
     #end def
 
     @staticmethod
@@ -196,7 +211,7 @@ class CotisationComputes:
         if now.month < 9:
             last_year = datetime.datetime(now.year - 1, 8, 31, 12, 0)
         else:
-            last_year = datetime.datetime(now, 8, 31, 12, 0)
+            last_year = datetime.datetime(now.year, 8, 31, 12, 0)
         #end if
 
         if cotisations is None:
