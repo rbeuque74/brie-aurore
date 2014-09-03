@@ -79,6 +79,8 @@ To: """ + member.cn.first().decode("utf-8").encode("ascii", "ignore") + """ <"""
 Subject: Votre mot de passe WiFi : residence universitaire
 
         Bienvenue dans votre residence etudiante de Paris Sud
+
+        Votre nom de connexion est : """ + member_uid + """
         Votre mot de passe WiFi est : """ + password
 
         message = message.encode("utf-8")

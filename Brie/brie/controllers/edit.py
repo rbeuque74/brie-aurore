@@ -154,6 +154,18 @@ class MemberModificationController(AuthenticatedRestController):
         #end if
         rooms = sorted(rooms, key=lambda t:t.cn.first())
 
+        areas = Room.get_areas(self.user, residence_dn)
+
+        for room in rooms:
+            for area in areas:
+                if area.dn in room.dn:
+                    room.area = area
+                    break
+                #end if
+            #end for
+        #end for
+            
+
         show_values["rooms"] = rooms
 
         cotisations = show_values["cotisations"]
