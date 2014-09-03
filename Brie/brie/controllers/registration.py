@@ -43,6 +43,16 @@ class RegistrationController(AuthenticatedBaseController):
 
         rooms = Room.get_rooms(self.user, self.user.residence_dn)
         rooms = sorted(rooms, key=lambda t:t.cn.first())
+        
+        areas = Room.get_areas(self.user, self.user.residence_dn)
+        for room in rooms:
+            for area in areas:
+                if area.dn in room.dn:
+                    room.area = area
+                    break
+                #end if
+            #end for
+        #end for
 
         now = datetime.now()
 
