@@ -6,13 +6,13 @@ from brie.config import ldap_config, groups_enum
 from brie.lib.ldap_helper import *
 from brie.lib.aurore_helper import *
 from brie.lib.name_translation_helpers import Passwords
+from brie.lib.smtp_helper import SmtpHelper
 from brie.model.ldap import *
 
 from brie.model.ldap import Wifi as WifiModel
 
 from brie.controllers import auth
 from brie.controllers.auth import AuthenticatedBaseController, AuthenticatedRestController
-import smtplib
 
 
 class Wifi:
@@ -71,26 +71,13 @@ class DirectController(AuthenticatedRestController):
             self.user.ldap_bind.save(wifi)
         #end
 
-        sender = "noreply@fede-aurore.net"
-        receivers = [member.mail.first()]
+        # Envoi du mail
+        from_address = [u'Fédération Aurore', 'noreply@fede-aurore.net']
+        recipient = [member.cn.first(), member.mail.first()]
+        subject = u'['+ residence +'] votre mot de passe WiFi'
+        text = u'Bonjour,\n\nVous venez de vous inscrire au sein d\'une résidence de la fédération Aurore\nUn mot de passe pour utiliser la connexion WiFi de la résidence vous a été assigné.\n\nUtilisateur: '+ member_uid +'\nMot de passe: '+ password +u'\n\nCordialement,\nla fédération Aurore'
         
-        message = """From: Federation Aurore <noreply@fede-aurore.net>
-To: """ + member.cn.first().decode("utf-8").encode("ascii", "ignore") + """ <""" + member.mail.first().decode("utf-8").encode("ascii", "ignore") + """> 
-Subject: Votre mot de passe WiFi : residence universitaire
-
-        Bienvenue dans votre residence etudiante de Paris Sud
-
-        Votre nom de connexion est : """ + member_uid + """
-        Votre mot de passe WiFi est : """ + password
-
-        message = message.encode("utf-8")
-
-        try:
-           smtpObj = smtplib.SMTP('smtp.u-psud.fr')
-           smtpObj.sendmail(sender, receivers, message)         
-           print "Successfully sent email"
-        except SMTPException:
-           print "Error: unable to send email"
+        SmtpHelper.send_email(from_address, recipient, subject, text)
 
         redirect("/show/member/" + residence + "/" + member_uid)
     #end def
