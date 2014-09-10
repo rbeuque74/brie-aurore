@@ -34,5 +34,25 @@ class GetEmailsController(AuthenticatedBaseController):
             "emails" : emails 
         }
     #end def
+
+    @expose("brie.templates.getemails.cotisation_paid")
+    def cotisation_paid(self, residence):
+        residence_name = residence
+        residence_dn = Residences.get_dn_by_name(self.user, residence_name)
+        members = Member.get_all(self.user, residence_dn)
+        emails = []
+        for member in members:
+            if CotisationComputes.is_cotisation_paid(member.dn, self.user, residence_dn):
+                emails.append(member.mail.first())
+            #end if
+        #end for
+
+        return { 
+            "user" : self.user, 
+            "residence" : residence_name,
+            "emails" : emails 
+        }
+    #end def
+
 #end class
 

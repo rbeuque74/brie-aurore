@@ -13,6 +13,10 @@
                 <input type="hidden" name="residence" value="${residence}"/>
                 <input type="submit" value="Récupérer toutes les adresses mails" class="button"/>
             </form>
+            <form action="/getemails/cotisation_paid" method="post" class="inline_block">
+                <input type="hidden" name="residence" value="${residence}"/>
+                <input type="submit" value="Récupérer les adresses mails des adhérents actifs" class="button"/>
+            </form>
         </div>
         <table class="table table-hover">
             <tr>
