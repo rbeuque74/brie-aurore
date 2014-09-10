@@ -28,6 +28,10 @@
                 <span class="section_name show_section_name">${residence}</span>
                 <div>
                     <div>
+                        <div class="room_number vide_color">${"%03d" % free_ips_in_dhcp_pool[residence]}</div>
+                        <span>IPs libres</span>
+                    </div>
+                    <div>
                         <div class="room_number ok_color">${"%03d" % members_stats[residence]['number_of_cotisation_paid_members']}</div>
                         <span>Cotisations à jour</span>
                     </div>

@@ -22,6 +22,7 @@ class StatsController(AuthenticatedBaseController):
         rooms_stats = dict()
         members_stats = dict()
         total_earned = dict()
+        free_ips_in_dhcp_pool = dict()
         average_cotisation = dict()
         global_average_cotisation = 0
         global_total_earned = 0
@@ -44,6 +45,9 @@ class StatsController(AuthenticatedBaseController):
             for room in Room.get_rooms(self.user, residence_dn):
                 if not room.has("x-memberIn"):
                     rooms_stats[residence_name]['empty_rooms'].append(room)
+
+            free_ips_in_dhcp_pool[residence_name] = len(IpReservation.get_all_free(self.user, residence_dn))
+
             # FIXME : Vérifier si on compte les "extras" (vente de câbles). Il ne faudrait pas les compter.
             all_payments = Cotisation.get_all_payment_by_year(self.user, residence_dn, year)
             total_earned[residence_name] = 0
@@ -77,7 +81,8 @@ class StatsController(AuthenticatedBaseController):
             "average_cotisation" : average_cotisation,
             "global_total_earned" : global_total_earned,
             "global_current_members" : global_current_members,
-            "global_average_cotisation" : global_average_cotisation 
+            "global_average_cotisation" : global_average_cotisation,
+            "free_ips_in_dhcp_pool" : free_ips_in_dhcp_pool
         }
     #end def
 #end class

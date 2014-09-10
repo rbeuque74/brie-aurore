@@ -315,6 +315,14 @@ class IpReservation:
     #end def
 
     @staticmethod
+    def get_all_free(user_session, residence_dn):
+        results  = user_session.ldap_bind.search(ldap_config.ip_reservation_base_dn + residence_dn, "(&(objectClass=auroreIpReservation)(!(x-taken=*)))")
+
+        return results
+    #end def
+
+
+    @staticmethod
     def get_ip(user_session, residence_dn, ip):
         results  = user_session.ldap_bind.search_first(ldap_config.ip_reservation_base_dn + residence_dn, "(&(objectClass=auroreIpReservation)(cn=" + ip + "))")
         
