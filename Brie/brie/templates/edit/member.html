@@ -28,7 +28,7 @@
                         <option value="">&lt;vide&gt;</option>
                         <py:if test="room_ldap is None">
                             <py:for each="target_room in rooms">
-                                <option value="${target_room.uid.first()}">${target_room.cn.first()}</option>
+                                <option value="${target_room.uid.first()}">${target_room.cn.first()} [BAT-${target_room.area.cn.first()}]</option>
                             </py:for>
                         </py:if>
                         <py:if test="room_ldap is not None">
