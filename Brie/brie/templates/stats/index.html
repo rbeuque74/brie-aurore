@@ -6,6 +6,23 @@
     </head>
     <body>
         <xi:include href="navbar.html" />
+        <div py:if="residence == 'Aurore'" class="section" >
+                <span class="section_name show_section_name">Globalement</span>
+                <div>
+                    <div>
+                        <div class="room_number vide_color">${"%03d" % global_current_members}</div>
+                        <span>Adhérents actuels</span>
+                    </div>
+                    <div>
+                        <div class="room_number vide_color">${"%03d €" % global_total_earned}</div>
+                        <span>Cotisations année en cours</span>
+                    </div>
+                    <div>
+                        <div class="room_number vide_color">${"%03d €" % global_average_cotisation}</div>
+                        <span>Cotisation moyenne année en cours</span>
+                    </div>
+                </div>
+        </div>
         <div class="section" >
             <div py:for="residence in residences">
                 <span class="section_name show_section_name">${residence}</span>
@@ -13,6 +30,14 @@
                     <div>
                         <div class="room_number ok_color">${"%03d" % members_stats[residence]['number_of_cotisation_paid_members']}</div>
                         <span>Cotisations à jour</span>
+                    </div>
+                    <div>
+                        <div class="room_number vide_color">${"%03d €" % total_earned[residence]}</div>
+                        <span>Cotisations année en cours</span>
+                    </div>
+                    <div>
+                        <div class="room_number vide_color">${"%03d €" % average_cotisation[residence]}</div>
+                        <span>Cotisation moyenne année en cours</span>
                     </div>
                     <div>
                         <div class="room_number non_certif_color">${"%03d" % members_stats[residence]['number_of_cotisation_late_members']}</div>
