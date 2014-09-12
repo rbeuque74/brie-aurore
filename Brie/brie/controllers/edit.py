@@ -1050,7 +1050,7 @@ class AllMembersEnableController(AuthenticatedRestController):
                 raise Exception('membre inconnu')
             #end if
             # On ne reconnecte que les membres ayant payé leur cotisation.
-            if CotisationComputes.is_cotisation_paid(member, self.user, residence_dn):
+            if CotisationComputes.is_cotisation_paid(member.dn, self.user, residence_dn):
                 dhcps = Machine.get_dhcps(self.user, member.dn)
             
                 machine_membre_tag = "machine_membre" # FIXME move to config
