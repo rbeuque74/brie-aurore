@@ -28,11 +28,13 @@ class TreasuryController(AuthenticatedBaseController):
 
     """ Affiche les résultats """
     @expose("brie.templates.treasury.index")
-    def index(self):
+    def index(self, year = None):
         residence_dn = self.user.residence_dn
         residence = Residences.get_name_by_dn(self.user, self.user.residence_dn)
 
-        year = CotisationComputes.current_year()
+        if year is None:
+            year = CotisationComputes.current_year()
+        #end if
         all_payments = Cotisation.get_all_payment_by_year(self.user, residence_dn, year)
         all_payments_cashed = Cotisation.get_all_cashed_payments_by_year(self.user, residence_dn, year)
         total_earned = 0
@@ -85,7 +87,8 @@ class TreasuryController(AuthenticatedBaseController):
             "admin_totals" : admin_totals,
             "admin_payments_received" : admin_payments_received_ordered,
             "total_earned" : total_earned,
-            "total_earned_cashed" : total_earned_cashed
+            "total_earned_cashed" : total_earned_cashed,
+            "year" : int(year)
         }
     #end def
 

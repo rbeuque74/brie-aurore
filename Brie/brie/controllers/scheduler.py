@@ -33,12 +33,6 @@ def disconnect_members_from_residence(admin_user, residence_dn):
         if machines_tuples != []:
             
             if not CotisationComputes.is_cotisation_paid(member.dn, admin_user, residence_dn):
-                #verification de grace pour septembre : si le membre avait cotise en Aout, on lui accorde un delai de paiement pour Septembre, et on ne le deconnecte pas
-                if date_actuelle.month == 9 and CotisationComputes.is_cotisation_was_paid_last_year(member.dn, admin_user, residence_dn):
-                    #le membre etait a jour en aout, on lui autorise un delai de paiement en septembre - pas de deconnexion
-                    continue
-                #end if
-
                 dhcps = Machine.get_dhcps(admin_user, member.dn)
                 machine_membre_tag = "machine_membre" # FIXME move to config
 

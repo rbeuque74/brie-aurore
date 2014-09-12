@@ -178,7 +178,8 @@ class CotisationComputes:
             current_year = CotisationComputes.current_year()
             cotisations = Cotisation.cotisations_of_member(user_session, member_dn, current_year)
         #end if
-        return Room.get_by_member_dn(user_session, residence_dn, member_dn) == None or cotisations == []
+        #en septembre, on ne met pas de membre en old afin que les anciens ne soient pas deconnectes
+        return Room.get_by_member_dn(user_session, residence_dn, member_dn) == None or datetime.datetime.now().month != 9 or cotisations == []
     #end def
 
     @staticmethod
