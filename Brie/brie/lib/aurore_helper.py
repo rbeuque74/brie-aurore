@@ -250,6 +250,11 @@ class CotisationComputes:
         #end if
 
         delta = (now - anniversary)
+        if delta.days > 7 and now.month == 9 and CotisationComputes.is_cotisation_was_paid_last_year(member_dn, user_session, residence_dn):
+            #le membre etait a jour en aout, on lui autorise un delai de paiement en septembre - pas de deconnexion
+            return True
+        #end if
+
         return delta.days <= 7
     #end def
 
