@@ -50,9 +50,9 @@ class EditController(AuthenticatedBaseController):
         self.wifi = WifiRestController(new_show)
         self.machine = MachineController()
         self.room = RoomController(new_show)
-        self.member = MemberModificationController(new_show)
-        self.add = MemberAddController()
         self.cotisation = CotisationController()
+        self.member = MemberModificationController(new_show, self.machine, self.room, self.cotisation)
+        self.add = MemberAddController()
 
     
     """ Affiche les détails éditables de la chambre """
@@ -131,13 +131,22 @@ class MemberModificationController(AuthenticatedRestController):
 
     """ Controller show qu'on réutilise pour gérer l'affichage """
     show = None
+    """ Controller room qu'on réutilise pour gérer les chambres """
+    room = None
+    """ Controller machine qu'on réutilise pour gérer les machines """
+    machine = None
+    """ Controller cotisation qu'on réutilise pour gérer les cotis """
+    cotisation = None
 
-    def __init__(self, new_show):
+    def __init__(self, new_show, machine, room, cotisation):
         self.show = new_show
+        self.room = room
+        self.machine = machine
         self.disable = MemberDisableController()
         self.enable = MemberEnableController()
         self.disconnectall = AllMembersDisableController()
         self.reconnectall = AllMembersEnableController()
+        self.delete = MemberDeleteController(machine, room, cotisation)
     #end def
 
     """ Affiche les détails éditables du membre et de la chambre """
@@ -337,7 +346,61 @@ class MemberEnableController(AuthenticatedRestController):
         # On redirige sur la page d'édition du membre
         redirect("/edit/member/" + residence + "/" + member_uid)
     #end def
+#end class
 
+class MemberDeleteController(AuthenticatedRestController):
+    require_group = groups_enum.responsablereseau
+    machine = None
+    room = None
+    cotisation = None
+    
+    def __init__(self, machine, room, cotisation):
+        self.machine = machine
+        self.room = room
+        self.cotisation = cotisation
+    #end def
+
+    """ Gestion des requêtes post sur ce controller """
+    @expose()
+    def post(self, residence, member_uid):
+        residence_dn = Residences.get_dn_by_name(self.user, residence)
+        self.machine.delete.user = self.user
+        self.room.move.user = self.user
+        self.cotisation.delete.user = self.user
+
+        # Récupération du membre et de la machine
+        # Note : on cherche la machine seulement sur le membre (member.dn)
+        member = Member.get_by_uid(self.user, residence_dn, member_uid)
+        if member is None:
+            raise Exception('membre inconnu')
+        #end if
+
+        #on vide la chambre du membre
+        self.room.move.post(residence, member_uid, "", False, False)
+
+        #on supprime les machines du membre
+        for name, mac, dns, disable in Machine.get_machine_tuples_of_member(member.dn):
+            self.machine.delete.post(residence, member_uid, name, False)
+        #end if
+
+        #on supprime sa cotisation histoire de laisser une trace dans les logs...
+        year = CotisationComputes.current_year()
+        cotisations = Cotisation.cotisations_of_member(self.user, member.dn, year)
+        for cotisation in cotisations:
+            self.cotisation.delete.post(residence, member_uid, cotisation.get('cn').first(), False)
+        #end for
+
+        #on supprime le membre
+        self.user.ldap_bind.delete_entry_subtree(member.dn)
+
+        print("[LOG "+datetime.now().strftime("%Y-%m-%d %H:%M") +"] suppression du membre "+member_uid+" by "+self.user.attrs.dn)
+
+        # On redirige sur la page de la residence
+        redirect("/rooms/index/" + residence)
+
+    #end def
+
+#end class
 
 
 """ Controller de gestion des machines """
@@ -514,7 +577,7 @@ class CotisationDeleteController(AuthenticatedRestController):
     require_group = groups_enum.admin
 
     @expose()
-    def post(self, residence, member_uid, cotisation_cn):
+    def post(self, residence, member_uid, cotisation_cn, go_redirect = True):
         residence_dn = Residences.get_dn_by_name(self.user, residence)
         member = Member.get_by_uid(self.user, residence_dn, member_uid)
 
@@ -534,7 +597,9 @@ class CotisationDeleteController(AuthenticatedRestController):
 
         print("[LOG "+datetime.now().strftime("%Y-%m-%d %H:%M") +"] suppression cotisation (" + cotisation.get('x-amountPaid').first() + "EUR) pour l'utilisateur "+ member.dn + " par l'admin "+ self.user.attrs.dn)
 
-        redirect("/edit/member/"+residence+"/"+member_uid)
+        if go_redirect:
+            redirect("/edit/member/"+residence+"/"+member_uid)
+        #end if
 
     #end def
 
@@ -709,7 +774,7 @@ class MachineDeleteController(AuthenticatedRestController):
 
     """ Gestion des requêtes post sur ce controller """
     @expose()
-    def post(self, residence, member_uid, machine_id):
+    def post(self, residence, member_uid, machine_id, redirect = True):
         residence_dn = Residences.get_dn_by_name(self.user, residence)
 
         # Récupération du membre et de la machine
@@ -734,7 +799,9 @@ class MachineDeleteController(AuthenticatedRestController):
         #end if
 
         # On redirige sur la page d'édition du membre
-        redirect("/edit/member/" + residence + "/" + member_uid)
+        if redirect:
+            redirect("/edit/member/" + residence + "/" + member_uid)
+        #end if
     #end def
 #end def
 

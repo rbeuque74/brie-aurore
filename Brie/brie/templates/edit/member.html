@@ -109,5 +109,15 @@
                 </div>
             </form>
         </div>
+        <div class="section">
+            <form method="post" action="/edit/member/delete">
+                <input type="hidden" name="residence" value="${residence}"/>
+                <input type="hidden" name="member_uid" value="${member_ldap.uid.first()}"/>
+                <div>
+                    <span class="item_name">supprimer le membre</span>
+                    <input type="submit" class="button" style="color:red;" value="suprimer (définitif)"  onclick="return confirm('Are you sure, on ne peut pas revenir en arrière ?!?')" />
+                </div>
+            </form>
+        </div>
     </body>
 </html>
