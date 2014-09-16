@@ -191,14 +191,25 @@ class NewRegistrationController(AuthenticatedRestController):
         if room_uid != "":
             self.member_edit_controller.room.move.post(residence, member_uid, room_uid, erase = True, go_redirect = False)
         #end if
+
+        trigerErreur = False
         try:
             self.member_edit_controller.machine.add.post(residence, member_uid, first_machine_name, first_machine_mac, go_redirect = False)
+        except:
+            trigerErreur = True
+        try:
             self.member_edit_controller.cotisation.add.post(residence, member_uid, next_end, extra_name, go_redirect = False)
+        except:
+            trigerErreur = True
+        try:
             if group_cn != "":
                 self.administration_controller.groups.add_member.post(group_cn, member.dn, go_redirect = False)
             #end if
         except:
-            redirect("/registration/error/" + member_uid)
+            trigerErreur = True
+
+        if trigerErreur:
+            redirect("/registration/error/" + member_uid) 
 
     
         redirect("/registration/")
