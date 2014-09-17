@@ -53,6 +53,7 @@ class EditController(AuthenticatedBaseController):
         self.cotisation = CotisationController()
         self.member = MemberModificationController(new_show, self.machine, self.room, self.cotisation)
         self.add = MemberAddController()
+        self.member_delete = MemberDeleteController(self.machine, self.room, self.cotisation)
 
     
     """ Affiche les détails éditables de la chambre """
@@ -146,7 +147,6 @@ class MemberModificationController(AuthenticatedRestController):
         self.enable = MemberEnableController()
         self.disconnectall = AllMembersDisableController()
         self.reconnectall = AllMembersEnableController()
-        self.delete = MemberDeleteController(machine, room, cotisation)
     #end def
 
     """ Affiche les détails éditables du membre et de la chambre """
@@ -379,7 +379,7 @@ class MemberDeleteController(AuthenticatedRestController):
         self.room.move.post(residence, member_uid, "", False, False)
 
         #on supprime les machines du membre
-        for name, mac, dns, disable in Machine.get_machine_tuples_of_member(member.dn):
+        for name, mac, dns, disable in Machine.get_machine_tuples_of_member(self.user, member.dn):
             self.machine.delete.post(residence, member_uid, name, False)
         #end if
 
