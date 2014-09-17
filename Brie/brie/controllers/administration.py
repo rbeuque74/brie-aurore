@@ -7,6 +7,7 @@ from tg.decorators import expose, validate
 from brie.config import ldap_config
 from brie.lib.ldap_helper import *
 from brie.lib.aurore_helper import *
+from brie.lib.log_helper import BrieLogging
 from brie.model.ldap import *
 
 from brie.controllers import auth
@@ -62,24 +63,24 @@ class GroupController(AuthenticatedBaseController):
     def grace_cotisation(self, group_cn):
         group = Groupes.get_by_cn(self.user, self.user.residence_dn, group_cn)
 
-        print("[LOG "+datetime.now().strftime("%Y-%m-%d %H:%M")+"] start grace du groupe "+ group.dn + " par l'admin "+ self.user.attrs.dn)
+        BrieLogging.get().info("start grace du groupe "+ group.dn + " par l'admin "+ self.user.attrs.dn)
 
         for user_dn in group.get('uniqueMember').all():
             current_year = CotisationComputes.current_year()
             cotisations = Cotisation.cotisations_of_member(self.user, user_dn, current_year)
             for cotisation in cotisations:
                 if cotisation.has('x-paymentCashed') and cotisation.get('x-paymentCashed').first() == 'TRUE':
-                    print("[LOG "+datetime.now().strftime("%Y-%m-%d %H:%M")+"] impossible de gracier une cotisation encaissee pour l'utilisateur "+ user_dn + " par l'admin "+ self.user.attrs.dn)
+                    BrieLogging.get().warn("impossible de gracier une cotisation encaissee pour l'utilisateur "+ user_dn + " par l'admin "+ self.user.attrs.dn)
                 else:
                     old_montant = cotisation.get("x-amountPaid").first()
                     cotisation.get("x-amountPaid").replace(cotisation.get("x-amountPaid").first(), 0)
                     self.user.ldap_bind.save(cotisation)
-                    print("[LOG "+datetime.now().strftime("%Y-%m-%d %H:%M")+"] cotisation graciee (" + old_montant + "EUR) pour l'utilisateur "+ user_dn + " par l'admin "+ self.user.attrs.dn)
+                    BrieLogging.get().info("cotisation graciee (" + old_montant + "EUR) pour l'utilisateur "+ user_dn + " par l'admin "+ self.user.attrs.dn)
                 #end if
             #end for(cotisation)
         #end for(users)
 
-        print("[LOG "+datetime.now().strftime("%Y-%m-%d %H:%M")+"] fin du grace_bulk_action du groupe "+ group.dn + " par l'admin "+ self.user.attrs.dn)
+        BrieLogging.get().info("fin du grace_bulk_action du groupe "+ group.dn + " par l'admin "+ self.user.attrs.dn)
 
         redirect("/administration/")
     #end def

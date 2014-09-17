@@ -3,6 +3,7 @@ import ldap
 #import ldap.modlist as modlist
 
 from brie.config import ldap_config
+from brie.lib.log_helper import BrieLogging
 from brie.model.ldap import Groupes
 
 
@@ -321,11 +322,11 @@ class Ldap(object):
         )
 
         for ldap_attribute in ldap_attributes:
-            print "name : " + ldap_attribute.name
-            print "values : " + str(ldap_attribute.values)
-            print "deletions : " + str(ldap_attribute._deletions)
-            print "additions : " + str(ldap_attribute._additions)
-            print  "modified : " + str(ldap_attribute._modified)
+            BrieLogging.get().debug("name : " + ldap_attribute.name)
+            BrieLogging.get().debug("values : " + str(ldap_attribute.values))
+            BrieLogging.get().debug("deletions : " + str(ldap_attribute._deletions))
+            BrieLogging.get().debug("additions : " + str(ldap_attribute._additions))
+            BrieLogging.get().debug("modified : " + str(ldap_attribute._modified))
             
             if ldap_attribute._deletions != []:
                 str_values = [str(value) for value in ldap_attribute._deletions]
@@ -348,8 +349,8 @@ class Ldap(object):
 
         #end for
 
-        print "dn : " +  ldap_entry.dn
-        print "modlist : " + str(modlist)
+        BrieLogging.get().debug("dn : " +  ldap_entry.dn)
+        BrieLogging.get().debug("modlist : " + str(modlist))
         if modlist != []:
             self.__connection.modify_s(ldap_entry.dn, modlist)
 

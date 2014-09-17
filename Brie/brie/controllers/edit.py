@@ -9,6 +9,7 @@ from brie.config import groups_enum
 from brie.lib.ldap_helper import *
 from brie.lib.plugins import *
 from brie.lib.aurore_helper import *
+from brie.lib.log_helper import BrieLogging
 from brie.model.ldap import *
 from brie.lib.name_translation_helpers import Translations
 
@@ -96,7 +97,7 @@ class MemberAddController(AuthenticatedRestController):
                 def year_directory_exists(year):
                     search = self.user.ldap_bind.search(ldap_config.username_base_dn + residence_dn,"(ou="+str(year)+")")
                     if len(search) == 0:
-                        print "[LOG]Year "+str(year)+" directory does not exist. Creating."
+                        BrieLogging.get().info("Year "+str(year)+" directory does not exist. Creating.")
                         directory_attrs = {
                                 "objectClass" : ["top","organizationalUnit"],
                                 "ou" : str(year).encode("utf-8")
@@ -307,7 +308,7 @@ class MemberDisableController(AuthenticatedRestController):
             #end if
         #end for
 
-        print("[LOG "+datetime.now().strftime("%Y-%m-%d %H:%M") +"] disable member "+member_uid+" by "+self.user.attrs.dn)
+        BrieLogging.get().info("disable member "+member_uid+" by "+self.user.attrs.dn)
 
         # On redirige sur la page d'édition du membre
         redirect("/edit/member/" + residence + "/" + member_uid)
@@ -341,7 +342,7 @@ class MemberEnableController(AuthenticatedRestController):
             #end if
         #end for
 
-        print("[LOG "+datetime.now().strftime("%Y-%m-%d %H:%M") +"] enable member "+member_uid+" by "+self.user.attrs.dn)
+        BrieLogging.get().info("enable member "+member_uid+" by "+self.user.attrs.dn)
 
         # On redirige sur la page d'édition du membre
         redirect("/edit/member/" + residence + "/" + member_uid)
@@ -393,7 +394,7 @@ class MemberDeleteController(AuthenticatedRestController):
         #on supprime le membre
         self.user.ldap_bind.delete_entry_subtree(member.dn)
 
-        print("[LOG "+datetime.now().strftime("%Y-%m-%d %H:%M") +"] suppression du membre "+member_uid+" by "+self.user.attrs.dn)
+        BrieLogging.get().info("suppression du membre "+member_uid+" by "+self.user.attrs.dn)
 
         # On redirige sur la page de la residence
         redirect("/rooms/index/" + residence)
@@ -539,7 +540,7 @@ class MachineAddController(AuthenticatedRestController):
         self.user.ldap_bind.add_entry(dns_dn, machine_dns)
 
         # Ajout de l'entrée dans les logs
-        print("[LOG "+datetime.now().strftime("%Y-%m-%d %H:%M") +"] ajout machine " + mac + " pour l'utilisateur "+ member.dn + " par l'admin "+ self.user.attrs.dn)
+        BrieLogging.get().info("ajout machine " + mac + " pour l'utilisateur "+ member.dn + " par l'admin "+ self.user.attrs.dn)
         
         plugin_vars = {
             "machine_dn" : machine_dn,
@@ -595,7 +596,7 @@ class CotisationDeleteController(AuthenticatedRestController):
 
         self.user.ldap_bind.delete_entry_subtree(cotisation.dn)
 
-        print("[LOG "+datetime.now().strftime("%Y-%m-%d %H:%M") +"] suppression cotisation (" + cotisation.get('x-amountPaid').first() + "EUR) pour l'utilisateur "+ member.dn + " par l'admin "+ self.user.attrs.dn)
+        BrieLogging.get().info("suppression cotisation (" + cotisation.get('x-amountPaid').first() + "EUR) pour l'utilisateur "+ member.dn + " par l'admin "+ self.user.attrs.dn)
 
         if go_redirect:
             redirect("/edit/member/"+residence+"/"+member_uid)
@@ -630,7 +631,7 @@ class CotisationGraceController(AuthenticatedRestController):
         cotisation.get("x-amountPaid").replace(cotisation.get("x-amountPaid").first(), 0)
         self.user.ldap_bind.save(cotisation)
 
-        print("[LOG "+datetime.now().strftime("%Y-%m-%d %H:%M") + "cotisation graciee (" + old_montant + "EUR) pour l'utilisateur "+ member.dn + " par l'admin "+ self.user.attrs.dn)
+        BrieLogging.get().info("cotisation graciee (" + old_montant + "EUR) pour l'utilisateur "+ member.dn + " par l'admin "+ self.user.attrs.dn)
 
         redirect("/edit/member/"+residence+"/"+member_uid)
 
@@ -751,11 +752,13 @@ class CotisationAddController(AuthenticatedRestController):
         
         if cotisation is not None:
             cotisation_dn = "cn=cotisation-" + time + "," + year_dn
+            BrieLogging.get().info("cotisation ajoutée pour "+ member.dn +"("+cotisation.get("x-amountPaid").first()+"EUR) by "+ self.user.attrs.dn)
             self.user.ldap_bind.add_entry(cotisation_dn, cotisation)
         #end if        
 
         if extra is not None:
             extra_dn = "cn=extra-" + time + "," + year_dn
+            BrieLogging.get().info("extra ajouté pour "+ member.dn +"("+extra.get("x-amountPaid").first()+"EUR) by "+ self.user.attrs.dn)
             self.user.ldap_bind.add_entry(extra_dn, extra)
         #end if
 
@@ -788,7 +791,7 @@ class MachineDeleteController(AuthenticatedRestController):
         # Si la machine existe effectivement, on la supprime
         if machine is not None:
             # Ajout de l'entrée dans les logs
-            print("[LOG "+datetime.now().strftime("%Y-%m-%d %H:%M") +"] suppression machine " + Machine.get_dhcps(self.user, machine.dn)[0].get("dhcpHWAddress").values[0] + " pour l'utilisateur "+ member.dn + " par l'admin "+ self.user.attrs.dn)
+            BrieLogging.get().info("suppression machine " + Machine.get_dhcps(self.user, machine.dn)[0].get("dhcpHWAddress").values[0] + " pour l'utilisateur "+ member.dn + " par l'admin "+ self.user.attrs.dn)
 
             self.user.ldap_bind.delete_entry_subtree(machine.dn)
 
@@ -834,7 +837,7 @@ class MachineDisableController(AuthenticatedRestController):
             self.user.ldap_bind.save(machine)
         #end if
 
-        print("[LOG "+datetime.now().strftime("%Y-%m-%d %H:%M") +"] disable member "+member_uid+" machine "+ machine.dhcpStatements.first().split(" ")[1] +" by "+self.user.attrs.dn)
+        BrieLogging.get().info("disable member "+member_uid+" machine "+ machine.dhcpStatements.first().split(" ")[1] +" by "+self.user.attrs.dn)
 
         # On redirige sur la page d'édition du membre
         redirect("/edit/member/" + residence + "/" + member_uid)
@@ -869,7 +872,7 @@ class MachineEnableController(AuthenticatedRestController):
             self.user.ldap_bind.save(machine)
         #end if
 
-        print("[LOG "+datetime.now().strftime("%Y-%m-%d %H:%M") +"] enable member "+member_uid+" machine "+ mac +" by "+self.user.attrs.dn)
+        BrieLogging.get().info("enable member "+member_uid+" machine "+ mac +" by "+self.user.attrs.dn)
 
         # On redirige sur la page d'édition du membre
         redirect("/edit/member/" + residence + "/" + member_uid)
@@ -979,6 +982,7 @@ class RoomMoveController(AuthenticatedRestController):
             member_in = room.get('x-memberIn').first()
             if  member_in is not None:
                 if erase:
+                    BrieLogging.get().info("ecrasement de chambre - passage en sdf pour "+member_in+" chambre "+room_uid+" by"+self.user.attrs.dn)
                     self.user.ldap_bind.delete_attr(room.dn, { "x-memberIn" : member_in })
                 else:
                     raise Exception("chambre de destination non vide")
@@ -991,16 +995,16 @@ class RoomMoveController(AuthenticatedRestController):
             #end if
             self.user.ldap_bind.add_attr(room.dn, memberIn_attribute)
             if old_room is not None:
-                print("[LOG "+datetime.now().strftime("%Y-%m-%d %H:%M") +"] demenagement member "+member_uid+" from "+ old_room.uid.first() +" to "+ room_uid +" by "+self.user.attrs.dn)
+                BrieLogging.get().info("demenagement member "+member_uid+" from "+ old_room.uid.first() +" to "+ room_uid +" by "+self.user.attrs.dn)
             else:
-                print("[LOG "+datetime.now().strftime("%Y-%m-%d %H:%M") +"] demenagement member "+member_uid+" to "+ room_uid +" by "+self.user.attrs.dn)
+                BrieLogging.get().info("demenagement member "+member_uid+" to "+ room_uid +" by "+self.user.attrs.dn)
             #end if
         else:
             old_room = Room.get_by_member_dn(self.user, residence_dn, member.dn)
             memberIn_attribute = Room.memberIn_attr(str(member.dn))
             if old_room is not None:
                 self.user.ldap_bind.delete_attr(old_room.dn, memberIn_attribute)
-                print("[LOG "+datetime.now().strftime("%Y-%m-%d %H:%M") +"] retrait de chambre pour le member "+member_uid+" from "+ old_room.uid.first() +" by "+self.user.attrs.dn)
+                BrieLogging.get().info("retrait de chambre pour le member "+member_uid+" from "+ old_room.uid.first() +" by "+self.user.attrs.dn)
             #end if
         #end if
             
@@ -1051,13 +1055,13 @@ class RoomChangeMemberController(AuthenticatedRestController):
         if room.get("x-memberIn") is not None and room.get("x-memberIn").first() is not None:
             memberIn_attribute = Room.memberIn_attr(str(room.get("x-memberIn").first()))
             self.user.ldap_bind.delete_attr(room.dn, memberIn_attribute)
-            print("[LOG "+datetime.now().strftime("%Y-%m-%d %H:%M") +"] retrait de chambre pour le member "+room.get("x-memberIn").first() +" from "+ room_uid +" by "+self.user.attrs.dn)
+            BrieLogging.get().info("retrait de chambre pour le member "+room.get("x-memberIn").first() +" from "+ room_uid +" by "+self.user.attrs.dn)
         #end if
 
         if member is not None:
             memberIn_attribute = Room.memberIn_attr(str(member.dn))
             self.user.ldap_bind.add_attr(room.dn, memberIn_attribute)
-            print("[LOG "+datetime.now().strftime("%Y-%m-%d %H:%M") +"] ajout de chambre pour le member "+ member_uid +" to "+ room_uid +" by "+self.user.attrs.dn)
+            BrieLogging.get().info("ajout de chambre pour le member "+ member_uid +" to "+ room_uid +" by "+self.user.attrs.dn)
         #end if    
 
         # On redirige sur la page d'édition du membre

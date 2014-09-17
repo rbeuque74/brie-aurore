@@ -1,5 +1,6 @@
 from brie.config import ldap_config
 from brie.model.ldap import *
+from brie.lib.log_helper import BrieLogging
 import datetime
 import smtplib
 
@@ -73,7 +74,7 @@ class CotisationComputes:
         if paid_months == []:
             return next_months_available
 
-        print next_months_available
+        BrieLogging.get().debug(next_months_available)
         available_months = [
             month
             for month in next_months_available
@@ -98,8 +99,8 @@ class CotisationComputes:
     def price_to_pay(year_price, month_price, already_paid, number_months_to_pay):
         
         months_price = number_months_to_pay * month_price
-        print "already paid : " + str(already_paid)
-        print "months price : " + str(months_price)
+        BrieLogging.get().debug("already paid : " + str(already_paid))
+        BrieLogging.get().debug("months price : " + str(months_price))
         if already_paid + months_price > year_price:
             months_price = max(0, year_price - already_paid)
 
@@ -332,7 +333,7 @@ class CotisationComputes:
             elif CotisationComputes.is_no_cotisation(member.dn, user_session, residence_dn, cotisations):
                 no_cotisation_members.append(member)
             else:
-                print "DEBUG : member with weird status !"
+                BrieLogging.get().warn("aurore_helper:336 member with weird status !")
             #end if
 
         #end for
@@ -358,7 +359,7 @@ class CotisationComputes:
             #end if
         #end for
 
-        print str(datetime.datetime.now()) + "members_status_from_list_cotisations:" + str(len(members_dict))
+        BrieLogging.get().debug(str(datetime.datetime.now()) + "members_status_from_list_cotisations:" + str(len(members_dict)))
 
         old_members = []
         cotisation_paid_members = []
@@ -389,7 +390,7 @@ class CotisationComputes:
             elif CotisationComputes.is_no_cotisation(member_dn, user_session, residence_dn, cotisations, anniversary, False):
                 no_cotisation_members.append(member_dn)
             else:
-                print "DEBUG : member with weird status !"
+                BrieLogging.get().debug("aurore_helper:393 : member with weird status !")
             #end if
 
         #end for

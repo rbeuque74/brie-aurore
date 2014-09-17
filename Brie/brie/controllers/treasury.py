@@ -7,6 +7,7 @@ from brie.config import ldap_config
 from brie.config import groups_enum
 from brie.lib.ldap_helper import *
 from brie.lib.aurore_helper import *
+from brie.lib.log_helper import BrieLogging
 from brie.lib.plugins import *
 from brie.model.ldap import *
 
@@ -59,9 +60,9 @@ class TreasuryController(AuthenticatedBaseController):
 
             dn_prefix = "cn=" + pending_payment.cn.first() + ",cn=" + str(year) + ",cn=cotisations,"
 
-            print dn_prefix
+            BrieLogging.get().debug(dn_prefix)
             member_dn = pending_payment.dn[len(dn_prefix):]
-            print member_dn
+            BrieLogging.get().debug(member_dn)
             member = Member.get_by_dn(self.user, member_dn)
     
             amount_paid = int(pending_payment.get("x-amountPaid").first())
