@@ -781,7 +781,7 @@ class MachineDeleteController(AuthenticatedRestController):
 
     """ Gestion des requêtes post sur ce controller """
     @expose()
-    def post(self, residence, member_uid, machine_id, redirect = True):
+    def post(self, residence, member_uid, machine_id, go_redirect = True):
         residence_dn = Residences.get_dn_by_name(self.user, residence)
 
         # Récupération du membre et de la machine
@@ -806,7 +806,7 @@ class MachineDeleteController(AuthenticatedRestController):
         #end if
 
         # On redirige sur la page d'édition du membre
-        if redirect:
+        if go_redirect:
             redirect("/edit/member/" + residence + "/" + member_uid)
         #end if
     #end def
