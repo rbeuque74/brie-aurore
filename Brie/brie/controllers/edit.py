@@ -506,7 +506,11 @@ class MachineAddController(AuthenticatedRestController):
         # Génération de l'id de la machine et recherche d'une ip libre
         ip = IpReservation.get_first_free(self.user, residence_dn)
 
-        # Rendre l'ip prise 
+        if ip is None:
+            raise Exception("le pool d'adresse IP est vide. aucune adresse IP disponible pour ajouter une machine")
+        #end if
+
+        # Indique que l'ip est prise 
         taken_attribute = IpReservation.taken_attr(str(datetime.today()))
         self.user.ldap_bind.add_attr(ip.dn, taken_attribute)
 
