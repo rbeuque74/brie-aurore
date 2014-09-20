@@ -756,13 +756,13 @@ class CotisationAddController(AuthenticatedRestController):
         
         if cotisation is not None:
             cotisation_dn = "cn=cotisation-" + time + "," + year_dn
-            BrieLogging.get().info("cotisation ajoutée pour "+ member.dn +"("+cotisation.get("x-amountPaid").first()+"EUR) by "+ self.user.attrs.dn)
+            BrieLogging.get().info("cotisation ajoutee pour "+ member.dn +"("+str(cotisation.get("x-amountPaid")) +"EUR) by "+ self.user.attrs.dn)
             self.user.ldap_bind.add_entry(cotisation_dn, cotisation)
         #end if        
 
         if extra is not None:
             extra_dn = "cn=extra-" + time + "," + year_dn
-            BrieLogging.get().info("extra ajouté pour "+ member.dn +"("+extra.get("x-amountPaid").first()+"EUR) by "+ self.user.attrs.dn)
+            BrieLogging.get().info("extra ajoute pour "+ member.dn +"("+str(extra.get("x-amountPaid")) +"EUR) by "+ self.user.attrs.dn)
             self.user.ldap_bind.add_entry(extra_dn, extra)
         #end if
 
