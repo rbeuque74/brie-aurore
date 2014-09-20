@@ -27,7 +27,7 @@
                     </div>
                     <div>
                         <span class="item_name">E-mail</span>
-                        <input type="text" name="mail" value="${member_ldap.mail.first('')}" />
+                        <input type="email" name="mail" value="${member_ldap.mail.first('')}" />
                     </div>
                     <div>
                         <span class="item_name">Téléphone</span>
@@ -80,12 +80,15 @@
                 </py:choose>
             </div>
             <div>
+                <strong>Aide à la complétion</strong> -> vous avez un clavier <select id="osRegister"><option value="win">Windows</option><option value="mac">MacOSX</option></select>
+                <input type="checkbox" id="disablevalid">Disable mac validation</input>
                 <form action="/edit/machine/add/" method="post">
-                   <input type="text" name="name" placeholder="nom de la machine" class="item_name"/>
-                   <input type="text" name="mac" onkeyup="mac_address_correcter()" id="mac_adress_input" placeholder="adresse mac" />
-                   <input type="hidden" name="residence" value="${residence}"/>
-                   <input type="hidden" name="member_uid" value="${member_ldap.uid.first()}"/>
-                   <input type="submit" value="ajouter" class="button"/>
+                    <input type="text" name="name" placeholder="nom de la machine" class="item_name"/>
+                    <input type="text" name="mac" class="macValidator" id="mac_adress_input" placeholder="adresse mac" />
+                    <input type="hidden" name="residence" value="${residence}"/>
+                    <input type="hidden" name="member_uid" value="${member_ldap.uid.first()}"/>
+                    <span class="macInvalid">adresse mac invalide</span>
+                    <input type="submit" value="ajouter" class="button"/>
                 </form>
             </div>
         </div>

@@ -159,7 +159,10 @@ class NewRegistrationController(AuthenticatedRestController):
     @expose()
     def post(self, residence, sn, givenName, mail, phone, 
         room_uid, first_machine_name, first_machine_mac,
-        next_end, extra_name, group_cn
+        next_end, extra_name, group_cn, 
+        second_machine_name = "", second_machine_mac = "",
+        third_machine_name = "", third_machine_mac = "",
+        fourth_machine_name = "", fourth_machine_mac = "", 
     ):
         # Initialisation des Users des Controllers Existant appellés 
         self.member_edit_controller.add.user = self.user
@@ -192,25 +195,30 @@ class NewRegistrationController(AuthenticatedRestController):
             self.member_edit_controller.room.move.post(residence, member_uid, room_uid, erase = True, go_redirect = False)
         #end if
 
-        trigerErreur = False
         try:
-            self.member_edit_controller.machine.add.post(residence, member_uid, first_machine_name, first_machine_mac, go_redirect = False)
-        except:
-            trigerErreur = True
-        try:
-            self.member_edit_controller.cotisation.add.post(residence, member_uid, next_end, extra_name, go_redirect = False)
-        except:
-            trigerErreur = True
-        try:
+            if first_machine_name != "" and first_machine_mac != "":
+                self.member_edit_controller.machine.add.post(residence, member_uid, first_machine_name, first_machine_mac, go_redirect = False)
+            #end if
+            if second_machine_name != "" and second_machine_mac != "":
+                self.member_edit_controller.machine.add.post(residence, member_uid, second_machine_name, second_machine_mac, go_redirect = False)
+            #end if
+            if third_machine_name != "" and third_machine_mac != "":
+                self.member_edit_controller.machine.add.post(residence, member_uid, third_machine_name, third_machine_mac, go_redirect = False)
+            #end if
+            if fourth_machine_name != "" and fourth_machine_mac != "":
+                self.member_edit_controller.machine.add.post(residence, member_uid, fourth_machine_name, fourth_machine_mac, go_redirect = False)
+            #end if
+
+            if next_end != "" or extra_name != "":
+                self.member_edit_controller.cotisation.add.post(residence, member_uid, next_end, extra_name, go_redirect = False)
+            #end if
+
             if group_cn != "":
                 self.administration_controller.groups.add_member.post(group_cn, member.dn, go_redirect = False)
             #end if
         except:
-            trigerErreur = True
-
-        if trigerErreur:
             redirect("/registration/error/" + member_uid) 
-
+        #end trycatch
     
         redirect("/registration/")
     #end def

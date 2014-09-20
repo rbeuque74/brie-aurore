@@ -4,7 +4,13 @@
     <head>
         <link type="text/css" rel="Stylesheet" href="/css/common.css" />
         <link type="text/css" rel="Stylesheet" href="/css/show.css" />
-        <script  src="/js/mac_address_changer.js" />
+        <script src="/js/jquery-1.11.1.min.js" />
+        <script src="/js/mac_address_changer.js" />
+        <style type="text/css">
+        .macInvalid {
+            color:red; display:none;
+        }
+        </style>
         <xi:include href="common-css-header.html" />
     </head>
     <body> 
@@ -24,7 +30,7 @@
                     </div>
                     <div>
                         <span class="item_name">E-mail</span>
-                        <input type="text" name="mail" value="" />
+                        <input type="email" name="mail" value="" />
                     </div>
                     <div>
                         <span class="item_name">Téléphone</span>
@@ -45,11 +51,15 @@
                 </div>
             </div>
             <div class="section">
-                <span class="section_name show_section_name">MACHINE</span>
-                <div>
+                <span class="section_name show_section_name">MACHINE</span><br />
+                <strong>Aide à la complétion</strong> -> vous avez un clavier <select id="osRegister"><option value="win">Windows</option><option value="mac">MacOSX</option></select>
+                <input type="checkbox" id="disablevalid">Disable mac validation</input>
+                <div id="machine_add">
                     <div>
-                       <input type="text" name="first_machine_name" placeholder="nom de la machine" class="item_name"/>
-                       <input type="text" name="first_machine_mac" onkeyup="mac_address_correcter()" id="mac_adress_input" placeholder="adresse mac" />
+                        <input type="text" name="first_machine_name" placeholder="nom de la machine" class="item_name"/>
+                        <input type="text" name="first_machine_mac" class="macValidator" id="mac_adress_input" placeholder="adresse mac" />
+                        <span class="macInvalid">adresse mac invalide</span>
+                        <a href="#" class="button" onclick="addMacField()">+</a>
                     </div>
                 </div>
             </div>
