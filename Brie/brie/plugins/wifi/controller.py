@@ -60,7 +60,7 @@ class DirectController(AuthenticatedRestController):
         
 
         wifi = WifiModel.get_by_member_dn(self.user, member.dn)
-        password = Passwords.generate_password_wifi()
+        password = Passwords.generate_password_admin()
 
         if wifi is None:
             wifi_dn = "cn=wifi," + member.dn
