@@ -202,8 +202,10 @@ class CotisationComputes:
 
         anniversary = CotisationComputes.anniversary_from_ldap_items(cotisations_previous_year)
         #end if
+
+        #si il a pas cotise cette annee et qu'il n'avait pas pris jusqua fin aout l'an dernier
         delta = (last_year - anniversary)
-        return cotisations_this_year == [] and delta.days > 7
+        return cotisations_this_year == [] and (delta.days > 7 or Room.get_by_member_dn(user_session, residence_dn, member.dn) == None)
 
     #end def
 
