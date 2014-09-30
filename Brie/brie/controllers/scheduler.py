@@ -47,7 +47,9 @@ def disconnect_members_from_residence(admin_user, residence_dn):
             #end if
             
         #end if
-        if CotisationComputes.is_member_to_delete(member, admin_user, residence_dn):
+
+        # FIXME on retire la suppression pendant quelques jours le temps que les anciens mauvais payeurs soient pas supprimes
+        if false and CotisationComputes.is_member_to_delete(member, admin_user, residence_dn):
             # supprime les machines mais pas le membre (il pourrait avoir besoin du compte ex : Yohan, le LDAP d'Aurores, etc)
             # alors test a ajouter pour ne supprimer que si membre d'aucun groupe
             # duplication de code avec class MachineDeleteController
