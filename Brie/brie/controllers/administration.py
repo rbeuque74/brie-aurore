@@ -99,6 +99,7 @@ class AdministrationController(AuthenticatedBaseController):
     def index(self):
         groups = Groupes.get_all(self.user, self.user.residence_dn)
         all_users = sorted(Member.get_all(self.user, self.user.residence_dn), key=lambda u: u.cn.first())
+        free_ips = len(IpReservation.get_all_free(self.user, self.user.residence_dn))
 
         residence = None
         if self.user is not None:
@@ -108,6 +109,7 @@ class AdministrationController(AuthenticatedBaseController):
         return { 
             "user" : self.user, 
             "residence" : residence,
+            "free_ip" : free_ips,
             "groups_ldap" : groups, 
             "all_users" : all_users 
         }

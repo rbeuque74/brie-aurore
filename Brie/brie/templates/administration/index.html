@@ -2,12 +2,17 @@
     <head>
         <link rel="stylesheet" type="text/css" href="/css/common.css" />
         <link rel="stylesheet" type="text/css" href="/css/show.css" />
+        <link rel="stylesheet" type="text/css" href="/css/rooms.css" />
         <xi:include href="common-css-header.html" />
     </head>
     <body>
         <xi:include href="navbar.html" />
         <a class="button" href="/" >RETOUR</a>
         <div class="section" >
+                    <div>
+                        <div class="room_number vide_color">${"%03d" % free_ip}</div>
+                        <span>IPs libres</span>
+                    </div>
             <span class="section_name show_section_name">GROUPES</span>
             <div py:for="group in groups_ldap">
                 <span class="item_name">${group.cn.first()}</span>
