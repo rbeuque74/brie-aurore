@@ -13,7 +13,7 @@
                     <li py:if="user.groups.admin or user.groups.admin_read"><a href="/rooms/index/${residence}">PIÈCES</a></li>
                     <li py:if="user.groups.admin"><a href="/members/index/${residence}">MEMBRES</a></li>
                     <li py:if="user.groups.admin"><a href="/registration/">INSCRIPTION</a></li>
-                    <li py:if="user.groups.tresorier"><a href="/treasury/">TRÉSORIE</a></li>
+                    <li py:if="user.groups.tresorier"><a href="/treasury/">TRÉSORERIE</a></li>
                     <li py:if="user.groups.responsablereseau"><a href="/administration/">ADMINISTRATION</a></li>
                     <li py:if="user.residence_dn == 'dc=aurore,dc=u-psud,dc=fr'"><a href="/stats/">STATISTIQUES</a></li>
                 </ul>
