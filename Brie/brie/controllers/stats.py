@@ -17,7 +17,7 @@ from operator import itemgetter
 class StatsController(AuthenticatedBaseController):
 
     @expose("brie.templates.stats.index")
-    def index(self):
+    def index(self, year = None):
         residences = []
         rooms_stats = dict()
         members_stats = dict()
@@ -28,12 +28,24 @@ class StatsController(AuthenticatedBaseController):
         global_total_earned = 0
         global_current_members = 0
         residences_ldap = Residences.get_residences(self.user)
-        year = CotisationComputes.current_year()                                                                                    
+
+        #on restreint l'acces a la page stats pour les membres Aurore
+        for residence_ldap in residences_ldap:
+            if residence_ldap.uniqueMember.first() == self.user.residence_dn and residence_ldap.cn.first() != "Aurore":
+                raise Exception("acces refuse")
+            #end if
+        #end for
+        
+        if year is None:
+            year = CotisationComputes.current_year()                                                                                    
         for residence_ldap in residences_ldap:
             residence_dn = residence_ldap.uniqueMember.first()
             residence_name = residence_ldap.cn.first()
             residences.append(residence_name)
-            members_stats[residence_name] = CotisationComputes.members_status_from_residence(self.user, residence_dn)
+            #members_stats[residence_name] = CotisationComputes.members_status_from_residence(self.user, residence_dn)
+            cotisations_year = Cotisation.get_all_cotisation_by_year(self.user, residence_dn, year)
+            members_stats[residence_name] = CotisationComputes.members_status_from_list_cotisations(self.user, residence_dn, cotisations_year)
+
             members_stats[residence_name]['number_of_cotisation_paid_members'] = len(members_stats[residence_name]['cotisation_paid_members'])
             members_stats[residence_name]['number_of_cotisation_late_members'] = len(members_stats[residence_name]['cotisation_late_members'])
             members_stats[residence_name]['number_of_no_cotisation_members'] = len(members_stats[residence_name]['no_cotisation_members'])
@@ -74,6 +86,7 @@ class StatsController(AuthenticatedBaseController):
         return { 
             "user" : self.user, 
             "residence" : residence,
+            "year" : int(year),
             "residences" : residences,
             "rooms_stats" : rooms_stats, 
             "members_stats" : members_stats,
