@@ -799,7 +799,7 @@ class MachineDeleteController(AuthenticatedRestController):
         # Si la machine existe effectivement, on la supprime
         if machine is not None:
             # Ajout de l'entrée dans les logs
-            BrieLogging.get().info("suppression machine " + Machine.get_dhcps(self.user, machine.dn)[0].get("dhcpHWAddress").values[0] + " pour l'utilisateur "+ member.dn + " par l'admin "+ self.user.attrs.dn)
+            BrieLogging.get().info("suppression machine " + Machine.get_dhcps(self.user, machine.dn)[0].get("dhcpHWAddress").values[0] + " ("+ dns.dlzData.first() +") pour l'utilisateur "+ member.dn + " par l'admin "+ self.user.attrs.dn)
 
             self.user.ldap_bind.delete_entry_subtree(machine.dn)
 
