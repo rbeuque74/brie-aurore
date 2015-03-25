@@ -26,7 +26,7 @@ import ldap
 
 #root = tg.config['application_root_module'].RootController
 
-""" Controller d'edition de details de membres, chambres""" 
+""" Controller d'edition de details de membres, chambres"""
 class EditController(AuthenticatedBaseController):
     require_group = groups_enum.admin
 
@@ -56,7 +56,7 @@ class EditController(AuthenticatedBaseController):
         self.add = MemberAddController()
         self.member_delete = MemberDeleteController(self.machine, self.room, self.cotisation)
 
-    
+
     """ Affiche les détails éditables de la chambre """
     @expose("brie.templates.edit.room")
     def room(self, residence, room_id):
@@ -78,14 +78,14 @@ class MemberAddController(AuthenticatedRestController):
                 #end if
 
 		residence_dn = Residences.get_dn_by_name(self.user, residence)
-                
+
                 # On modifie silencieusement le nom de la machine si il existe déjà
                 def try_name(name, number):
                     actual_name = name
                     if number > 0:
                         actual_name = name + str(number)
-                    #end if 
-        
+                    #end if
+
                     member = Member.get_by_uid(self.user, residence_dn, actual_name)
                     if member is not None:
                         return try_name(name, number + 1)
@@ -107,7 +107,7 @@ class MemberAddController(AuthenticatedRestController):
 
 
                 member_uid = try_name(member_uid, 0)
-        
+
                 member = Member.entry_attr(member_uid, prenom, nom, mail, phone, -1)
 
                 year = CotisationComputes.registration_current_year()
@@ -115,7 +115,7 @@ class MemberAddController(AuthenticatedRestController):
 		member_dn = "uid=" + member_uid + ",ou=" + str(year) + "," + ldap_config.username_base_dn + residence_dn
 		year_directory_exists(year)
                 self.user.ldap_bind.add_entry(member_dn, member)
-		
+
 
 		#preview = member, room
 		#index_result["preview"] = preview
@@ -154,10 +154,10 @@ class MemberModificationController(AuthenticatedRestController):
     @expose("brie.templates.edit.member")
     def get(self, residence, uid):
         residence_dn = Residences.get_dn_by_name(self.user, residence)
-        
+
         self.show.user = self.user
         show_values = self.show.member(residence, uid)
-        
+
         rooms = Room.get_rooms(self.user, residence_dn)
         if rooms is None:
             raise Exception("unable to retrieve rooms")
@@ -174,7 +174,7 @@ class MemberModificationController(AuthenticatedRestController):
                 #end if
             #end for
         #end for
-            
+
 
         show_values["rooms"] = rooms
 
@@ -199,7 +199,7 @@ class MemberModificationController(AuthenticatedRestController):
         already_paid = 0
         for cotisation in cotisations:
             paid_months = (
-                paid_months + 
+                paid_months +
                 [int(month) for month in cotisation.get("x-validMonth").all()]
             )
 
@@ -230,7 +230,7 @@ class MemberModificationController(AuthenticatedRestController):
 
         available_months_prices = []
         index = 1
-        
+
         anniversary = CotisationComputes.generate_new_anniversary_from_ldap_items(cotisations)
 
         for available_month in available_months:
@@ -238,7 +238,7 @@ class MemberModificationController(AuthenticatedRestController):
                 available_months_prices.append(
                     (available_month, "fin de l'année ".decode("utf-8"), CotisationComputes.price_to_pay(year_price, month_price, already_paid, index))
                 )
-            else: 
+            else:
                 available_months_prices.append(
                     (available_month, str(anniversary.day) + " " + month_names[available_month % 12], CotisationComputes.price_to_pay(year_price, month_price, already_paid, index))
                 )
@@ -247,7 +247,7 @@ class MemberModificationController(AuthenticatedRestController):
         #end for
 
         show_values["available_months_prices"] = available_months_prices
-        
+
         extras_available = Cotisation.get_all_extras(self.user, residence_dn)
         show_values["extras_available"] = extras_available
 
@@ -263,7 +263,7 @@ class MemberModificationController(AuthenticatedRestController):
         sn = unicode.encode(sn, 'utf-8')
         givenName = unicode.encode(givenName, 'utf-8')
         comment = unicode.encode(comment, 'utf-8')
-    
+
         member.sn.replace(member.sn.first(), sn)
 
         member.givenName.replace(member.givenName.first(), givenName)
@@ -298,7 +298,7 @@ class MemberDisableController(AuthenticatedRestController):
         #end if
 
         dhcps = Machine.get_dhcps(self.user, member.dn)
-    
+
         machine_membre_tag = "machine_membre" # FIXME move to config
 
         for dhcp_item in dhcps:
@@ -331,7 +331,7 @@ class MemberEnableController(AuthenticatedRestController):
         #end if
 
         dhcps = Machine.get_dhcps(self.user, member.dn)
-    
+
         machine_membre_tag = "machine_membre" # FIXME move to config
         machine_membre_disabled = machine_membre_tag + "_disabled" # FIXME move to config
 
@@ -354,7 +354,7 @@ class MemberDeleteController(AuthenticatedRestController):
     machine = None
     room = None
     cotisation = None
-    
+
     def __init__(self, machine, room, cotisation):
         self.machine = machine
         self.room = room
@@ -441,7 +441,9 @@ class MachineAddController(AuthenticatedRestController):
 
         mac = mac.strip()
         name = name.strip().replace(" ", "-").replace("_", "-")
-        name = Translations.strip_accents(name)
+        name = Translations.formatName(name)
+        #name = Translations.strip_accents(name)
+
 
         #Vérification que l'adresse mac soit correcte
         mac_match = re.match('^([0-9A-Fa-f]{2}[:-]?){5}([0-9A-Fa-f]{2})$', mac)
@@ -455,7 +457,7 @@ class MachineAddController(AuthenticatedRestController):
         if mac_match is not None:
             mac = mac_match.group(1) + ":" + mac_match.group(2) + ":" + mac_match.group(3) + ":" + mac_match.group(4) + ":" + mac_match.group(5) + ":" + mac_match.group(6)
         #endif
-        
+
         #Remplacement de l'adresse mac séparée par des tirets
         mac_match = re.match('^([0-9A-Fa-f]{2})-([0-9A-Fa-f]{2})-([0-9A-Fa-f]{2})-([0-9A-Fa-f]{2})-([0-9A-Fa-f]{2})-([0-9A-Fa-f]{2})$', mac)
         if mac_match is not None:
@@ -488,7 +490,7 @@ class MachineAddController(AuthenticatedRestController):
             actual_name = name
             if number > 0:
                 actual_name = name + "-" + str(number)
-            #end if 
+            #end if
 
             machine = Machine.get_dns_by_name(self.user, member_base_dn, actual_name)
             if machine is not None:
@@ -502,7 +504,7 @@ class MachineAddController(AuthenticatedRestController):
         name = re.sub('_', '-', name)
 
         name = try_name(name, 0)
-        
+
         # Génération de l'id de la machine et recherche d'une ip libre
         ip = IpReservation.get_first_free(self.user, residence_dn)
 
@@ -510,7 +512,7 @@ class MachineAddController(AuthenticatedRestController):
             raise Exception("le pool d'adresse IP est vide. aucune adresse IP disponible pour ajouter une machine")
         #end if
 
-        # Indique que l'ip est prise 
+        # Indique que l'ip est prise
         taken_attribute = IpReservation.taken_attr(str(datetime.today()))
         self.user.ldap_bind.add_attr(ip.dn, taken_attribute)
 
@@ -528,24 +530,24 @@ class MachineAddController(AuthenticatedRestController):
         # Attributs ldap des objets dhcp et dns, fils de l'objet machine
         machine_dhcp = Machine.dhcp_attr(name, mac)
         machine_dns = Machine.dns_attr(name, ip.cn.first())
-        
-        # Construction du dn et ajout de l'objet machine 
+
+        # Construction du dn et ajout de l'objet machine
         # en fils du membre (membre.dn)
         machine_dn = "cn=" + name + "," + ldap_config.machine_base_dn + member.dn
         self.user.ldap_bind.add_entry(machine_dn, machine_top)
 
-        # Construction du dn et ajout de l'objet dhcp 
+        # Construction du dn et ajout de l'objet dhcp
         # en fils de la machine (machine_dn)
         dhcp_dn = "cn=dhcp," + machine_dn
         self.user.ldap_bind.add_entry(dhcp_dn, machine_dhcp)
 
-        # Construction du dn et ajout de l'objet dns 
+        # Construction du dn et ajout de l'objet dns
         dns_dn = "cn=dns," + machine_dn
         self.user.ldap_bind.add_entry(dns_dn, machine_dns)
 
         # Ajout de l'entrée dans les logs
         BrieLogging.get().info("ajout machine " + mac + " pour l'utilisateur "+ member.dn + " par l'admin "+ self.user.attrs.dn)
-        
+
         plugin_vars = {
             "machine_dn" : machine_dn,
             "name" : name,
@@ -554,13 +556,13 @@ class MachineAddController(AuthenticatedRestController):
         }
 
         plugin_action(self.user, residence, plugin_vars)
-        
+
         if go_redirect:
             redirect("/edit/member/" + residence + "/" + member_uid)
         #end if
     #end def
 #end class
-        
+
 class CotisationController(AuthenticatedBaseController):
     require_group = groups_enum.admin
 
@@ -650,7 +652,7 @@ class CotisationAddController(AuthenticatedRestController):
     def create_cotisation(self, member, time, current_year, residence, residence_dn, member_uid, next_end):
 
         now = datetime.now()
-        next_month = int(next_end)        
+        next_month = int(next_end)
 
         if not CotisationComputes.is_valid_month(next_month):
             raise Exception("Invalid month") #FIXME
@@ -661,7 +663,7 @@ class CotisationAddController(AuthenticatedRestController):
         already_paid = 0
         for cotisation in cotisations_existantes:
             paid_months = (
-                paid_months + 
+                paid_months +
                 [int(month) for month in cotisation.get("x-validMonth").all()]
             )
             already_paid += int(cotisation.get("x-amountPaid").first())
@@ -681,11 +683,11 @@ class CotisationAddController(AuthenticatedRestController):
         except:
             pass
         #end try
-        
+
         price_to_pay = CotisationComputes.price_to_pay(year_price, month_price, already_paid, len(available_months))
 
-        
-        # réactivation des machines du membre # FIXME 
+
+        # réactivation des machines du membre # FIXME
         if now.month in available_months:
             dhcps = Machine.get_dhcps(self.user, member.dn)
 
@@ -709,7 +711,7 @@ class CotisationAddController(AuthenticatedRestController):
         user_info = self.user.attrs.cn.first()
         return Cotisation.extra_attr(time, residence, current_year, self.user.attrs.dn, user_info, extra_item.uid.first(), prix)
     #end def
-    
+
     @expose()
     def post(self, residence, member_uid, next_end, extra_name, go_redirect = True):
         residence_dn = Residences.get_dn_by_name(self.user, residence)
@@ -723,7 +725,7 @@ class CotisationAddController(AuthenticatedRestController):
 
         if next_end != "":
             cotisation = self.create_cotisation(member, time, current_year, residence, residence_dn, member_uid, next_end)
-        
+
         if extra_name != "":
             extra = self.create_extra(time, current_year, residence, residence_dn, member_uid, extra_name)
         #end if
@@ -735,10 +737,10 @@ class CotisationAddController(AuthenticatedRestController):
                 return
             #end if
         #end if
-            
+
         folder_dn = ldap_config.cotisation_member_base_dn + member.dn
         year_dn = "cn=" + str(current_year) + "," + folder_dn
-   
+
         try:
             folder = Cotisation.folder_attr()
             self.user.ldap_bind.add_entry(folder_dn, folder)
@@ -753,12 +755,12 @@ class CotisationAddController(AuthenticatedRestController):
             pass # OKAY
         #end try
 
-        
+
         if cotisation is not None:
             cotisation_dn = "cn=cotisation-" + time + "," + year_dn
             BrieLogging.get().info("cotisation ajoutee pour "+ member.dn +"("+str(cotisation.get("x-amountPaid")) +"EUR) by "+ self.user.attrs.dn)
             self.user.ldap_bind.add_entry(cotisation_dn, cotisation)
-        #end if        
+        #end if
 
         if extra is not None:
             extra_dn = "cn=extra-" + time + "," + year_dn
@@ -769,7 +771,7 @@ class CotisationAddController(AuthenticatedRestController):
         if go_redirect:
             redirect("/edit/member/" + residence + "/" + member_uid)
         else:
-            return 
+            return
         #end if
     #end def
 
@@ -897,28 +899,28 @@ class WifiRestController(AuthenticatedRestController):
 
     def __init__(self, new_show):
         self.show = new_show
-    
+
     @expose("brie.templates.edit.wifi")
     def get(self, uid):
-        member = Member.get_by_uid(self.user, self.user.residence_dn, uid)     
+        member = Member.get_by_uid(self.user, self.user.residence_dn, uid)
 
         if member is None:
             self.show.error_no_entry()
 
         return { "member_ldap" : member }
     #end def
-        
+
 
     @expose("brie.templates.edit.wifi")
     def post(self, uid, password):
-    
+
         member = Member.get_by_uid(self.user, self.user.residence_dn, uid)
-    
+
         if member is None:
             self.show.error_no_entry()
-        
-        wifi = Wifi.get_by_dn(self.user, member.dn)    
-        
+
+        wifi = Wifi.get_by_dn(self.user, member.dn)
+
         if wifi is None:
             wifi_dn = "cn=wifi," + member.dn
             self.user.ldap_bind.add_entry(wifi_dn, Wifi.entry_attr(password))
@@ -930,7 +932,7 @@ class WifiRestController(AuthenticatedRestController):
         redirect("/show/member/" + uid)
     #end def
 #end class
-        
+
 """ Controller de gestion des rooms """
 class RoomController(AuthenticatedBaseController):
     require_group = groups_enum.admin
@@ -948,7 +950,7 @@ class RoomController(AuthenticatedBaseController):
     """ Affiche les détails éditables de la chambre """
     @expose("brie.templates.edit.room")
     def index(self, residence, room_id):
-        residence_dn = Residences.get_dn_by_name(self.user, residence)    
+        residence_dn = Residences.get_dn_by_name(self.user, residence)
 
         room = Room.get_by_uid(self.user, residence_dn, room_id)
 
@@ -960,14 +962,14 @@ class RoomController(AuthenticatedBaseController):
             member = Member.get_by_dn(self.user, room.get("x-memberIn").first())
 
         members = Member.get_all(self.user, residence_dn)
-        
-        return { 
+
+        return {
             "residence" : residence,
-            "user" : self.user, 
-            "room_ldap" : room, 
+            "user" : self.user,
+            "room_ldap" : room,
             "member_ldap" : member,
             "members" : members
-        }        
+        }
         #se Exception("tait toi")
     #end def
 
@@ -1016,7 +1018,7 @@ class RoomMoveController(AuthenticatedRestController):
                 BrieLogging.get().info("retrait de chambre pour le member "+member_uid+" from "+ old_room.uid.first() +" by "+self.user.attrs.dn)
             #end if
         #end if
-            
+
             #self.user.ldap_bind.delete_entry_subtree(machine.dn)
 
             #taken_attribute = IpReservation.taken_attr(ip.get("x-taken").first())
@@ -1051,7 +1053,7 @@ class RoomChangeMemberController(AuthenticatedRestController):
 
         if member is not None:
             old_room_member = Room.get_by_member_dn(self.user, residence_dn, member.dn)
-    
+
             # Si la machine existe effectivement, on la supprime
             if old_room_member is not None:
                 raise Exception("le nouveau membre possèdait déjà une chambre. conflit")
@@ -1071,7 +1073,7 @@ class RoomChangeMemberController(AuthenticatedRestController):
             memberIn_attribute = Room.memberIn_attr(str(member.dn))
             self.user.ldap_bind.add_attr(room.dn, memberIn_attribute)
             BrieLogging.get().info("ajout de chambre pour le member "+ member_uid +" to "+ room_uid +" by "+self.user.attrs.dn)
-        #end if    
+        #end if
 
         # On redirige sur la page d'édition du membre
         redirect("/edit/room/index/" + residence + "/" + room_uid)
@@ -1097,7 +1099,7 @@ class AllMembersDisableController(AuthenticatedRestController):
             groups_of_user = Groupes.get_by_user_dn(self.user, residence_dn, member.dn)
             if "exemptdecoglobale" not in groups_of_user:
                 dhcps = Machine.get_dhcps(self.user, member.dn)
-            
+
                 machine_membre_tag = "machine_membre" # FIXME move to config
 
                 for dhcp_item in dhcps:
@@ -1132,7 +1134,7 @@ class AllMembersEnableController(AuthenticatedRestController):
             # On ne reconnecte que les membres ayant payé leur cotisation.
             if CotisationComputes.is_cotisation_paid(member.dn, self.user, residence_dn):
                 dhcps = Machine.get_dhcps(self.user, member.dn)
-            
+
                 machine_membre_tag = "machine_membre" # FIXME move to config
                 machine_membre_disabled = machine_membre_tag + "_disabled" # FIXME move to config
 

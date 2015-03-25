@@ -5,7 +5,7 @@ from os import urandom
 from binascii import b2a_hex
 
 class Translations(object):
-    
+
     @staticmethod
     def to_uid(name, surname):
         clean_name =  Translations.strip_accents(name.replace(" ", "")).lower()[:15]
@@ -23,25 +23,35 @@ class Translations(object):
     def area_of_room(room):
         if Translations.floor_of_room(room) == 5:
             return "crous"
-    
+
         floor_number = room % 100
-        
-        if floor_number <= 33: 
+
+        if floor_number <= 33:
             return "sud"
         else:
             return "nord"
         #end if
     #end def
 
-#end class
-        
-        
-
     # http://stackoverflow.com/questions/517923/what-is-the-best-way-to-remove-accents-in-a-python-unicode-string
     @staticmethod
     def strip_accents(s):
         return ''.join((c for c in unicodedata.normalize('NFD', s) if unicodedata.category(c) != 'Mn'))
     #end def
+
+    @staticmethod
+    def formatName(value):
+        """
+        Converts to ASCII. Converts spaces to hyphens. Removes characters that
+        aren't alphanumerics, underscores, or hyphens. Converts to lowercase.
+        Also strips leading and trailing whitespace.
+        """
+        value = unicodedata.normalize('NFKD', value).encode('ascii', 'ignore').decode('ascii')
+        value = re.sub('[^\w\s-]', '', value).strip().lower()
+        return re.sub('[-\s]+', '-', value)
+    #end def
+
+#end class
 
 class Passwords(object):
 
