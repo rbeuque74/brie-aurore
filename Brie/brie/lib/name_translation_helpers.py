@@ -3,7 +3,7 @@ import unicodedata
 from random import randint
 from os import urandom
 from binascii import b2a_hex
-import re, unicodedata
+import re
 
 class Translations(object):
 
