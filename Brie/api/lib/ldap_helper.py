@@ -2,9 +2,7 @@
 import ldap
 #import ldap.modlist as modlist
 
-from brie.config import ldap_config
-from brie.lib.log_helper import BrieLogging
-from brie.model.ldap import Groupes
+#from brie.model.ldap import Groupes
 
 
 class Groups(object):
@@ -35,11 +33,11 @@ class User(object):
         self.attrs = attrs
         self.residence_dn = residence_dn
 
-        if attrs is not None:
-            groups = Groupes.get_by_user_dn(self, residence_dn, self.attrs.dn)
+        #if attrs is not None:
+        #    groups = Groupes.get_by_user_dn(self, residence_dn, self.attrs.dn)
 
-            self.groups = Groups(groups)
-        #end if
+        #    self.groups = Groups(groups)
+        ##end if
     #end def
 #end class
 
@@ -57,10 +55,10 @@ class Ldap(object):
         password : mot de passe
     """
     @staticmethod
-    def connect(dn, password):
+    def connect(dn, password, uri):
         connection = None
 #        try:
-        connection = ldap.initialize(ldap_config.uri)
+        connection = ldap.initialize(uri)
         connection.simple_bind_s(dn, password)
 #        except:
 #        return None
@@ -322,11 +320,11 @@ class Ldap(object):
         )
 
         for ldap_attribute in ldap_attributes:
-            BrieLogging.get().debug("name : " + ldap_attribute.name)
-            BrieLogging.get().debug("values : " + str(ldap_attribute.values))
-            BrieLogging.get().debug("deletions : " + str(ldap_attribute._deletions))
-            BrieLogging.get().debug("additions : " + str(ldap_attribute._additions))
-            BrieLogging.get().debug("modified : " + str(ldap_attribute._modified))
+            #BrieLogging.get().debug("name : " + ldap_attribute.name)
+            #BrieLogging.get().debug("values : " + str(ldap_attribute.values))
+            #BrieLogging.get().debug("deletions : " + str(ldap_attribute._deletions))
+            #BrieLogging.get().debug("additions : " + str(ldap_attribute._additions))
+            #BrieLogging.get().debug("modified : " + str(ldap_attribute._modified))
             
             if ldap_attribute._deletions != []:
                 str_values = [str(value) for value in ldap_attribute._deletions]
@@ -349,8 +347,8 @@ class Ldap(object):
 
         #end for
 
-        BrieLogging.get().debug("dn : " +  ldap_entry.dn)
-        BrieLogging.get().debug("modlist : " + str(modlist))
+        #BrieLogging.get().debug("dn : " +  ldap_entry.dn)
+        #BrieLogging.get().debug("modlist : " + str(modlist))
         if modlist != []:
             self.__connection.modify_s(ldap_entry.dn, modlist)
 
