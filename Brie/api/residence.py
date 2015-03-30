@@ -6,8 +6,10 @@ class Residence(object):
     def __init__(self, ldap_object):
         if o is None:
             raise BrieException(u"L'objet LDAP ne peut pas être nul")
+        #end if
         if not isinstance(o, LdapEntry):
             raise BrieException(u"L'objet fourni n'est pas un objet LDAP")
+        #end if
         
         self.o = ldap_object
     #end def
@@ -38,6 +40,7 @@ class Residence(object):
             raise BrieException(u"La résidence spécifiée n'existe pas")
         else:
             return Residence(residence)
+        #end if
     #end def
 
     @staticmethod
@@ -47,5 +50,6 @@ class Residence(object):
             raise BrieException(u"La résidence spécifiée n'existe pas")
         else:
             return Residence(residence)
+        #end if
     #end def
 
