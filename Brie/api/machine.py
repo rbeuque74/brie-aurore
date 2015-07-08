@@ -1,12 +1,12 @@
 # -*- coding: utf-8 -*-
 
-import exception 
+import exception
 
 class Machine(object):
     """Classe modelisant un périphérique connecté au réseau"""
 
     o = None
-    
+
     def __init__(self, ldap_object):
         if o is None:
             raise BrieException(u"L'objet LDAP ne peut pas être nul")
@@ -14,7 +14,7 @@ class Machine(object):
         if not isinstance(o, LdapEntry):
             raise BrieException(u"L'objet fourni n'est pas un objet LDAP")
         #end if
-        
+
         self.o = ldap_object
     #end def
 
@@ -27,10 +27,12 @@ class Machine(object):
     #end def
 
     def getMac(self):
+        pass
         #TODO return
     #end def
 
     def getIP(self):
+        pass
         #TODO return
     #end def
 

@@ -1,12 +1,12 @@
 # -*- coding: utf-8 -*-
 
-import exception 
+import exception
 
 class Membre(object):
     """Classe modelisant les membres"""
 
     o = None
-    
+
     def __init__(self, prenom, nom, email, mobile):
         self.o =  {
             "objectClass" : ["top", "person", "organizationalPerson", "inetOrgPerson", "pacatnetMember", "pykotaAccount", "posixAccount"],
@@ -38,11 +38,11 @@ class Membre(object):
             "loginShell" : "/usr/bin/zsh".encode("utf-8")
         }
     #end def
-    
+
     @classmethod
     def fromLdapObject(cls, o):
         membre = cls(o.cn.first())
-        
+
         if o is None:
             raise BrieException(u"L'objet LDAP ne peut pas être nul")
         #end if
@@ -61,7 +61,7 @@ class Membre(object):
     def getPrenom(self):
         return self.o.givenName.first()
     #end def
-    
+
     def getNom(self):
         return self.o.sn.first()
     #end def
@@ -131,7 +131,7 @@ class Membre(object):
         #end if
         return output
     #end def
-    
+
     @staticmethod
     def getByEmail(brie, email, residence):
         membres = brie.ldapconn().search(brie.PREFIX_MEMBRES_DN + residence.getDn(), "(&(objectClass=pacatnetMember)(mail=" + email + "))")
@@ -159,7 +159,7 @@ class Membre(object):
         #end if
         return output
     #end def
-    
+
 
     @staticmethod
     def getNonResponsableReseau(brie, residence):
@@ -174,7 +174,7 @@ class Membre(object):
         #end if
         return output
     #end def
-    
+
     @staticmethod
     def getResponsableReseau(brie, residence):
         membres = brie.ldapconn().search(brie.PREFIX_MEMBRES_DN + residence.getDn(), "(&(objectClass=pacatnetMember)(memberof=cn=responsablereseau,ou=groupes,"+residence.getDn()+"))")
@@ -202,5 +202,5 @@ class Membre(object):
         #end if
         return output
     #end def
-    
+
 
