@@ -19,7 +19,7 @@ class Groups(object):
     def list(self):
         return list(self.__groups)
     #end def
- 
+
 #end class
 
 class User(object):
@@ -27,7 +27,7 @@ class User(object):
     attrs = None
     groups =  None
     residence_dn = None
-    
+
     def __init__(self, ldap_bind, attrs, residence_dn = None):
         self.ldap_bind = ldap_bind
         self.attrs = attrs
@@ -49,7 +49,7 @@ class Ldap(object):
     def __init__(self, connection):
         self.__connection = connection
     #end def
-    
+
     """ Methode de connexion à la base de donnée
         dn : dn de connexion
         password : mot de passe
@@ -63,11 +63,11 @@ class Ldap(object):
 #        except:
 #        return None
         #end try
-       
+
         if connection is not None:
             return Ldap(connection)
-        #end 
- 
+        #end
+
         return None
     #end def
 
@@ -87,7 +87,7 @@ class Ldap(object):
         #end try
 
         ldap_results = []
-        
+
         for result in results:
             result_dn = result[0]
             attributes = result[1]
@@ -99,7 +99,7 @@ class Ldap(object):
                 ldap_value = LdapAttribute(name, values)
                 val_dict[name] = ldap_value
             #end for
-            
+
             ldap_result = LdapEntry(result_dn, val_dict)
             ldap_results.append(ldap_result)
         #end for
@@ -129,10 +129,10 @@ class Ldap(object):
                     #end if
                 #end for
                 tree_c[0] = result
-            #end if 
+            #end if
         #end for
         return LdapEntryTree(tree[0], tree[1])
-    #end def 
+    #end def
 
     """ Recherche le premier resultat sur la base
         appel la methode "search" en interne
@@ -163,9 +163,9 @@ class Ldap(object):
             return Ldap.str_attribute(value)
         #end def
 
-        return dict([ 
+        return dict([
             (keyval[0], str_value(keyval[1]))
-            for keyval in attributes.iteritems() 
+            for keyval in attributes.iteritems()
         ])
     #end def
 
@@ -181,9 +181,9 @@ class Ldap(object):
             return Ldap.str_attribute(value)
         #end def
 
-        return dict([ 
+        return dict([
             (keyval, str_value(attributes[keyval]))
-            for keyval in attributes 
+            for keyval in attributes
         ])
     #end def
 
@@ -194,14 +194,14 @@ class Ldap(object):
         elif isinstance(value, unicode):
             return unicode.encode(value, "utf-8")
         #end if
-        
+
         return str(value)
     #end def
-        
+
 
     """ Remplace les attributs d'un dn donné
         dn : adresse de l'élément
-        attributes : dictionnaire d'attributs 
+        attributes : dictionnaire d'attributs
     """
     def replace_attr(self, dn, attributes):
         attributes = Ldap.str_attributes(attributes)
@@ -230,7 +230,7 @@ class Ldap(object):
             pass
     #end def
 
-    """ Supprime les attributs d'un dn donné 
+    """ Supprime les attributs d'un dn donné
         dn : adresse de l'élément
         attributes : dictionnaire des attributs à supprimer
     """
@@ -247,7 +247,7 @@ class Ldap(object):
         #    pass
     #end def
 
-    """ Ajoute un nouvelle élément 
+    """ Ajoute un nouvelle élément
         dn : adresse du nouvelle élément
         attributes : dictionnaire des attributes de l'élément
     """
@@ -258,14 +258,14 @@ class Ldap(object):
         for attribute in attributes.iteritems():
             modlist.append((attribute[0], attribute[1]))
         #end for
-        
+
         ##try:
         self.__connection.add_s(dn, modlist)
         ##except:
         ##    pass
     #end def
 
-    """ Clone un élément 
+    """ Clone un élément
         dn : adresse du nouvelle élément
         attributes : l'élément à cloner
     """
@@ -277,7 +277,7 @@ class Ldap(object):
         for attribute in attributes.iteritems():
             modlist.append((attribute[0], attribute[1]))
         #end for
-        
+
         ##try:
         self.__connection.add_s(dn, modlist)
         ##except:
@@ -314,7 +314,7 @@ class Ldap(object):
         ldap_entry._deletions = []
 
         ldap_attributes = (
-            attribute 
+            attribute
             for attribute in ldap_entry.__dict__.itervalues()
             if isinstance(attribute, LdapAttribute)
         )
@@ -325,7 +325,7 @@ class Ldap(object):
             #BrieLogging.get().debug("deletions : " + str(ldap_attribute._deletions))
             #BrieLogging.get().debug("additions : " + str(ldap_attribute._additions))
             #BrieLogging.get().debug("modified : " + str(ldap_attribute._modified))
-            
+
             if ldap_attribute._deletions != []:
                 str_values = [str(value) for value in ldap_attribute._deletions]
                 modlist.append((ldap.MOD_DELETE, ldap_attribute.name, str_values))
@@ -360,12 +360,12 @@ class Ldap(object):
     """ Ferme la connexion à la base """
     def close(self):
         self.__connection.unbind()
-            
+
 #end class
 
 """ Classe représentant un élément ldap """
 class LdapEntry(object):
-    dn = None    
+    dn = None
 
     _deletions = []
 
@@ -391,7 +391,7 @@ class LdapEntry(object):
     def __getattr__(self, name):
         attr = LdapAttribute(name, [])
         self.__dict__[name] = attr
-        
+
         return attr
     #end def
 
@@ -408,7 +408,7 @@ class LdapEntry(object):
                 values = [value]
             #end if
 
-            
+
             self.__dict__[name] = LdapAttribute(name, values)
             self.__dict__[name]._additions = values
         #end if
@@ -452,9 +452,9 @@ class LdapAttribute(object):
         for value in self.values:
             return unicode(value)
         #end for
-        
+
         if default is None:
-            return None        
+            return None
 
         return unicode(default)
     #end def
@@ -465,21 +465,21 @@ class LdapAttribute(object):
     #end def
 
     """ Ajoute une valeur à cet attribut
-        Note : la valeur ne sera pas ajouté si elle existe déjà 
+        Note : la valeur ne sera pas ajouté si elle existe déjà
     """
     def add(self, value):
         if not value in self.values:
             self.values.append(value)
             self._additions.append(value)
         #end if
-    #end def 
+    #end def
 
     """ Supprime une valeur de cet attribut """
-    def delete(self, value):    
+    def delete(self, value):
         if value in self.values:
             self.values = [old for old in self.values if old != value]
 
-            # Si il vient d'être ajouté, on l'enleve simplement 
+            # Si il vient d'être ajouté, on l'enleve simplement
             # de la queue d'ajout
             # sinon on l'ajoute dans la queue de suppression
             if value in self._additions:
@@ -496,7 +496,7 @@ class LdapAttribute(object):
     def replace(self, old, new):
         if old == new:
             return
-    
+
         # Fonction usuelle de remplacement
         def replace(current):
             if current == old:
@@ -515,17 +515,17 @@ class LdapAttribute(object):
         else:
             self.values = [replace(value) for value in self.values]
 
-            # Si la valeur modifié vient d'être ajouté, 
+            # Si la valeur modifié vient d'être ajouté,
             # elle est modifié dans la queue d'addition
             self._additions = [replace(value) for value in self._additions]
-        
+
             self._modified = True
         #end if
 
     #end def
 
 #end class
-   
+
 class LdapEntryTree(LdapEntry):
     childs = None
     val = None
@@ -547,8 +547,8 @@ class LdapEntryTree(LdapEntry):
     def __getattr__(self, name):
         attr = LdapAttribute(name, [])
         self.__dict__[name] = attr
-        
+
         return attr
     #end def
 
-#end class 
+#end class
