@@ -14,7 +14,7 @@ class Brie(object):
     admin = None
     __anon_bind = None
 
-    LDAP_URI = "ldaps://localhost:6360"
+    LDAP_URI = "ldaps://localhost"
 
     PREFIX_MEMBRES_DN = "ou=membres,"
     PREFIX_CHAMBRES_DN = "ou=chambres,"

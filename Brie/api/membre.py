@@ -1,11 +1,11 @@
 # -*- coding: utf-8 -*-
 
 import exception
+from lib.ldap_helper import LdapEntry
+from lib.brie_helper import registration_current_year, to_uid
 
 class Membre(object):
     """Classe modelisant les membres"""
-
-    o = None
 
     def __init__(self, prenom, nom, email, mobile):
         self.o =  {
@@ -21,28 +21,34 @@ class Membre(object):
             "mail" : u"",
             "loginShell" : "/bin/bash"
         }
+        self.setPrenom(prenom)
+        self.setNom(nom)
+        self.setMail(email)
+        self.setMobile(mobile)
+        self.setUid(to_uid(prenom, nom))
     #end def
+
+    def __repr__(self):
+        return "<Membre ({0}, {1}, {2}, {3})>".format(self.getPrenom().encode("utf-8"), self.getNom().encode("utf-8"), self.getMail().encode("utf-8"), self.getDn().encode("utf-8"))
 
     def toLdapObject(self):
         return  {
             "objectClass" : ["top", "person", "organizationalPerson", "inetOrgPerson", "pacatnetMember", "pykotaAccount", "posixAccount"],
-            "uid" :uid.encode("utf-8"),
-            "cn" : (prenom + " " + nom.upper()).encode("utf-8"),
-            "sn" : (nom.upper()).encode("utf-8"),
-            "givenName" : (prenom).encode("utf-8"),
-            "uidNumber" : str(uid_number),
-            "mobile" : str(phone),
+            "uid" : self.uid.encode("utf-8"),
+            "cn" : (self.prenom + " " + self.nom.upper()).encode("utf-8"),
+            "sn" : (self.nom.upper()).encode("utf-8"),
+            "givenName" : (self.prenom).encode("utf-8"),
+            "uidNumber" : u"",
+            "mobile" : str(self.mobile),
             "gidNumber" : "10000",
-            "homeDirectory" : ("/net/home/" + uid).encode("utf-8"),
-            "mail" : mail.encode("utf-8"),
+            "homeDirectory" : ("/net/home/" + self.uid).encode("utf-8"),
+            "mail" : self.mail.encode("utf-8"),
             "loginShell" : "/usr/bin/zsh".encode("utf-8")
         }
     #end def
 
     @classmethod
     def fromLdapObject(cls, o):
-        membre = cls(o.cn.first())
-
         if o is None:
             raise BrieException(u"L'objet LDAP ne peut pas être nul")
         #end if
@@ -50,8 +56,19 @@ class Membre(object):
             raise BrieException(u"L'objet fourni n'est pas un objet LDAP")
         #end if
 
-        membre.o = ldap_object
-        return residence
+        membre = cls(o.givenName.first(), o.sn.first(), o.mail.first(), o.mobile.first())
+        membre.setUid(o.uid.first())
+        membre.o = o
+        return membre
+    #end def
+
+    def save(self, brie):
+        if not isinstance(self.o, LdapEntry):
+            year = registration_current_year()
+            member_dn = "uid={0},ou={1},{2}{3}".format(self.getUid(), str(year), brie.PREFIX_MEMBRES_DN, residence.getDn())
+            brie.ldapconn().add_entry(member_dn, self.toLdapObject())
+        else:
+            brie.ldapconn().save(self.o)
     #end def
 
     def getDn(self):
@@ -59,19 +76,51 @@ class Membre(object):
     #end def
 
     def getPrenom(self):
-        return self.o.givenName.first()
+        return self.prenom
+    #end def
+
+    def setPrenom(self, prenom):
+        try:
+            self.o.givenName.replace(self.o.givenName.first(), prenom)
+        except:
+            self.o['givenName'] = prenom
+        self.prenom = prenom
     #end def
 
     def getNom(self):
-        return self.o.sn.first()
+        return self.nom
+    #end def
+
+    def setNom(self, nom):
+        try:
+            self.o.sn.replace(self.o.sn.first(), nom)
+        except:
+            self.o['sn'] = nom
+        self.nom = nom
     #end def
 
     def getCn(self):
-        return self.o.cn.first()
+        return self.cn
+    #end def
+
+    def setCn(self, cn):
+        try:
+            self.o.cn.replace(self.o.cn.first(), cn)
+        except:
+            self.o['cn'] = cn
+        self.cn = cn
     #end def
 
     def getUid(self):
-        return self.o.uid.first()
+        return self.uid
+    #end def
+
+    def setUid(self, uid):
+        try:
+            self.o.uid.replace(self.o.uid.first(), uid)
+        except:
+            self.o['uid'] = uid
+        self.uid = uid
     #end def
 
     def getUidNumber(self):
@@ -79,7 +128,15 @@ class Membre(object):
     #end def
 
     def getMobile(self):
-        return self.o.mobile.first()
+        return self.mobile
+    #end def
+
+    def setMobile(self, mobile):
+        try:
+            self.o.mobile.replace(self.o.mobile.first(), mobile)
+        except:
+            self.o['mobile'] = mobile
+        self.mobile = mobile
     #end def
 
     def getGidNumber(self):
@@ -91,7 +148,15 @@ class Membre(object):
     #end def
 
     def getMail(self):
-        return self.o.mail.first()
+        return self.mail
+    #end def
+
+    def setMail(self, mail):
+        try:
+            self.o.mail.replace(self.o.mail.first(), mail)
+        except:
+            self.o['mail'] = mail
+        self.mail = mail
     #end def
 
     def getLoginShell(self):
@@ -104,7 +169,7 @@ class Membre(object):
         if membre is None:
             raise BrieException(u"Le membre demandé n'existe pas")
         else:
-            return Membre(membre)
+            return Membre.fromLdapObject(membre)
         #end if
     #end def
 
@@ -114,7 +179,7 @@ class Membre(object):
         if membre is None:
             raise BrieException(u"Le membre demandé n'existe pas")
         else:
-            return Membre(membre)
+            return Membre.fromLdapObject(membre)
         #end if
     #end def
 
@@ -126,7 +191,7 @@ class Membre(object):
         else:
             output = []
             for membre in membres:
-                output.append(Membre(membre))
+                output.append(Membre.fromLdapObject(membre))
             #end for
         #end if
         return output
@@ -140,7 +205,7 @@ class Membre(object):
         else:
             output = []
             for membre in membres:
-                output.append(Membre(membre))
+                output.append(Membre.fromLdapObject(membre))
             #end for
         #end if
         return output
@@ -148,13 +213,13 @@ class Membre(object):
 
     @staticmethod
     def getAll(brie, residence):
-        membres = brie.ldapconn().search(brie.PREFIX_MEMBRES_DN + residence.getDn(), u"(objectClass=pacatnetMember")
+        membres = brie.ldapconn().search(brie.PREFIX_MEMBRES_DN + residence.getDn(), u"(objectClass=pacatnetMember)")
         if membres is None:
             raise BrieException(u"Impossible de récupérer les membres ou pas de membres dans la résidence")
         else:
             output = []
             for membre in membres:
-                output.append(Membre(membre))
+                output.append(Membre.fromLdapObject(membre))
             #end for
         #end if
         return output
@@ -169,7 +234,7 @@ class Membre(object):
         else:
             output = []
             for membre in membres:
-                output.append(Membre(membre))
+                output.append(Membre.fromLdapObject(membre))
             #end for
         #end if
         return output
@@ -183,7 +248,7 @@ class Membre(object):
         else:
             output = []
             for membre in membres:
-                output.append(Membre(membre))
+                output.append(Membre.fromLdapObject(membre))
             #end for
         #end if
         return output
@@ -197,7 +262,7 @@ class Membre(object):
         else:
             output = []
             for membre in membres:
-                output.append(Membre(membre))
+                output.append(Membre.fromLdapObject(membre))
             #end for
         #end if
         return output
