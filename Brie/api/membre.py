@@ -1,7 +1,9 @@
 # -*- coding: utf-8 -*-
 
 import exception
-from lib.ldap_helper import LdapEntry
+import ldap
+import machine
+from lib.ldap_helper import LdapEntry, LdapEntryTree
 from lib.brie_helper import registration_current_year, to_uid
 
 class Membre(object):
@@ -14,38 +16,27 @@ class Membre(object):
             "cn" : u"",
             "sn" : u"",
             "givenName" : u"",
-            "uidNumber" : u"",
+            "uidNumber" : str(-1),
             "mobile" : u"",
             "gidNumber" : "10000",
             "homeDirectory" : u"",
             "mail" : u"",
-            "loginShell" : "/bin/bash"
+            "loginShell" : "/bin/bash",
         }
+        self.o_folder_machine = machine.Machine.folder_attr()
+        self.prenom = u""
+        self.nom = u""
         self.setPrenom(prenom)
         self.setNom(nom)
         self.setMail(email)
         self.setMobile(mobile)
         self.setUid(to_uid(prenom, nom))
+        self.machines = []
     #end def
 
     def __repr__(self):
         return "<Membre ({0}, {1}, {2}, {3})>".format(self.getPrenom().encode("utf-8"), self.getNom().encode("utf-8"), self.getMail().encode("utf-8"), self.getDn().encode("utf-8"))
 
-    def toLdapObject(self):
-        return  {
-            "objectClass" : ["top", "person", "organizationalPerson", "inetOrgPerson", "pacatnetMember", "pykotaAccount", "posixAccount"],
-            "uid" : self.uid.encode("utf-8"),
-            "cn" : (self.prenom + " " + self.nom.upper()).encode("utf-8"),
-            "sn" : (self.nom.upper()).encode("utf-8"),
-            "givenName" : (self.prenom).encode("utf-8"),
-            "uidNumber" : u"",
-            "mobile" : str(self.mobile),
-            "gidNumber" : "10000",
-            "homeDirectory" : ("/net/home/" + self.uid).encode("utf-8"),
-            "mail" : self.mail.encode("utf-8"),
-            "loginShell" : "/usr/bin/zsh".encode("utf-8")
-        }
-    #end def
 
     @classmethod
     def fromLdapObject(cls, o):
@@ -58,6 +49,7 @@ class Membre(object):
 
         membre = cls(o.givenName.first(), o.sn.first(), o.mail.first(), o.mobile.first())
         membre.setUid(o.uid.first())
+        membre.setComment(o.get("x-comment").first())
         membre.o = o
         return membre
     #end def
@@ -65,10 +57,16 @@ class Membre(object):
     def save(self, brie):
         if not isinstance(self.o, LdapEntry):
             year = registration_current_year()
-            member_dn = "uid={0},ou={1},{2}{3}".format(self.getUid(), str(year), brie.PREFIX_MEMBRES_DN, residence.getDn())
-            brie.ldapconn().add_entry(member_dn, self.toLdapObject())
+            member_dn = "uid={0},ou={1},{2}{3}".format(self.getUid(), str(year), brie.PREFIX_MEMBRES_DN, brie.residence.getDn())
+            brie.ldapconn().add_entry(member_dn, self.o)
         else:
             brie.ldapconn().save(self.o)
+            member_dn = self.getDn()
+        try:
+            machine_dn = "{0}{1}".format(brie.PREFIX_MACHINES_MEMBRE_DN, member_dn)
+            brie.ldapconn().add_entry(machine_dn, self.o_folder_machine)
+        except ldap.ALREADY_EXISTS:
+            pass
     #end def
 
     def getDn(self):
@@ -80,11 +78,15 @@ class Membre(object):
     #end def
 
     def setPrenom(self, prenom):
+        prenom = prenom.encode("utf-8")
         try:
             self.o.givenName.replace(self.o.givenName.first(), prenom)
+            self.o.cn.replace(self.o.cn.first(), "{0} {1}".format(prenom, self.nom))
         except:
             self.o['givenName'] = prenom
+            self.o['cn'] = "{0} {1}".format(prenom, self.nom)
         self.prenom = prenom
+        self.cn = "{0} {1}".format(prenom, self.nom)
     #end def
 
     def getNom(self):
@@ -92,11 +94,15 @@ class Membre(object):
     #end def
 
     def setNom(self, nom):
+        nom = nom.encode("utf-8")
         try:
             self.o.sn.replace(self.o.sn.first(), nom)
+            self.o.cn.replace(self.o.cn.first(), "{0} {1}".format(self.prenom, nom))
         except:
             self.o['sn'] = nom
+            self.o['cn'] = "{0} {1}".format(self.prenom, nom)
         self.nom = nom
+        self.cn = "{0} {1}".format(self.prenom, nom)
     #end def
 
     def getCn(self):
@@ -104,6 +110,7 @@ class Membre(object):
     #end def
 
     def setCn(self, cn):
+        cn = cn.encode("utf-8")
         try:
             self.o.cn.replace(self.o.cn.first(), cn)
         except:
@@ -159,8 +166,26 @@ class Membre(object):
         self.mail = mail
     #end def
 
+    def getComment(self):
+        return self.comment
+    #end def
+
+    def setComment(self, comment):
+        try:
+            self.o.get("x-comment").replace(self.o.get("x-comment").first(), comment)
+        except:
+            self.o["x-comment"] = comment
+        self.comment = comment
+    #end def
+
     def getLoginShell(self):
         return self.o.loginShell.first()
+    #end def
+
+    def getChilds(self, brie):
+        test = brie.ldapconn().get_childs(self.getDn())
+        from pprint import pprint
+        pprint(test)
     #end def
 
     @staticmethod
@@ -180,6 +205,48 @@ class Membre(object):
             raise BrieException(u"Le membre demandé n'existe pas")
         else:
             return Membre.fromLdapObject(membre)
+        #end if
+    #end def
+
+
+    def get_machines(self, brie):
+        try:
+            self.getDn()
+        except:
+            raise BrieException("Membre not commited yet!")
+        membre = brie.ldapconn().get_childs(self.getDn())
+        if membre is None:
+            raise BrieException(u"Le membre demandé n'existe pas")
+        else:
+            self.machines = []
+            for machine_name in membre.machines.childs:
+                machine_ldap = membre.machines.childs[machine_name]
+                if not isinstance(machine_ldap.dns, LdapEntryTree) or not isinstance(machine_ldap.dhcp, LdapEntryTree):
+                    continue
+                #end if
+                machine_obj = machine.Machine.from_ldap_object(self, machine_ldap)
+                self.machines.append(machine_obj)
+            #end for
+        #end if
+
+    @staticmethod
+    def getFullByUid(brie, membre_uid, residence):
+        m = Membre.getByUid(brie, membre_uid, residence)
+        if m is None:
+            return None
+        membre = brie.ldapconn().get_childs(m.getDn())
+        if membre is None:
+            raise BrieException(u"Le membre demandé n'existe pas")
+        else:
+            for machine_name in membre.machines.childs:
+                machine_ldap = membre.machines.childs[machine_name]
+                if not isinstance(machine_ldap.dns, LdapEntryTree) or not isinstance(machine_ldap.dhcp, LdapEntryTree):
+                    continue
+                #end if
+                machine_obj = machine.Machine.from_ldap_object(m, machine_ldap)
+                m.machines.append(machine_obj)
+            return m
+            #end for
         #end if
     #end def
 
@@ -267,5 +334,7 @@ class Membre(object):
         #end if
         return output
     #end def
+
+
 
 

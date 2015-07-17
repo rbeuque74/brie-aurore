@@ -9,4 +9,6 @@ class BrieLdapConnectionException(BrieException):
 class BrieConnectionException(BrieException):
     pass
 
+class BrieNotFoundException(BrieException):
+    pass
 

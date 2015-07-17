@@ -252,6 +252,9 @@ class Ldap(object):
         attributes : dictionnaire des attributes de l'élément
     """
     def add_entry(self, dn, attributes):
+        if isinstance(attributes, LdapEntry):
+            raise ldap.ALREADY_EXISTS()
+
         attributes = Ldap.str_attributes(attributes)
 
         modlist = []

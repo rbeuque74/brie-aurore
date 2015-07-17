@@ -63,9 +63,9 @@ class Brie(object):
         if self.__anon_bind is None:
             raise BrieLdapConnectionException()
 
-        residence = Residence.getResidenceByName(self, self.residence_name)
+        self.residence = Residence.getResidenceByName(self, self.residence_name)
 
-        user_base_dn = Brie.PREFIX_MEMBRES_DN + residence.getDn()
+        user_base_dn = Brie.PREFIX_MEMBRES_DN + self.residence.getDn()
         actual_user = self.ldapconn().search_first(user_base_dn, "(uid=" + self.username + ")")
 
         if actual_user is None:
